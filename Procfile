@@ -1,0 +1,1 @@
+﻿web: node Jok.Pool/Scripts/Jok.Pool.Server.js

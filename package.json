@@ -1,0 +1,16 @@
+﻿{
+	"name": "Jok.Pool.Server",
+	"version": "1.0.0",
+	"dependencies": {
+		"engine.io" : "0.9.11",
+		"node-uuid" : "*"
+	},
+	"engines": {
+		"node": "0.10.18",
+		"npm": "1.1.x"
+	},
+	"scripts": {
+		"start": "node Jok.Pool/Scripts/Jok.Pool.Server.js",
+		"debug": "node --debug Jok.Pool/Scripts/Jok.Pool.Server.js"
+	}
+}
