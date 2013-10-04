@@ -1,0 +1,1 @@
+{"version":3,"file":"Game.js","sourceRoot":"","sources":["Game.ts"],"names":["GameTable","GameTable.constructor","GameTable.join","GameTable.leave"],"mappings":"AAAA;IAEA;QAAAA;;AAQCA,QANGA,2BAAAA,UAAKA,MAAMA;QACXE,CAACA;;QAEDF,4BAAAA,UAAMA,MAAMA;QACZG,CAACA;QAELH;AAACA,IAADA,CAACA,IAAA;IARD,8BAQC;GACD"}
