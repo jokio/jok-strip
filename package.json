@@ -6,7 +6,8 @@
 		"engine.io" : "0.7.9",
 		"primus" : "1.4.3",
 		"primus-emitter" : "1.0.2",
-		"primus-rooms" : "1.1.1"
+		"primus-rooms" : "1.1.1",
+		"node-inspector" : "0.4.0"
 	},
 	"engines": {
 		"node": "0.10.18",
