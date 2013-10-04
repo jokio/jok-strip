@@ -143,8 +143,12 @@
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
     <None Include="Scripts\Common\jquery-2.0.3.intellisense.js" />
+    <Content Include="Scripts\Common\client.js" />
     <Content Include="Scripts\Common\jquery-2.0.3.js" />
     <Content Include="Scripts\Common\jquery-2.0.3.min.js" />
+    <Content Include="Scripts\Common\r.js" />
+    <Content Include="Scripts\Common\require.js" />
+    <Content Include="Scripts\Common\server.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

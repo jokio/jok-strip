@@ -1,1 +1,1 @@
-{"version":3,"file":"GameClient.js","sourceRoot":"","sources":["GameClient.ts"],"names":["GameClient","GameClient.constructor"],"mappings":"AAAA,gCAAgC;AAAhC;;;IAIA;QAAAA;;AAKCA,QAADA;AAACA,IAADA,CAACA,IAAA;IALD,gCAKC;GAAA"}
+{"version":3,"file":"GameClient.js","sourceRoot":"","sources":["GameClient.ts"],"names":["GameClient","GameClient.constructor"],"mappings":"AAAA,gCAAgC;AAAhC;;;IAIA;QAAAA;;AAICA,QAADA;AAACA,IAADA,CAACA,IAAA;IAJD,gCAIC;;IAED,OAAO,CAAC,GAAG,CAAC,2BAA2B,CAAC,CAAC;GACzC"}

@@ -6,5 +6,6 @@ export class GameClient {
 
     table: GameEngine.GameTable;
 
-
 }
+
+console.log('Game Client Module Loaded');

@@ -8,5 +8,7 @@ define(["require", "exports"], function(require, exports) {
         return GameClient;
     })();
     exports.GameClient = GameClient;
+
+    console.log('Game Client Module Loaded');
 });
 //# sourceMappingURL=GameClient.js.map

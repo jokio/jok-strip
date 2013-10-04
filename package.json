@@ -1,6 +1,6 @@
 ﻿{
 	"name": "Jok.Strip.Server",
-	"version": "1.0.0",
+	"version": "0.1.0",
 	"dependencies": {
 		"node-uuid" : "1.4.1",
 		"engine.io" : "0.7.9",
@@ -13,7 +13,7 @@
 		"npm": "1.1.x"
 	},
 	"scripts": {
-		"start": "node Jok.Pool/Scripts/GameServer.js",
-		"debug": "node --debug Jok.Pool/Scripts/GameServer.js"
+		"start": "node Jok.Strip/Scripts/Common/server.js",
+		"debug": "node --debug Jok.Strip/Scripts/Common/server.js"
 	}
 }
