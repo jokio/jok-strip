@@ -1,0 +1,1 @@
+{"version":3,"file":"GameServer.js","sourceRoot":"","sources":["GameServer.ts"],"names":["GameServer","GameServer.constructor","GameServer.start"],"mappings":"AAAA,gCAAgC;AAAhC;;;IAIA;QAAAA;;AAKCA,QAHGA,6BAAAA;QAEAE,CAACA;QACLF;AAACA,IAADA,CAACA,IAAA;IALD,gCAKC;GAAA"}

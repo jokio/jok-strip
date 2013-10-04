@@ -1,16 +1,19 @@
 ﻿{
-	"name": "Jok.Pool.Server",
+	"name": "Jok.Strip.Server",
 	"version": "1.0.0",
 	"dependencies": {
-		"engine.io" : "0.9.11",
-		"node-uuid" : "*"
+		"node-uuid" : "1.4.1",
+		"engine.io" : "0.7.9",
+		"primus" : "1.4.3",
+		"primus-emitter" : "1.0.2",
+		"primus-rooms" : "1.1.1"
 	},
 	"engines": {
 		"node": "0.10.18",
 		"npm": "1.1.x"
 	},
 	"scripts": {
-		"start": "node Jok.Pool/Scripts/Jok.Pool.Server.js",
-		"debug": "node --debug Jok.Pool/Scripts/Jok.Pool.Server.js"
+		"start": "node Jok.Pool/Scripts/GameServer.js",
+		"debug": "node --debug Jok.Pool/Scripts/GameServer.js"
 	}
 }
