@@ -10,7 +10,7 @@ namespace Jok.Strip.Controllers
     {
         public ActionResult Index()
         {
-            return View();
+            return RedirectToAction("Play");
         }
 
         public ActionResult Play(string channel)

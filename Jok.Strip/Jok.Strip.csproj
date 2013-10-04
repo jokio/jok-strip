@@ -160,9 +160,7 @@
     <Content Include="Views\Home\Play.cshtml" />
     <Content Include="Scripts\Common\jquery-2.0.3.min.map" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
