@@ -11,7 +11,7 @@
 		"npm": "1.1.x"
 	},
 	"scripts": {
-		"start": "node Jok.Strip/Scripts/Common/server.js",
-		"debug": "node --debug Jok.Strip/Scripts/Common/server.js"
+		"start": "node Jok.Strip/Scripts/_server.js",
+		"debug": "node --debug Jok.Strip/Scripts/_server.js"
 	}
 }

@@ -1,24 +1,35 @@
 /// <reference path="Game.ts" />
 
-
+import ServerEngine = require('ServerEngine');
 import GameEngine = require('Game');
-import http = require('http');
 
 
-export class GameServer {
+export class GameServer extends ServerEngine.JokServer {
 
-    httpServer: http.Server;
+    constructor() {
+        super();
 
-    primus;
-
-    start() {
-        this.httpServer = http.createServer(this.httpHandler);
+        this.on('connect', this.onConnect);
+        this.on('authoize', this.onAuthorize);
+        this.on('disconnect', this.onDisconnect);
     }
 
-    httpHandler(req, res) {
-        res.end('Hello World');
+    onConnect(socket) {
+        console.log('socket connected');
     }
 
+    onAuthorize(socket, isSuccess) {
+        console.log('socket authorization result:', isSuccess);
+    }
+
+    onDisconnect(socket) {
+        console.log('socket disconnected');
+    }
+
+
+    static Start(port: number) {
+        return new GameServer().listen(port);
+    }
 }
 
-console.log('GameServer Module Loaded');
+GameServer.Start(3000);

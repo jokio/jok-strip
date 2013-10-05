@@ -10,5 +10,7 @@ define(["require", "exports"], function(require, exports) {
         return GameTable;
     })();
     exports.GameTable = GameTable;
+
+    console.log('as2d');
 });
 //# sourceMappingURL=Game.js.map

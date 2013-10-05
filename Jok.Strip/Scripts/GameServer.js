@@ -1,22 +1,42 @@
 /// <reference path="Game.ts" />
-define(["require", "exports", 'http'], function(require, exports, __http__) {
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+define(["require", "exports", 'ServerEngine'], function(require, exports, __ServerEngine__) {
+    var ServerEngine = __ServerEngine__;
     
-    var http = __http__;
 
-    var GameServer = (function () {
+    var GameServer = (function (_super) {
+        __extends(GameServer, _super);
         function GameServer() {
+            _super.call(this);
+
+            this.on('connect', this.onConnect);
+            this.on('authoize', this.onAuthorize);
+            this.on('disconnect', this.onDisconnect);
         }
-        GameServer.prototype.start = function () {
-            this.httpServer = http.createServer(this.httpHandler);
+        GameServer.prototype.onConnect = function (socket) {
+            console.log('socket connected');
         };
 
-        GameServer.prototype.httpHandler = function (req, res) {
-            res.end('Hello World');
+        GameServer.prototype.onAuthorize = function (socket, isSuccess) {
+            console.log('socket authorization result:', isSuccess);
+        };
+
+        GameServer.prototype.onDisconnect = function (socket) {
+            console.log('socket disconnected');
+        };
+
+        GameServer.Start = function (port) {
+            return new GameServer().listen(port);
         };
         return GameServer;
-    })();
+    })(ServerEngine.JokServer);
     exports.GameServer = GameServer;
 
-    console.log('GameServer Module Loaded');
+    GameServer.Start(3000);
 });
 //# sourceMappingURL=GameServer.js.map

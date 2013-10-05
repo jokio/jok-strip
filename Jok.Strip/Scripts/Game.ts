@@ -8,3 +8,6 @@ export class GameTable {
     }
 }
 
+
+
+console.log('as2d');
