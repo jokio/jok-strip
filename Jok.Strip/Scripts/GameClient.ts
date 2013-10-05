@@ -1,3 +1,4 @@
+/// <reference path="JokClientEngine.ts" />
 /// <reference path="Game.ts" />
 
 import ClientEngine = require('JokClientEngine');
@@ -12,6 +13,7 @@ class GameClient extends ClientEngine.JokClient {
         this.on('connect', this.onConnect);
         this.on('disconnect', this.onDisconnect);
         this.on('authorize', this.onAuthorize);
+        this.on('msg', this.onMsg);
     }
 
 
@@ -29,6 +31,10 @@ class GameClient extends ClientEngine.JokClient {
 
     onDisconnect() {
         console.log('disconnected');
+    }
+
+    onMsg(text) {
+        console.log(text);
     }
 
 

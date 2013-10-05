@@ -1,3 +1,4 @@
+/// <reference path="JokClientEngine.ts" />
 /// <reference path="Game.ts" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -17,6 +18,7 @@ define(["require", "exports", 'JokClientEngine'], function(require, exports, __C
             this.on('connect', this.onConnect);
             this.on('disconnect', this.onDisconnect);
             this.on('authorize', this.onAuthorize);
+            this.on('msg', this.onMsg);
         }
         GameClient.prototype.onConnect = function () {
             console.log('connected');
@@ -32,6 +34,10 @@ define(["require", "exports", 'JokClientEngine'], function(require, exports, __C
 
         GameClient.prototype.onDisconnect = function () {
             console.log('disconnected');
+        };
+
+        GameClient.prototype.onMsg = function (text) {
+            console.log(text);
         };
 
         GameClient.Start = function (url) {

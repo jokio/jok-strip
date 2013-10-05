@@ -1,3 +1,4 @@
+/// <reference path="JokServerEngine.ts" />
 /// <reference path="Game.ts" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -17,22 +18,20 @@ define(["require", "exports", 'JokServerEngine'], function(require, exports, __S
             this.on('connect', this.onConnect);
             this.on('authorize', this.onAuthorize);
             this.on('disconnect', this.onDisconnect);
-            this.on('ping', this.onPing);
+            this.on('msg', this.onMsg);
         }
         GameServer.prototype.onConnect = function (socket) {
-            console.log('socket connected');
+            this.groups.add(socket.id, 'test');
         };
 
         GameServer.prototype.onAuthorize = function (socket, isSuccess) {
-            console.log('socket authorization result:', isSuccess);
         };
 
         GameServer.prototype.onDisconnect = function (socket) {
-            console.log('socket disconnected');
         };
 
-        GameServer.prototype.onPing = function () {
-            console.log('ping received');
+        GameServer.prototype.onMsg = function (socket, text) {
+            this.sendToGroup('test', 'msg', text);
         };
 
         GameServer.Start = function (port) {

@@ -44,13 +44,13 @@ define(["require", "exports", 'Common/EventEmitter'], function(require, exports,
 
             this.socket.on('close', function () {
                 _this.emit('disconnect', {});
-                setTimeout(function () {
-                    return _this.connect(url);
-                }, 1000);
             });
 
             this.socket.on('error', function (data) {
                 console.log('error', data);
+                setTimeout(function () {
+                    return _this.connect(url);
+                }, 1000);
             });
 
             return this;

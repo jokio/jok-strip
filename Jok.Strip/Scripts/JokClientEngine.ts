@@ -43,11 +43,11 @@ export class JokClient extends events.EventEmitter  {
 
         this.socket.on('close', () => {
             this.emit('disconnect', {});
-            setTimeout(() => this.connect(url), 1000);
         });
 
         this.socket.on('error', (data) => {
             console.log('error', data);
+            setTimeout(() => this.connect(url), 1000);
         });
 
         return this;

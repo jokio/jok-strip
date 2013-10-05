@@ -1,3 +1,4 @@
+/// <reference path="JokServerEngine.ts" />
 /// <reference path="Game.ts" />
 
 import ServerEngine = require('JokServerEngine');
@@ -12,24 +13,22 @@ class GameServer extends ServerEngine.JokServer {
         this.on('connect', this.onConnect);
         this.on('authorize', this.onAuthorize);
         this.on('disconnect', this.onDisconnect);
-        this.on('ping', this.onPing);
+        this.on('msg', this.onMsg);
     }
 
 
     onConnect(socket) {
-        console.log('socket connected');
+        this.groups.add(socket.id, 'test');
     }
 
     onAuthorize(socket, isSuccess) {
-        console.log('socket authorization result:', isSuccess);
     }
 
     onDisconnect(socket) {
-        console.log('socket disconnected');
     }
 
-    onPing() {
-        console.log('ping received');
+    onMsg(socket, text) {
+        this.sendToGroup('test', 'msg', text);
     }
 
 
