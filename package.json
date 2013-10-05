@@ -4,9 +4,6 @@
 	"dependencies": {
 		"node-uuid" : "1.4.1",
 		"engine.io" : "0.7.9",
-		"primus" : "1.4.3",
-		"primus-emitter" : "1.0.2",
-		"primus-rooms" : "1.1.1",
 		"node-inspector" : "0.4.0"
 	},
 	"engines": {

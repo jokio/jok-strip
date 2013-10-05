@@ -146,6 +146,7 @@
     <Content Include="Scripts\Common\client.js" />
     <Content Include="Scripts\Common\jquery-2.0.3.js" />
     <Content Include="Scripts\Common\jquery-2.0.3.min.js" />
+    <Content Include="Scripts\Common\primus-client.js" />
     <Content Include="Scripts\Common\r.js" />
     <Content Include="Scripts\Common\require.js" />
     <Content Include="Scripts\Common\server.js" />

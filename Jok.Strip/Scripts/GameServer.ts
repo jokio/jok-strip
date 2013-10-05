@@ -3,7 +3,6 @@
 
 import GameEngine = require('Game');
 import http = require('http');
-var Primus = require('primus');
 
 
 export class GameServer {
@@ -14,7 +13,6 @@ export class GameServer {
 
     start() {
         this.httpServer = http.createServer(this.httpHandler);
-        this.primus = new Primus(this.httpServer, {/* options */});
     }
 
     httpHandler(req, res) {

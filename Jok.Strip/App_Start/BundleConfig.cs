@@ -9,7 +9,7 @@ namespace Jok.Strip
         public static void RegisterBundles(BundleCollection bundles)
         {
             bundles.Add(new ScriptBundle("~/bundles/js").Include(
-                        "~/Scripts/jquery-{version}.js"
+                        "~/Scripts/Common/jquery-{version}.js"
                         ));
 
             bundles.Add(new StyleBundle("~/bundles/css").Include("~/Content/site.css"));
