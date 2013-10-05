@@ -16,6 +16,9 @@
 	 */
     function EventEmitter() { }
 
+    // Compatability
+    EventEmitter.EventEmitter = EventEmitter;
+
     // Shortcuts to improve speed and size
 
     // Easy access to the prototype

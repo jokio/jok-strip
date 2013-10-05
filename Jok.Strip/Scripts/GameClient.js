@@ -12,18 +12,11 @@ define(["require", "exports", 'JokClientEngine'], function(require, exports, __C
     var GameClient = (function (_super) {
         __extends(GameClient, _super);
         function GameClient() {
-            var _this = this;
             _super.call(this);
 
-            this.serverEvents.on('connect', function () {
-                return _this.onConnect();
-            });
-            this.serverEvents.on('disconnect', function () {
-                return _this.onDisconnect();
-            });
-            this.serverEvents.on('authorize', function (info) {
-                return _this.onAuthorize(info);
-            });
+            this.on('connect', this.onConnect);
+            this.on('disconnect', this.onDisconnect);
+            this.on('authorize', this.onAuthorize);
         }
         GameClient.prototype.onConnect = function () {
             console.log('connected');

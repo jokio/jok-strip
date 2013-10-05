@@ -9,9 +9,9 @@ class GameClient extends ClientEngine.JokClient {
     constructor() {
         super();
 
-        this.serverEvents.on('connect', () => this.onConnect());
-        this.serverEvents.on('disconnect', () => this.onDisconnect());
-        this.serverEvents.on('authorize', (info) => this.onAuthorize(info));
+        this.on('connect', this.onConnect);
+        this.on('disconnect', this.onDisconnect);
+        this.on('authorize', this.onAuthorize);
     }
 
 

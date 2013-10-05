@@ -1,12 +1,19 @@
-define(["require", "exports"], function(require, exports) {
-    
+var __extends = this.__extends || function (d, b) {
+    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+    function __() { this.constructor = d; }
+    __.prototype = b.prototype;
+    d.prototype = new __();
+};
+define(["require", "exports", 'Common/EventEmitter'], function(require, exports, __events__) {
+    var events = __events__;
 
     var global = window;
 
-    var JokClient = (function () {
+    var JokClient = (function (_super) {
+        __extends(JokClient, _super);
         function JokClient() {
+            _super.call(this);
             this.reconnectRetryCount = 0;
-            this.serverEvents = new global.EventEmitter();
 
             global.gameClient = this;
         }
@@ -18,7 +25,7 @@ define(["require", "exports"], function(require, exports) {
 
             this.socket.on('open', function () {
                 _this.reconnectRetryCount = 0;
-                _this.serverEvents.emit('connect', {});
+                _this.emit('connect', {});
             });
 
             this.socket.on('message', function (msg) {
@@ -32,11 +39,11 @@ define(["require", "exports"], function(require, exports) {
                     return;
                 }
 
-                _this.serverEvents.emit(command.cmd, command.data);
+                _this.emit(command.cmd, command.data);
             });
 
             this.socket.on('close', function () {
-                _this.serverEvents.emit('disconnect', {});
+                _this.emit('disconnect', {});
                 setTimeout(function () {
                     return _this.connect(url);
                 }, 1000);
@@ -57,7 +64,7 @@ define(["require", "exports"], function(require, exports) {
             }));
         };
         return JokClient;
-    })();
+    })(events.EventEmitter);
     exports.JokClient = JokClient;
 });
 //# sourceMappingURL=JokClientEngine.js.map

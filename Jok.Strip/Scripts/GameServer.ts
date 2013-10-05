@@ -4,11 +4,11 @@ import ServerEngine = require('JokServerEngine');
 import GameEngine = require('Game');
 
 
-export class GameServer extends ServerEngine.JokServer {
+class GameServer extends ServerEngine.JokServer {
 
     constructor() {
         super();
-
+        
         this.on('connect', this.onConnect);
         this.on('authorize', this.onAuthorize);
         this.on('disconnect', this.onDisconnect);

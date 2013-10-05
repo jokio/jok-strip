@@ -40,7 +40,6 @@ define(["require", "exports", 'JokServerEngine'], function(require, exports, __S
         };
         return GameServer;
     })(ServerEngine.JokServer);
-    exports.GameServer = GameServer;
 
     GameServer.Start(3000);
 });

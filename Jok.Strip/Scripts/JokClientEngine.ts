@@ -1,10 +1,8 @@
-import events2 = require('events')
+import events = require('Common/EventEmitter')
 
 var global: any = window;
 
-export class JokClient {
-
-    serverEvents;
+export class JokClient extends events.EventEmitter  {
 
     socket;
 
@@ -12,7 +10,7 @@ export class JokClient {
 
 
     constructor() {
-        this.serverEvents = new global.EventEmitter();
+        super();
 
         global.gameClient = this;
     }
@@ -25,7 +23,7 @@ export class JokClient {
 
         this.socket.on('open', () => {
             this.reconnectRetryCount = 0;
-            this.serverEvents.emit('connect', {});
+            this.emit('connect', {});
         });
 
         this.socket.on('message', (msg) => {
@@ -40,11 +38,11 @@ export class JokClient {
                 return;
             }
 
-            this.serverEvents.emit(command.cmd, command.data);
+            this.emit(command.cmd, command.data);
         });
 
         this.socket.on('close', () => {
-            this.serverEvents.emit('disconnect', {});
+            this.emit('disconnect', {});
             setTimeout(() => this.connect(url), 1000);
         });
 
