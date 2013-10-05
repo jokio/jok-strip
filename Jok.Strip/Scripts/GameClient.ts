@@ -20,7 +20,7 @@ class GameClient extends ClientEngine.JokClient {
     }
 
     onAuthorize(info) {
-        console.log('authorize info', info);
+        console.log('authorize', info);
 
         if (info.isSuccess) {
             this.sendCommand('ping');

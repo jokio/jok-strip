@@ -30,7 +30,7 @@ define(["require", "exports", 'JokClientEngine'], function(require, exports, __C
         };
 
         GameClient.prototype.onAuthorize = function (info) {
-            console.log('authorize info', info);
+            console.log('authorize', info);
 
             if (info.isSuccess) {
                 this.sendCommand('ping');

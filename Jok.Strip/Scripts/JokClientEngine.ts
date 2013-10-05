@@ -40,7 +40,7 @@ export class JokClient {
                 return;
             }
 
-            this.serverEvents.emit.call(this, command.cmd, command.data);
+            this.serverEvents.emit(command.cmd, command.data);
         });
 
         this.socket.on('close', () => {
