@@ -1,6 +1,6 @@
 /// <reference path="Game.ts" />
 
-import ServerEngine = require('ServerEngine');
+import ServerEngine = require('JokServerEngine');
 import GameEngine = require('Game');
 
 
@@ -10,9 +10,11 @@ export class GameServer extends ServerEngine.JokServer {
         super();
 
         this.on('connect', this.onConnect);
-        this.on('authoize', this.onAuthorize);
+        this.on('authorize', this.onAuthorize);
         this.on('disconnect', this.onDisconnect);
+        this.on('ping', this.onPing);
     }
+
 
     onConnect(socket) {
         console.log('socket connected');
@@ -24,6 +26,10 @@ export class GameServer extends ServerEngine.JokServer {
 
     onDisconnect(socket) {
         console.log('socket disconnected');
+    }
+
+    onPing() {
+        console.log('ping received');
     }
 
 

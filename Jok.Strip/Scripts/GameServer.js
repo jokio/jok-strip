@@ -5,7 +5,7 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-define(["require", "exports", 'ServerEngine'], function(require, exports, __ServerEngine__) {
+define(["require", "exports", 'JokServerEngine'], function(require, exports, __ServerEngine__) {
     var ServerEngine = __ServerEngine__;
     
 
@@ -15,8 +15,9 @@ define(["require", "exports", 'ServerEngine'], function(require, exports, __Serv
             _super.call(this);
 
             this.on('connect', this.onConnect);
-            this.on('authoize', this.onAuthorize);
+            this.on('authorize', this.onAuthorize);
             this.on('disconnect', this.onDisconnect);
+            this.on('ping', this.onPing);
         }
         GameServer.prototype.onConnect = function (socket) {
             console.log('socket connected');
@@ -28,6 +29,10 @@ define(["require", "exports", 'ServerEngine'], function(require, exports, __Serv
 
         GameServer.prototype.onDisconnect = function (socket) {
             console.log('socket disconnected');
+        };
+
+        GameServer.prototype.onPing = function () {
+            console.log('ping received');
         };
 
         GameServer.Start = function (port) {

@@ -1,10 +1,12 @@
 ﻿// [Module System]
-var requirejs = require('./common/r');
+var path = require('path');
+var requirejs = require('./r');
 
 requirejs.config({
     //Pass the top-level main.js/index.js require
     //function to requirejs so that node modules
     //are loaded relative to the top-level JS file.
+    baseUrl: path.join(__dirname, '..'),
     nodeRequire: require
 });
 

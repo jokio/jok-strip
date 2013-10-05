@@ -17,7 +17,14 @@ export class JokServer extends events.EventEmitter {
 
         this.engineServer.on('connection', (socket) => {
 
-            this.emit('connect', socket);
+            socket.sendCommand = function (cmd, data = {}) {
+                socket.send(JSON.stringify({
+                    cmd: cmd,
+                    data: data
+                }));
+            }
+
+            this.emit('connect', socket.emit);
 
             var sid = '';
             var ipaddress = '';
@@ -30,12 +37,9 @@ export class JokServer extends events.EventEmitter {
                 socket.userid = userid;
                 socket.channel = channel;
 
-                socket.send({
-                    cmd: 'authorize',
-                    data: {
-                        isSuccess: isSuccess,
-                        userid: userid
-                    }
+                socket.sendCommand('authorize', {
+                    isSuccess: isSuccess,
+                    userid: userid
                 });
 
                 this.emit('authorize', socket, isSuccess);
@@ -44,11 +48,17 @@ export class JokServer extends events.EventEmitter {
 
             socket.on('message', (msg) => {
 
-                if (!msg || !msg.cmd || !msg.data) {
+                try {
+                    var command = JSON.parse(msg);
+                }
+                catch (err) { }
+
+                if (!command || !command.cmd || !command.data) {
+                    //console.log('[INVALID_MSG_RECEIVED]: ' + msg);
                     return;
                 }
 
-                this.emit(msg.cmd, socket, msg.data);
+                this.emit(command.cmd, socket, command.data);
             });
 
             socket.on('close', () => {

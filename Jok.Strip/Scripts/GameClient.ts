@@ -1,23 +1,13 @@
 /// <reference path="Game.ts" />
 
+import ClientEngine = require('JokClientEngine');
 import GameEngine = require('Game');
-var EventEmitter, eio;
 
 
-class GameClient {
-
-    url = 'ws://localhost:3000/';
-
-    serverEvents = new EventEmitter();
-
-    socket;
-
-    reconnectRetryCount = 0;
-
-
+class GameClient extends ClientEngine.JokClient {
 
     constructor() {
-        this.connect();
+        super();
 
         this.serverEvents.on('connect', () => this.onConnect());
         this.serverEvents.on('disconnect', () => this.onDisconnect());
@@ -25,50 +15,26 @@ class GameClient {
     }
 
 
-    connect() {
-        this.reconnectRetryCount++;
-
-        this.socket = new eio.Socket(this.url);
-
-        this.socket.on('open', () => {
-            this.reconnectRetryCount = 0;
-            this.serverEvents.emit('connect', {});
-        });
-
-        this.socket.on('message', (msg) => {
-
-            if (!msg || !msg.cmd || !msg.data) {
-                console.log('[INVALID_MSG_RECEIVED]: ' + msg);
-                return;
-            }
-
-            this.serverEvents.emit(msg.cmd, msg.data);
-        });
-
-        this.socket.on('close', () => {
-            this.serverEvents.emit('disconnect', {});
-            setTimeout(() => this.connect(), 1000);
-        });
-    }
-
-
-    // [Server Callbacks]
     onConnect() {
-
-    }
-
-    onDisconnect() {
-
+        console.log('connected');
     }
 
     onAuthorize(info) {
-        console.log(info);
+        console.log('authorize info', info);
+
+        if (info.isSuccess) {
+            this.sendCommand('ping');
+        }
+    }
+
+    onDisconnect() {
+        console.log('disconnected');
     }
 
 
-    static Start() {
-        return new GameClient();
+    static Start(url) {
+        return new GameClient().connect(url);
     }
 }
 
-GameClient.Start();
+GameClient.Start('ws://localhost:3000/');

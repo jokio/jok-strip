@@ -150,7 +150,7 @@
     <Content Include="Scripts\Common\jquery-2.0.3.min.js" />
     <Content Include="Scripts\Common\r.js" />
     <Content Include="Scripts\Common\require.js" />
-    <Content Include="Scripts\_server.js" />
+    <Content Include="Scripts\Common\server.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -174,7 +174,8 @@
     <TypeScriptCompile Include="Scripts\Game.ts" />
     <TypeScriptCompile Include="Scripts\GameClient.ts" />
     <TypeScriptCompile Include="Scripts\GameServer.ts" />
-    <TypeScriptCompile Include="Scripts\ServerEngine.ts">
+    <TypeScriptCompile Include="Scripts\JokClientEngine.ts" />
+    <TypeScriptCompile Include="Scripts\JokServerEngine.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
