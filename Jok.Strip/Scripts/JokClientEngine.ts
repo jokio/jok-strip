@@ -19,6 +19,11 @@ export class JokClient extends events.EventEmitter  {
     connect(url: string) {
         this.reconnectRetryCount++;
 
+        if (this.socket) {
+            this.socket.removeAllListeners();
+            this.socket = null;
+        }
+
         this.socket = new global.eio.Socket(url);
 
         this.socket.on('open', () => {

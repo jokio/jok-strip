@@ -21,6 +21,11 @@ define(["require", "exports", 'Common/EventEmitter'], function(require, exports,
             var _this = this;
             this.reconnectRetryCount++;
 
+            if (this.socket) {
+                this.socket.removeAllListeners();
+                this.socket = null;
+            }
+
             this.socket = new global.eio.Socket(url);
 
             this.socket.on('open', function () {
