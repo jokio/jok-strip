@@ -31,6 +31,10 @@ define(["require", "exports", 'Common/EventEmitter'], function(require, exports,
             this.socket.on('open', function () {
                 _this.reconnectRetryCount = 0;
                 _this.emit('connect', {});
+
+                if (_this.logging) {
+                    console.log('connected');
+                }
             });
 
             this.socket.on('message', function (msg) {
@@ -45,14 +49,24 @@ define(["require", "exports", 'Common/EventEmitter'], function(require, exports,
                 }
 
                 _this.emit(command.cmd, command.data);
+
+                if (_this.logging) {
+                    console.log(command.cmd, command.data);
+                }
             });
 
             this.socket.on('close', function () {
                 _this.emit('disconnect', {});
+
+                if (_this.logging) {
+                    console.log('disonnected');
+                }
             });
 
             this.socket.on('error', function (data) {
-                console.log('error', data);
+                if (_this.logging) {
+                    console.log('error', data);
+                }
                 setTimeout(function () {
                     return _this.connect(url);
                 }, 1000);
