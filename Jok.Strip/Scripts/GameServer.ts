@@ -1,4 +1,4 @@
-/// <reference path="JokServerEngine.ts" />
+﻿/// <reference path="JokServerEngine.ts" />
 /// <reference path="Game.ts" />
 
 import ServerEngine = require('JokServerEngine');
@@ -11,7 +11,14 @@ export interface ISocket {
     table: Game.GameTable;
 };
 
-class GameServer extends ServerEngine.JokServer{
+class GameServer extends ServerEngine.JokServer {
+    
+     Tables: {
+            [tableId: string]:
+                Game.GameTable;
+            
+        } = {};
+
 
     constructor() {
         super();
@@ -23,21 +30,47 @@ class GameServer extends ServerEngine.JokServer{
 
 
     onConnect(socket: ISocket) {
-        
-        this.groups.add(socket.id, 'test');
+        //todo Sesacvlelia!
+    this.groups.add(socket.id, 'test');
     }
+    
 
     onAuthorize(socket:ISocket, isSuccess:boolean) {
         //todo: avtorizebuli uzeri magidaze.        
+
+        if (!isSuccess)
+            return;
+        //+ მაგიდა რომელზეც მხოლოდ ერთი მოთამაშეა და დაემატოს. 
+        //bug: საპოვნელია ეს მოთამაშე ხომ არაა უკვე სხვა მაგიდაზეც!
+        
+        var TabelID = -1;
+        for (var key in this.Tables) {
+            if (Object.keys(this.Tables[key].users).length != 2)
+            {
+                TabelID = key;
+                break;
+            }
+        }
+        if (TabelID<0)
+        {
+            TabelID = Math.abs(Math.random() * 10000000);
+            this.Tables[TabelID] = new Game.GameTable((data: Game.IGameToClient) => {
+                this.sendToGroup(TabelID, 'msg', data);
+            });
+           
+        }
+        this.Tables[TabelID].join(socket.id);
+        socket.table = this.Tables[TabelID];
     }
 
     onDisconnect(socket: ISocket) {
+        this.Tables[socket.table.TabelID].leave(socket.id);
+       
     }
 
-    onMsg(socket: ISocket, text: Game.IMessage) {
+    onMsg(socket: ISocket, text) {
         //if(text.Code != undefined && text.Code==1) 
         this.sendToGroup('test', 'msg', text);
-        
     }
 
 

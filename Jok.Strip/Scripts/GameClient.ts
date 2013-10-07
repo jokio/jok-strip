@@ -22,7 +22,7 @@ class GameClient extends ClientEngine.JokClient {
         $('#btnChat').on('click', () => {
             var $msg = $('#inpchat'); 
             
-            this.sendCommand('msg', { Code: 1, Value: $msg.val() });
+            this.sendCommand('msg',$msg.val());
             $msg.val("");
         });
      //-----
@@ -40,9 +40,9 @@ class GameClient extends ClientEngine.JokClient {
         console.log('disconnected');
     }
 
-    onMsg(text:Game.IMessage) {
-        $('#divChat').append(text.Value);
-        console.log(text);
+    onMsg(msg:Game.IGameToClient) {
+        // $('#divChat').append(msg);
+        console.log(msg);
     }
 
 

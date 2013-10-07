@@ -46,9 +46,9 @@ define(["require", "exports", 'JokClientEngine'], function(require, exports, __C
             console.log('disconnected');
         };
 
-        GameClient.prototype.onMsg = function (text) {
-            $('#divChat').append(text.Value);
-            console.log(text);
+        GameClient.prototype.onMsg = function (msg) {
+            // $('#divChat').append(msg);
+            console.log(msg);
         };
 
         GameClient.Start = function (url) {

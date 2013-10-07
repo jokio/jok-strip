@@ -1,4 +1,4 @@
-var Game;
+﻿var Game;
 (function (Game) {
     var UserState = (function () {
         function UserState() {
@@ -8,14 +8,14 @@ var Game;
     Game.UserState = UserState;
 
     var GameTable = (function () {
-        function GameTable(event) {
-            this.event = event;
+        function GameTable() {
             //OPTIONS
             this.keyBoardOption = { from: 65, to: 90 };
             this.GameEnd = false;
             //-------
             this.users = {};
             // event ჩაჯდეს ნაკადში ! მოგვიანებით.
+            this.TabelID = Math.abs(Math.random() * 10000000000);
         }
         GameTable.prototype.join = function (userid) {
             var users = this.users;
@@ -28,13 +28,13 @@ var Game;
             }
             users[userid].state.isActive = true;
 
-            this.event.TableStateChanged({ code: 3, state: this.GetState() });
+            this.TableStateChanged({ code: 1, state: this.GetState() });
             //  this.TimeControl(userid);
         };
 
         GameTable.prototype.TimeControl = function (userid, char) {
             var _this = this;
-            this.event.TableStateChanged({ code: 1, state: this.GetState() });
+            this.TableStateChanged({ code: 1, state: this.GetState() });
             if (this.users[userid].timeoutHendler != null)
                 clearTimeout(this.users[userid].timeoutHendler);
 
@@ -130,13 +130,13 @@ var Game;
             if (this.IsChar(char) && !this.GameEnd) {
                 this.TimeControl(userid, char);
             } else {
-                ///todo:არასწორი ასო ! შეტყობინება.
+                this.TableStateChanged({ code: 300, state: null, data: 'ეს არ არის ასო!' });
             }
         };
 
         GameTable.prototype.leave = function (userid) {
             this.users[userid].state.isActive = false;
-            this.event.TableStateChanged({ code: 1, state: this.GetState() });
+            this.TableStateChanged({ code: 1, state: this.GetState() });
         };
         GameTable.XCHAR = '•';
         return GameTable;

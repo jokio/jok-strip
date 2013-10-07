@@ -15,20 +15,43 @@ define(["require", "exports", 'JokServerEngine'], function(require, exports, __S
         __extends(GameServer, _super);
         function GameServer() {
             _super.call(this);
+            this.Tables = {};
             this.on('connect', this.onConnect);
             this.on('authorize', this.onAuthorize);
             this.on('disconnect', this.onDisconnect);
             this.on('msg', this.onMsg);
         }
         GameServer.prototype.onConnect = function (socket) {
+            //todo Sesacvlelia!
             this.groups.add(socket.id, 'test');
         };
 
         GameServer.prototype.onAuthorize = function (socket, isSuccess) {
-            //todo: avtorizebuli uzeri magidaze.
+            var _this = this;
+            if (!isSuccess)
+                return;
+
+            //+ მაგიდა რომელზეც მხოლოდ ერთი მოთამაშეა და დაემატოს.
+            //bug: საპოვნელია ეს მოთამაშე ხომ არაა უკვე სხვა მაგიდაზეც!
+            var TabelID = -1;
+            for (var key in this.Tables) {
+                if (Object.keys(this.Tables[key].users).length != 2) {
+                    TabelID = key;
+                    break;
+                }
+            }
+            if (TabelID < 0) {
+                TabelID = Math.abs(Math.random() * 10000000);
+                this.Tables[TabelID] = new Game.GameTable(function (data) {
+                    _this.sendToGroup(TabelID, 'msg', data);
+                });
+            }
+            this.Tables[TabelID].join(socket.id);
+            socket.table = this.Tables[TabelID];
         };
 
         GameServer.prototype.onDisconnect = function (socket) {
+            this.Tables[socket.table.TabelID].leave(socket.id);
         };
 
         GameServer.prototype.onMsg = function (socket, text) {
