@@ -2,12 +2,13 @@ import events = require('Common/EventEmitter')
 
 var global: any = window;
 
-export class JokClient extends events.EventEmitter  {
+export class JokClient extends events.EventEmitter {
 
     socket;
 
     reconnectRetryCount = 0;
 
+    logging: boolean;
 
     constructor() {
         super();
@@ -19,11 +20,20 @@ export class JokClient extends events.EventEmitter  {
     connect(url: string) {
         this.reconnectRetryCount++;
 
+        if (this.socket) {
+            this.socket.removeAllListeners();
+            this.socket = null;
+        }
+
         this.socket = new global.eio.Socket(url);
 
         this.socket.on('open', () => {
             this.reconnectRetryCount = 0;
             this.emit('connect', {});
+
+            if (this.logging) {
+                console.log('connected');
+            }
         });
 
         this.socket.on('message', (msg) => {
@@ -39,14 +49,24 @@ export class JokClient extends events.EventEmitter  {
             }
 
             this.emit(command.cmd, command.data);
+
+            if (this.logging) {
+                console.log(command.cmd, command.data);
+            }
         });
 
         this.socket.on('close', () => {
             this.emit('disconnect', {});
+
+            if (this.logging) {
+                console.log('disonnected');
+            }
         });
 
         this.socket.on('error', (data) => {
-            console.log('error', data);
+            if (this.logging) {
+                console.log('error', data);
+            }
             setTimeout(() => this.connect(url), 1000);
         });
 
