@@ -2,14 +2,19 @@
 /// <reference path="Game.ts" />
 
 import ServerEngine = require('JokServerEngine');
-import GameEngine = require('Game');
 
 
-class GameServer extends ServerEngine.JokServer {
+export interface ISocket {
+    id: string;
+    userid: string;
+    sendCommand(cmd: string, data: any);
+    table: Game.GameTable;
+};
+
+class GameServer extends ServerEngine.JokServer{
 
     constructor() {
         super();
-        
         this.on('connect', this.onConnect);
         this.on('authorize', this.onAuthorize);
         this.on('disconnect', this.onDisconnect);
@@ -17,18 +22,22 @@ class GameServer extends ServerEngine.JokServer {
     }
 
 
-    onConnect(socket) {
+    onConnect(socket: ISocket) {
+        
         this.groups.add(socket.id, 'test');
     }
 
-    onAuthorize(socket, isSuccess) {
+    onAuthorize(socket:ISocket, isSuccess:boolean) {
+        //todo: avtorizebuli uzeri magidaze.        
     }
 
-    onDisconnect(socket) {
+    onDisconnect(socket: ISocket) {
     }
 
-    onMsg(socket, text) {
+    onMsg(socket: ISocket, text: Game.IMessage) {
+        //if(text.Code != undefined && text.Code==1) 
         this.sendToGroup('test', 'msg', text);
+        
     }
 
 

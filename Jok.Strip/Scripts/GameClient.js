@@ -1,5 +1,6 @@
 /// <reference path="JokClientEngine.ts" />
 /// <reference path="Game.ts" />
+/// <reference path="typings/jquery.d.ts"/>
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -8,7 +9,6 @@ var __extends = this.__extends || function (d, b) {
 };
 define(["require", "exports", 'JokClientEngine'], function(require, exports, __ClientEngine__) {
     var ClientEngine = __ClientEngine__;
-    
 
     var GameClient = (function (_super) {
         __extends(GameClient, _super);
@@ -21,7 +21,17 @@ define(["require", "exports", 'JokClientEngine'], function(require, exports, __C
             this.on('msg', this.onMsg);
         }
         GameClient.prototype.onConnect = function () {
+            var _this = this;
             console.log('connected');
+
+            //---- Install
+            $('#btnChat').on('click', function () {
+                var $msg = $('#inpchat');
+
+                _this.sendCommand('msg', { Code: 1, Value: $msg.val() });
+                $msg.val("");
+            });
+            //-----
         };
 
         GameClient.prototype.onAuthorize = function (info) {
@@ -37,6 +47,7 @@ define(["require", "exports", 'JokClientEngine'], function(require, exports, __C
         };
 
         GameClient.prototype.onMsg = function (text) {
+            $('#divChat').append(text.Value);
             console.log(text);
         };
 

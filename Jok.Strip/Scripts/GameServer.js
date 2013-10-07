@@ -8,13 +8,13 @@ var __extends = this.__extends || function (d, b) {
 };
 define(["require", "exports", 'JokServerEngine'], function(require, exports, __ServerEngine__) {
     var ServerEngine = __ServerEngine__;
-    
+
+    ;
 
     var GameServer = (function (_super) {
         __extends(GameServer, _super);
         function GameServer() {
             _super.call(this);
-
             this.on('connect', this.onConnect);
             this.on('authorize', this.onAuthorize);
             this.on('disconnect', this.onDisconnect);
@@ -25,12 +25,14 @@ define(["require", "exports", 'JokServerEngine'], function(require, exports, __S
         };
 
         GameServer.prototype.onAuthorize = function (socket, isSuccess) {
+            //todo: avtorizebuli uzeri magidaze.
         };
 
         GameServer.prototype.onDisconnect = function (socket) {
         };
 
         GameServer.prototype.onMsg = function (socket, text) {
+            //if(text.Code != undefined && text.Code==1)
             this.sendToGroup('test', 'msg', text);
         };
 

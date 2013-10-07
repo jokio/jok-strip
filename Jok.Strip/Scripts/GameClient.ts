@@ -1,15 +1,14 @@
 /// <reference path="JokClientEngine.ts" />
 /// <reference path="Game.ts" />
+/// <reference path="typings/jquery.d.ts"/>
 
 import ClientEngine = require('JokClientEngine');
-import GameEngine = require('Game');
-
 
 class GameClient extends ClientEngine.JokClient {
 
     constructor() {
         super();
-
+       
         this.on('connect', this.onConnect);
         this.on('disconnect', this.onDisconnect);
         this.on('authorize', this.onAuthorize);
@@ -19,11 +18,19 @@ class GameClient extends ClientEngine.JokClient {
 
     onConnect() {
         console.log('connected');
+      //---- Install
+        $('#btnChat').on('click', () => {
+            var $msg = $('#inpchat'); 
+            
+            this.sendCommand('msg', { Code: 1, Value: $msg.val() });
+            $msg.val("");
+        });
+     //-----
     }
 
     onAuthorize(info) {
         console.log('authorize', info);
-
+        
         if (info.isSuccess) {
             this.sendCommand('ping');
         }
@@ -33,7 +40,8 @@ class GameClient extends ClientEngine.JokClient {
         console.log('disconnected');
     }
 
-    onMsg(text) {
+    onMsg(text:Game.IMessage) {
+        $('#divChat').append(text.Value);
         console.log(text);
     }
 
@@ -42,5 +50,11 @@ class GameClient extends ClientEngine.JokClient {
         return new GameClient().connect(url);
     }
 }
+
+
+
+
+   
+
 
 GameClient.Start('ws://localhost:3000/');

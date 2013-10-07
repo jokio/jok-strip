@@ -178,6 +178,7 @@
     <TypeScriptCompile Include="Scripts\JokServerEngine.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="Scripts\typings\jquery.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
   </ItemGroup>
   <PropertyGroup>
