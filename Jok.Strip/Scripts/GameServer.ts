@@ -2,7 +2,7 @@
 /// <reference path="Game.ts" />
 
 import ServerEngine = require('JokServerEngine');
-
+import Game = require('Game');
 
 export interface ISocket {
     id: string;

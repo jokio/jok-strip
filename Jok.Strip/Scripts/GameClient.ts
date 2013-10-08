@@ -3,6 +3,7 @@
 /// <reference path="typings/jquery.d.ts"/>
 
 import ClientEngine = require('JokClientEngine');
+import Game = require('Game');
 
 class GameClient extends ClientEngine.JokClient {
 
@@ -54,7 +55,7 @@ class GameClient extends ClientEngine.JokClient {
 
 
 
-   
 
+var w: any = window;
 
-GameClient.Start('ws://localhost:3000/');
+GameClient.Start('ws://localhost:3000/?token=' + w.userid);

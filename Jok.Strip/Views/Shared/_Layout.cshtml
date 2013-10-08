@@ -4,7 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>@ViewBag.Title</title>
-    @*<script src="/primus/primus.js"></script>*@
+    <script>
+        window.userid = '@ViewBag.UserID';
+    </script>
     @Styles.Render("~/bundles/css")
     @Scripts.Render("~/bundles/js")
     <style>

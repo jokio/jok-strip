@@ -1,4 +1,4 @@
-/// <reference path="JokServerEngine.ts" />
+﻿/// <reference path="JokServerEngine.ts" />
 /// <reference path="Game.ts" />
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -6,8 +6,9 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-define(["require", "exports", 'JokServerEngine'], function(require, exports, __ServerEngine__) {
+define(["require", "exports", 'JokServerEngine', 'Game'], function(require, exports, __ServerEngine__, __Game__) {
     var ServerEngine = __ServerEngine__;
+    var Game = __Game__;
 
     ;
 

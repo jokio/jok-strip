@@ -13,8 +13,10 @@ namespace Jok.Strip.Controllers
             return RedirectToAction("Play");
         }
 
-        public ActionResult Play(string channel)
+        public ActionResult Play(string channel, int userid = 11)
         {
+            ViewBag.UserID = userid;
+
             return View();
         }
     }

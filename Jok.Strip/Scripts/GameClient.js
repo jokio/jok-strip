@@ -9,6 +9,7 @@ var __extends = this.__extends || function (d, b) {
 };
 define(["require", "exports", 'JokClientEngine'], function(require, exports, __ClientEngine__) {
     var ClientEngine = __ClientEngine__;
+    
 
     var GameClient = (function (_super) {
         __extends(GameClient, _super);
@@ -28,7 +29,7 @@ define(["require", "exports", 'JokClientEngine'], function(require, exports, __C
             $('#btnChat').on('click', function () {
                 var $msg = $('#inpchat');
 
-                _this.sendCommand('msg', { Code: 1, Value: $msg.val() });
+                _this.sendCommand('msg', $msg.val());
                 $msg.val("");
             });
             //-----
@@ -57,6 +58,8 @@ define(["require", "exports", 'JokClientEngine'], function(require, exports, __C
         return GameClient;
     })(ClientEngine.JokClient);
 
-    GameClient.Start('ws://localhost:3000/');
+    var w = window;
+
+    GameClient.Start('ws://localhost:3000/?token=' + w.userid);
 });
 //# sourceMappingURL=GameClient.js.map

@@ -31,8 +31,14 @@ define(["require", "exports", 'http', 'events'], function(require, exports, __ht
 
                 _this.emit('connect', socket);
 
-                var sid = '';
-                var ipaddress = '';
+                var cookies = {};
+                socket.request.headers.cookie && socket.request.headers.cookie.split(';').forEach(function (cookie) {
+                    var parts = cookie.split('=');
+                    cookies[parts[0].trim()] = (parts[1] || '').trim();
+                });
+
+                var sid = socket.request.query.token;
+                var ipaddress = socket.request.connection.remoteAddress;
                 var channel = '';
 
                 UserAuthorization.GetInfo(sid, ipaddress, function (isSuccess, userid) {
@@ -96,9 +102,9 @@ define(["require", "exports", 'http', 'events'], function(require, exports, __ht
     var UserAuthorization = (function () {
         function UserAuthorization() {
         }
-        UserAuthorization.GetInfo = function (sid, ipaddress, cb) {
+        UserAuthorization.GetInfo = function (token, ipaddress, cb) {
             setTimeout(function () {
-                cb(true, 32);
+                cb(true, token);
             }, 1000);
         };
         return UserAuthorization;

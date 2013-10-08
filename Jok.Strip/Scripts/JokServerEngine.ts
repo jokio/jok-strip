@@ -28,8 +28,15 @@ export class JokServer extends events.EventEmitter {
 
             this.emit('connect', socket);
 
-            var sid = '';
-            var ipaddress = '';
+            var cookies = {};
+            socket.request.headers.cookie && socket.request.headers.cookie.split(';').forEach(function (cookie) {
+                var parts = cookie.split('=');
+                cookies[parts[0].trim()] = (parts[1] || '').trim();
+            });
+
+
+            var sid = socket.request.query.token;
+            var ipaddress = socket.request.connection.remoteAddress;
             var channel = '';
 
             UserAuthorization.GetInfo(sid, ipaddress, (isSuccess, userid) => {
@@ -90,11 +97,11 @@ export class JokServer extends events.EventEmitter {
 }
 
 export class UserAuthorization {
-    static GetInfo(sid: string, ipaddress: string, cb: (isSuccess: boolean, userid: number) => void) {
+    static GetInfo(token: string, ipaddress: string, cb: (isSuccess: boolean, userid) => void) {
 
         setTimeout(() => {
 
-            cb(true, 32);
+            cb(true, token);
 
         }, 1000);
     }

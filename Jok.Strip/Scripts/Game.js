@@ -1,21 +1,20 @@
-﻿var Game;
-(function (Game) {
+﻿define(["require", "exports"], function(require, exports) {
     var UserState = (function () {
         function UserState() {
         }
         return UserState;
     })();
-    Game.UserState = UserState;
+    exports.UserState = UserState;
 
     var GameTable = (function () {
-        function GameTable() {
+        function GameTable(TableStateChanged) {
+            this.TableStateChanged = TableStateChanged;
             //OPTIONS
             this.keyBoardOption = { from: 65, to: 90 };
             this.GameEnd = false;
             //-------
             this.users = {};
             // event ჩაჯდეს ნაკადში ! მოგვიანებით.
-            this.TabelID = Math.abs(Math.random() * 10000000000);
         }
         GameTable.prototype.join = function (userid) {
             var users = this.users;
@@ -141,8 +140,6 @@
         GameTable.XCHAR = '•';
         return GameTable;
     })();
-    Game.GameTable = GameTable;
-})(Game || (Game = {}));
-
-console.log('as2d');
+    exports.GameTable = GameTable;
+});
 //# sourceMappingURL=Game.js.map
