@@ -8,7 +8,8 @@ export interface ISocket {
     id: string;
     userid: string;
     sendCommand(cmd: string, data: any);
-    table: Game.GameTable;
+  
+    tabelid;
 };
 
 class GameServer extends ServerEngine.JokServer {
@@ -16,7 +17,6 @@ class GameServer extends ServerEngine.JokServer {
      Tables: {
             [tableId: string]:
                 Game.GameTable;
-            
         } = {};
 
 
@@ -26,6 +26,7 @@ class GameServer extends ServerEngine.JokServer {
         this.on('authorize', this.onAuthorize);
         this.on('disconnect', this.onDisconnect);
         this.on('msg', this.onMsg);
+        
     }
 
 
@@ -60,17 +61,27 @@ class GameServer extends ServerEngine.JokServer {
            
         }
         this.Tables[TabelID].join(socket.id);
-        socket.table = this.Tables[TabelID];
+        this.groups.add(socket.id, TabelID);
+        socket.tabelid = TabelID;
     }
 
     onDisconnect(socket: ISocket) {
-        this.Tables[socket.table.TabelID].leave(socket.id);
-       
+        if (this.Tables[socket.tabelid])
+
+            //delete Tabel active user not exist,
+            if (!this.Tables[socket.tabelid].leave(socket.id)) {
+                delete this.Tables[socket.tabelid];
+                //todo dasamtavrebelia siebis amoReba da grupebidan waSla
+            }
+      
     }
 
     onMsg(socket: ISocket, text) {
         //if(text.Code != undefined && text.Code==1) 
-        this.sendToGroup('test', 'msg', text);
+        if (this.Tables[socket.tabelid]) {
+            this.Tables[socket.tabelid].UserAction(socket.userid,text);
+        }
+       // this.sendToGroup('test', 'msg', socket.tabelid);
     }
 
 

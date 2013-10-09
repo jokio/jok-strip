@@ -18,17 +18,18 @@ export class UserState {
     public isActive: boolean;
     public time: number;
 }
-
+export class KeyBoardOption{ from: number; to: number }
 
 export class GameTable {
-    public TabelID: number;
+     
+   
     //OPTIONS
-    private keyBoardOption = { from: 65, to: 90 };
+    private keyBoardOption: KeyBoardOption;
     public static XCHAR = '•';
     public static TIMEOUTTICK: number;
     public GameEnd: boolean = false;
     //-------
-    users: {
+  users: {
         [key: string]: {
             originProverb: string;
             timeoutHendler?: number; // ასეთ გადაწყვეტილებას სინქრონიზაციის საჭვალება დაჭირდება!
@@ -36,7 +37,7 @@ export class GameTable {
         }
     } = {};
 
-    join(userid: string) {
+ public   join(userid: string) {
 
         var users = this.users;
         if (users[userid] == null) {
@@ -45,6 +46,7 @@ export class GameTable {
             userState.userId = userid;
             userState.helpkeys = [];
             userState.proverbState = this.generateVerb(users[userid].originProverb);
+            users[userid].timeoutHendler = null;
 
         }
         users[userid].state.isActive = true;
@@ -55,7 +57,7 @@ export class GameTable {
 
     private TimeControl(userid: string, char?: string) {
         this.TableStateChanged({ code: 1, state: this.GetState() });
-        if (this.users[userid].timeoutHendler != null)
+        if (this.users[userid].timeoutHendler != null)// bug gaasxa.
             clearTimeout(this.users[userid].timeoutHendler); // todo: (bug ?)
 
         this.users[userid].timeoutHendler = setTimeout(() => {
@@ -73,7 +75,7 @@ export class GameTable {
 
     private setNewCharforUser(userid: string, char: string) {
         char = char.toLowerCase();
-        if (!(this.IsChar(char)) ||
+        if (!(GameTable.IsChar(char,this.keyBoardOption)) ||
             this.users[userid].state.helpkeys.indexOf(char) >= 0)
             return;
         this.users[userid].state.helpkeys.push(char);
@@ -102,12 +104,12 @@ export class GameTable {
         return '';
     }
 
-    public IsChar(char: string): boolean {
+    public static IsChar(char: string, keyOption: KeyBoardOption): boolean {
         return char ?
             (char.length == 1 &&
-            char.toLowerCase().charCodeAt(0) >= this.keyBoardOption.from &&
-            this.keyBoardOption.to >= char.toLowerCase().charCodeAt(0))
-            : false;
+            char.toLowerCase().charCodeAt(0) >= keyOption.from &&
+            keyOption.to >= char.toLowerCase().charCodeAt(0))
+            : false; // bug (fixed)
 
     }
     /// ყველა მომხმარებელი
@@ -122,16 +124,16 @@ export class GameTable {
     generateVerb(text: string): string {
         if (text == null) return "";
         var keyobj = this.keyBoardOption;
+      
         //   todo: შესაცვლელია უკეთესი ლოგიკა!
         text.split(' ').forEach((e) => {
             if (e.length >= 4) {
                 // შესაცვლელია! + random
                 var replStr = '';
-                e.split('').forEach(function (ch) {
-
-                    if (this.IsChar(ch)) {
+                e.split('').forEach( (ch)=> {
+                    if (GameTable.IsChar(ch, keyobj)) {
                         replStr += GameTable.XCHAR; //  ეს ნიშანი შეიცვლება ისეთ ნიშნით რომელიც ტექსტში არ უნდა იყოს. მაგ '•'
-                    } else {
+                    } else {            
                         replStr += ch;
                     }
                 });
@@ -151,7 +153,7 @@ export class GameTable {
         //todo: მონაცემის ტიპი მოსაფიქრებელია
         var char = <string>data; // დასამუშავებელია
         //---------------
-        if (this.IsChar(char) && !this.GameEnd) {// ეს დაცვა შიგნითაცააქ მაგრამ შეიძლება რიცხვი მომივიდეს უნდა დავამუშავო.
+        if (GameTable.IsChar(char,this.keyBoardOption) && !this.GameEnd) {// ეს დაცვა შიგნითაცააქ მაგრამ შეიძლება რიცხვი მომივიდეს უნდა დავამუშავო.
             this.TimeControl(userid, char);
         }
         else {
@@ -161,14 +163,19 @@ export class GameTable {
 
     constructor(public TableStateChanged: (state: IGameToClient) => void) {
         // event ჩაჯდეს ნაკადში ! მოგვიანებით.
-
+        this.keyBoardOption = { from: 97, to: 122 };
+       
     }
 
-
-
-    leave(userid) {
+ 
+    ///Method return true if other user is active
+    public leave(userid: string) {
         this.users[userid].state.isActive = false;
         this.TableStateChanged({ code: 1, state: this.GetState() });
+        var tmp = false;
+        for (var k in this.users)
+            tmp = tmp || this.users[k].state.isActive;
+        return tmp;
     }
 
 

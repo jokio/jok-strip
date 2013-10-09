@@ -48,16 +48,23 @@ define(["require", "exports", 'JokServerEngine', 'Game'], function(require, expo
                 });
             }
             this.Tables[TabelID].join(socket.id);
-            socket.table = this.Tables[TabelID];
+            this.groups.add(socket.id, TabelID);
+            socket.tabelid = TabelID;
         };
 
         GameServer.prototype.onDisconnect = function (socket) {
-            this.Tables[socket.table.TabelID].leave(socket.id);
+            if (this.Tables[socket.tabelid])
+                if (!this.Tables[socket.tabelid].leave(socket.id)) {
+                    delete this.Tables[socket.tabelid];
+                    //todo dasamtavrebelia siebis amoReba da grupebidan waSla
+                }
         };
 
         GameServer.prototype.onMsg = function (socket, text) {
-            //if(text.Code != undefined && text.Code==1)
-            this.sendToGroup('test', 'msg', text);
+            if (this.Tables[socket.tabelid]) {
+                this.Tables[socket.tabelid].UserAction(socket.userid, text);
+            }
+            // this.sendToGroup('test', 'msg', socket.tabelid);
         };
 
         GameServer.Start = function (port) {

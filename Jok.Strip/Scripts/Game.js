@@ -5,16 +5,21 @@
         return UserState;
     })();
     exports.UserState = UserState;
+    var KeyBoardOption = (function () {
+        function KeyBoardOption() {
+        }
+        return KeyBoardOption;
+    })();
+    exports.KeyBoardOption = KeyBoardOption;
 
     var GameTable = (function () {
         function GameTable(TableStateChanged) {
             this.TableStateChanged = TableStateChanged;
-            //OPTIONS
-            this.keyBoardOption = { from: 65, to: 90 };
             this.GameEnd = false;
             //-------
             this.users = {};
             // event ჩაჯდეს ნაკადში ! მოგვიანებით.
+            this.keyBoardOption = { from: 97, to: 122 };
         }
         GameTable.prototype.join = function (userid) {
             var users = this.users;
@@ -53,7 +58,7 @@
 
         GameTable.prototype.setNewCharforUser = function (userid, char) {
             char = char.toLowerCase();
-            if (!(this.IsChar(char)) || this.users[userid].state.helpkeys.indexOf(char) >= 0)
+            if (!(GameTable.IsChar(char, this.keyBoardOption)) || this.users[userid].state.helpkeys.indexOf(char) >= 0)
                 return;
             this.users[userid].state.helpkeys.push(char);
             var orgp = this.users[userid].originProverb.toLowerCase();
@@ -80,8 +85,8 @@
             return '';
         };
 
-        GameTable.prototype.IsChar = function (char) {
-            return char ? (char.length == 1 && char.toLowerCase().charCodeAt(0) >= this.keyBoardOption.from && this.keyBoardOption.to >= char.toLowerCase().charCodeAt(0)) : false;
+        GameTable.IsChar = function (char, keyOption) {
+            return char ? (char.length == 1 && char.toLowerCase().charCodeAt(0) >= keyOption.from && keyOption.to >= char.toLowerCase().charCodeAt(0)) : false;
         };
 
         /// ყველა მომხმარებელი
@@ -104,7 +109,7 @@
                     // შესაცვლელია! + random
                     var replStr = '';
                     e.split('').forEach(function (ch) {
-                        if (this.IsChar(ch)) {
+                        if (GameTable.IsChar(ch, keyobj)) {
                             replStr += GameTable.XCHAR;
                         } else {
                             replStr += ch;
@@ -126,16 +131,21 @@
             //todo: მონაცემის ტიპი მოსაფიქრებელია
             var char = data;
 
-            if (this.IsChar(char) && !this.GameEnd) {
+            if (GameTable.IsChar(char, this.keyBoardOption) && !this.GameEnd) {
                 this.TimeControl(userid, char);
             } else {
                 this.TableStateChanged({ code: 300, state: null, data: 'ეს არ არის ასო!' });
             }
         };
 
+        ///Method return true if other user is active
         GameTable.prototype.leave = function (userid) {
             this.users[userid].state.isActive = false;
             this.TableStateChanged({ code: 1, state: this.GetState() });
+            var tmp = false;
+            for (var k in this.users)
+                tmp = tmp || this.users[k].state.isActive;
+            return tmp;
         };
         GameTable.XCHAR = '•';
         return GameTable;
