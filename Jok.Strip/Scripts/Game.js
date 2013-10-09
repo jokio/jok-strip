@@ -41,14 +41,14 @@
 
         GameTable.prototype.TimeControl = function (userid, char) {
             var _this = this;
+            if (this.GameEnd) {
+                this.gameEnd();
+                return;
+            }
             if (char)
                 this.setNewCharforUser(userid, char);
             this.TableStateChanged({ code: 1, state: this.GetState() });
-            if (this.users[userid].timeoutHendler != null)
-                clearTimeout(this.users[userid].timeoutHendler);
-
-            if (this.GameEnd)
-                return;
+            clearTimeout(this.users[userid].timeoutHendler);
             this.users[userid].timeoutHendler = setTimeout(function () {
                 //Timeout 'thinking logically'
                 _this.setNewCharforUser(userid, _this.getRandomCharForUser(userid));
@@ -60,45 +60,46 @@
         };
 
         GameTable.prototype.setNewCharforUser = function (userid, char) {
-            console.log('----------------------------------');
-            console.log("1.1");
             char = char.toLowerCase();
-            console.log("1.2 " + char);
+
             if (!(GameTable.IsChar(char, this.keyBoardOption)) || this.users[userid].state.helpkeys.indexOf(char) >= 0)
                 return;
-            console.log("2.1");
+
             this.users[userid].state.helpkeys.push(char);
-            console.log("2.2");
+
             var orgp = this.users[userid].originProverb.toLowerCase();
-            console.log("2.3");
+
             var pstate = this.users[userid].state.proverbState;
-            console.log("2.4");
+
             var newPstate = '';
             var isCorect = false;
-
-            console.log(this.users[userid]);
 
             if (this.users[userid].originProverb.length != this.users[userid].state.proverbState.length)
                 throw "sthring not match";
             for (var i = 0; i < this.users[userid].originProverb.length; i++) {
-                console.log("3.1");
                 if (pstate.charAt(i) == GameTable.XCHAR && orgp.charAt(i) == char) {
                     //originalidan aRdgena
-                    console.log("3.1.1");
                     newPstate += this.users[userid].originProverb.charAt(i);
                     isCorect = true;
                 } else {
-                    console.log("3.1.2");
                     newPstate += pstate.charAt(i);
                 }
-                console.log(newPstate);
             }
             if (!isCorect) {
                 this.users[userid].state.incorect++;
-                this.GameEnd = this.users[userid].state.maxIncorrect <= this.users[userid].state.incorect;
+                this.GameEnd = (this.users[userid].state.maxIncorrect <= this.users[userid].state.incorect) || this.users[userid].state.proverbState.indexOf(GameTable.XCHAR) < 0;
             }
             this.users[userid].state.proverbState = newPstate;
+            if (this.GameEnd)
+                this.gameEnd();
             return;
+        };
+
+        GameTable.prototype.gameEnd = function () {
+            this.GameEnd = true;
+            this.TableStateChanged({ code: 10, state: this.GetState() });
+            for (var k in this.users)
+                clearInterval(this.users[k].timeoutHendler);
         };
 
         GameTable.prototype.getRandomCharForUser = function (userid) {
@@ -125,7 +126,8 @@
         /// ასოსების დამალვა!
         GameTable.prototype.verbMaskGenerator = function (text) {
             if (text == null) {
-                console.warn("text is empty ", text, this);
+                console.log("method verbMaskGenerator(text: string)");
+                console.warn("text is empty", text, this);
                 throw "text is empty ";
             }
 
@@ -161,7 +163,7 @@
             if (data.code < 0) {
                 var char = data.data;
 
-                if (GameTable.IsChar(char, this.keyBoardOption) && !this.GameEnd) {
+                if (GameTable.IsChar(char, this.keyBoardOption)) {
                     this.TimeControl(userid, char);
                 } else {
                     this.TableStateChanged({ code: 300, state: null, data: 'ეს არ არის ასო!' });

@@ -3,7 +3,7 @@
 export interface IGameToClient { // Game To Client messages
     code: number;/*
              FullState=1; //new
-            
+            GameEnd = 10
            error =100
         */
     state: UserState[];
@@ -62,14 +62,14 @@ export class GameTable {
     }
 
     private TimeControl(userid: string, char?: string) {
+        if (this.GameEnd) {
+            this.gameEnd();
+            return;
+        }
         if(char)
         this.setNewCharforUser(userid, char);
         this.TableStateChanged({ code: 1, state: this.GetState() });
-        if (this.users[userid].timeoutHendler != null)// bug gaasxa.
             clearTimeout(this.users[userid].timeoutHendler); // todo: (bug ?)
-
-        if (this.GameEnd)
-            return;
         this.users[userid].timeoutHendler = setTimeout(() => {
             //Timeout 'thinking logically'
             this.setNewCharforUser(userid,this.getRandomCharForUser(userid));
@@ -80,48 +80,57 @@ export class GameTable {
     }
 
     private setNewCharforUser(userid: string, char: string) {
-        console.log('----------------------------------');
-            console.log("1.1");
+     
         char = char.toLowerCase();
-        console.log("1.2 "+char);
+   
         if (!(GameTable.IsChar(char, this.keyBoardOption)) ||
             this.users[userid].state.helpkeys.indexOf(char) >= 0)
             return;
-        console.log("2.1");
+    
         this.users[userid].state.helpkeys.push(char);
-        console.log("2.2");
+   
         var orgp = this.users[userid].originProverb.toLowerCase();
-        console.log("2.3");
+      
         var pstate = this.users[userid].state.proverbState;
-        console.log("2.4");
+    
         var newPstate = '';
         var isCorect = false;
       
-        console.log(this.users[userid]);
     
         if (this.users[userid].originProverb.length != this.users[userid].state.proverbState.length)
             throw "sthring not match";
         for (var i = 0; i < this.users[userid].originProverb.length; i++) {
-            console.log("3.1");
+           
             if (pstate.charAt(i) == GameTable.XCHAR && orgp.charAt(i) == char) {
                 //originalidan aRdgena
-                console.log("3.1.1");
+                
                 newPstate += this.users[userid].originProverb.charAt(i);
                 isCorect = true;
             } else {
-                console.log("3.1.2");
+              
                 newPstate += pstate.charAt(i);
             }
-            console.log(newPstate);
+           
         }
         if (!isCorect) {
             this.users[userid].state.incorect++;
-            this.GameEnd= this.users[userid].state.maxIncorrect <= this.users[userid].state.incorect;
-            
+            this.GameEnd = (this.users[userid].state.maxIncorrect
+            <= this.users[userid].state.incorect)
+            || this.users[userid].state.proverbState.indexOf(GameTable.XCHAR) < 0;
+
         }
         this.users[userid].state.proverbState = newPstate;
+        if (this.GameEnd)
+            this.gameEnd();
         return;
 
+    }
+
+    gameEnd() {
+        this.GameEnd = true;
+        this.TableStateChanged({ code: 10, state: this.GetState() });
+        for (var k in this.users)
+            clearInterval(this.users[k].timeoutHendler);
     }
 
     private getRandomCharForUser(userid: string): string {
@@ -152,7 +161,8 @@ export class GameTable {
     /// ასოსების დამალვა!
     verbMaskGenerator(text: string): string {
         if (text == null) {
-            console.warn("text is empty ", text, this);
+            console.log("method verbMaskGenerator(text: string)");
+            console.warn("text is empty", text, this);
             throw "text is empty ";
         }
   
@@ -190,10 +200,10 @@ export class GameTable {
         //todo: მონაცემის ტიპი მოსაფიქრებელია
 
         if (data.code < 0) {
-
+            
             var char = <string>data.data; // დასამუშავებელია
             //---------------
-            if (GameTable.IsChar(char, this.keyBoardOption) && !this.GameEnd) {// ეს დაცვა შიგნითაცააქ მაგრამ შეიძლება რიცხვი მომივიდეს უნდა დავამუშავო.
+            if (GameTable.IsChar(char, this.keyBoardOption)) {// ეს დაცვა შიგნითაცააქ მაგრამ შეიძლება რიცხვი მომივიდეს უნდა დავამუშავო.
                 this.TimeControl(userid, char);
             }
             else {
