@@ -24,11 +24,14 @@
         GameTable.prototype.join = function (userid) {
             var users = this.users;
             if (users[userid] == null) {
+                var verbOption = this.getProverb();
                 var userState = new UserState();
-                users[userid] = { originProverb: this.getProverb(), state: userState };
+                userState.incorect = 0;
+                userState.maxIncorrect = 5;
                 userState.userId = userid;
                 userState.helpkeys = [];
-                userState.proverbState = this.generateVerb(users[userid].originProverb);
+                users[userid] = { originProverb: verbOption, state: userState, timeoutHendler: null };
+                userState.proverbState = this.verbMaskGenerator(verbOption);
             }
             users[userid].state.isActive = true;
 
@@ -38,17 +41,17 @@
 
         GameTable.prototype.TimeControl = function (userid, char) {
             var _this = this;
+            if (char)
+                this.setNewCharforUser(userid, char);
             this.TableStateChanged({ code: 1, state: this.GetState() });
             if (this.users[userid].timeoutHendler != null)
                 clearTimeout(this.users[userid].timeoutHendler);
 
+            if (this.GameEnd)
+                return;
             this.users[userid].timeoutHendler = setTimeout(function () {
                 //Timeout 'thinking logically'
-                _this.setNewCharforUser(userid, char ? char : _this.getRandomCharForUser(userid));
-                if (_this.users[userid].state.proverbState.indexOf(GameTable.XCHAR) < 0) {
-                    //თამაში დასრულდა
-                    _this.GameEnd = true;
-                }
+                _this.setNewCharforUser(userid, _this.getRandomCharForUser(userid));
 
                 //-------------------
                 _this.TimeControl(userid);
@@ -57,27 +60,49 @@
         };
 
         GameTable.prototype.setNewCharforUser = function (userid, char) {
+            console.log('----------------------------------');
+            console.log("1.1");
             char = char.toLowerCase();
+            console.log("1.2 " + char);
             if (!(GameTable.IsChar(char, this.keyBoardOption)) || this.users[userid].state.helpkeys.indexOf(char) >= 0)
                 return;
+            console.log("2.1");
             this.users[userid].state.helpkeys.push(char);
+            console.log("2.2");
             var orgp = this.users[userid].originProverb.toLowerCase();
+            console.log("2.3");
             var pstate = this.users[userid].state.proverbState;
+            console.log("2.4");
             var newPstate = '';
-            for (var i = 0; i < this.users[userid].state.proverbState.length; i++) {
-                if (pstate[i] == GameTable.XCHAR && orgp[i] == char) {
+            var isCorect = false;
+
+            console.log(this.users[userid]);
+
+            if (this.users[userid].originProverb.length != this.users[userid].state.proverbState.length)
+                throw "sthring not match";
+            for (var i = 0; i < this.users[userid].originProverb.length; i++) {
+                console.log("3.1");
+                if (pstate.charAt(i) == GameTable.XCHAR && orgp.charAt(i) == char) {
                     //originalidan aRdgena
-                    newPstate += this.users[userid].originProverb[i];
+                    console.log("3.1.1");
+                    newPstate += this.users[userid].originProverb.charAt(i);
+                    isCorect = true;
                 } else {
-                    newPstate += pstate[i];
+                    console.log("3.1.2");
+                    newPstate += pstate.charAt(i);
                 }
+                console.log(newPstate);
+            }
+            if (!isCorect) {
+                this.users[userid].state.incorect++;
+                this.GameEnd = this.users[userid].state.maxIncorrect <= this.users[userid].state.incorect;
             }
             this.users[userid].state.proverbState = newPstate;
             return;
         };
 
         GameTable.prototype.getRandomCharForUser = function (userid) {
-            for (var i = this.keyBoardOption.from; i < this.keyBoardOption.to; i++) {
+            for (var i = this.keyBoardOption.from; i <= this.keyBoardOption.to; i++) {
                 if (this.users[userid].state.helpkeys.indexOf(String.fromCharCode(i)) < 0) {
                     return String.fromCharCode(i);
                 }
@@ -98,13 +123,18 @@
         };
 
         /// ასოსების დამალვა!
-        GameTable.prototype.generateVerb = function (text) {
-            if (text == null)
-                return "";
+        GameTable.prototype.verbMaskGenerator = function (text) {
+            if (text == null) {
+                console.warn("text is empty ", text, this);
+                throw "text is empty ";
+            }
+
             var keyobj = this.keyBoardOption;
 
             //   todo: შესაცვლელია უკეთესი ლოგიკა!
             text.split(' ').forEach(function (e) {
+                if (text.indexOf(GameTable.XCHAR) >= 0)
+                    return;
                 if (e.length >= 4) {
                     // შესაცვლელია! + random
                     var replStr = '';
@@ -115,10 +145,10 @@
                             replStr += ch;
                         }
                     });
-                    return text.replace(e, replStr);
+                    text = text.replace(e, replStr);
                 }
             });
-            return "";
+            return text;
         };
 
         ///ახალი ანადზის გენერირება
@@ -128,13 +158,14 @@
 
         ///საიტიდან მოთამაშიდან მოვიდა შეტყობინება
         GameTable.prototype.UserAction = function (userid, data) {
-            //todo: მონაცემის ტიპი მოსაფიქრებელია
-            var char = data;
+            if (data.code < 0) {
+                var char = data.data;
 
-            if (GameTable.IsChar(char, this.keyBoardOption) && !this.GameEnd) {
-                this.TimeControl(userid, char);
-            } else {
-                this.TableStateChanged({ code: 300, state: null, data: 'ეს არ არის ასო!' });
+                if (GameTable.IsChar(char, this.keyBoardOption) && !this.GameEnd) {
+                    this.TimeControl(userid, char);
+                } else {
+                    this.TableStateChanged({ code: 300, state: null, data: 'ეს არ არის ასო!' });
+                }
             }
         };
 
@@ -148,6 +179,7 @@
             return tmp;
         };
         GameTable.XCHAR = '•';
+        GameTable.TIMEOUTTICK = 3000;
         return GameTable;
     })();
     exports.GameTable = GameTable;

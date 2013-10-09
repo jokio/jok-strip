@@ -17,19 +17,21 @@ export class UserState {
     public helpkeys: string[];
     public isActive: boolean;
     public time: number;
+    public incorect: number;
+    public maxIncorrect: number;
 }
 export class KeyBoardOption{ from: number; to: number }
 
 export class GameTable {
-     
-   
+
+
     //OPTIONS
     private keyBoardOption: KeyBoardOption;
     public static XCHAR = '•';
-    public static TIMEOUTTICK: number;
+    public static TIMEOUTTICK = 3000;
     public GameEnd: boolean = false;
     //-------
-  users: {
+    users: {
         [key: string]: {
             originProverb: string;
             timeoutHendler?: number; // ასეთ გადაწყვეტილებას სინქრონიზაციის საჭვალება დაჭირდება!
@@ -37,16 +39,20 @@ export class GameTable {
         }
     } = {};
 
- public   join(userid: string) {
+    public join(userid: string) {
 
         var users = this.users;
         if (users[userid] == null) {
+            var verbOption = this.getProverb();
             var userState = new UserState();
-            users[userid] = { originProverb: this.getProverb(), state: userState };
+            userState.incorect = 0;
+            userState.maxIncorrect = 5; //todo; ჩასასწორებელია
             userState.userId = userid;
             userState.helpkeys = [];
-            userState.proverbState = this.generateVerb(users[userid].originProverb);
-            users[userid].timeoutHendler = null;
+            users[userid] = { originProverb: verbOption, state: userState, timeoutHendler: null };
+            userState.proverbState = this.verbMaskGenerator(verbOption);
+            
+        
 
         }
         users[userid].state.isActive = true;
@@ -56,17 +62,17 @@ export class GameTable {
     }
 
     private TimeControl(userid: string, char?: string) {
+        if(char)
+        this.setNewCharforUser(userid, char);
         this.TableStateChanged({ code: 1, state: this.GetState() });
         if (this.users[userid].timeoutHendler != null)// bug gaasxa.
             clearTimeout(this.users[userid].timeoutHendler); // todo: (bug ?)
 
+        if (this.GameEnd)
+            return;
         this.users[userid].timeoutHendler = setTimeout(() => {
             //Timeout 'thinking logically'
-            this.setNewCharforUser(userid, char ? char : this.getRandomCharForUser(userid));
-            if (this.users[userid].state.proverbState.indexOf(GameTable.XCHAR) < 0) {
-                //თამაში დასრულდა
-                this.GameEnd = true;
-            }
+            this.setNewCharforUser(userid,this.getRandomCharForUser(userid));
             //-------------------
             this.TimeControl(userid);
             //--
@@ -74,21 +80,44 @@ export class GameTable {
     }
 
     private setNewCharforUser(userid: string, char: string) {
+        console.log('----------------------------------');
+            console.log("1.1");
         char = char.toLowerCase();
-        if (!(GameTable.IsChar(char,this.keyBoardOption)) ||
+        console.log("1.2 "+char);
+        if (!(GameTable.IsChar(char, this.keyBoardOption)) ||
             this.users[userid].state.helpkeys.indexOf(char) >= 0)
             return;
+        console.log("2.1");
         this.users[userid].state.helpkeys.push(char);
+        console.log("2.2");
         var orgp = this.users[userid].originProverb.toLowerCase();
+        console.log("2.3");
         var pstate = this.users[userid].state.proverbState;
+        console.log("2.4");
         var newPstate = '';
-        for (var i = 0; i < this.users[userid].state.proverbState.length; i++) {
-            if (pstate[i] == GameTable.XCHAR && orgp[i] == char) {
+        var isCorect = false;
+      
+        console.log(this.users[userid]);
+    
+        if (this.users[userid].originProverb.length != this.users[userid].state.proverbState.length)
+            throw "sthring not match";
+        for (var i = 0; i < this.users[userid].originProverb.length; i++) {
+            console.log("3.1");
+            if (pstate.charAt(i) == GameTable.XCHAR && orgp.charAt(i) == char) {
                 //originalidan aRdgena
-                newPstate += this.users[userid].originProverb[i];
+                console.log("3.1.1");
+                newPstate += this.users[userid].originProverb.charAt(i);
+                isCorect = true;
             } else {
-                newPstate += pstate[i];
+                console.log("3.1.2");
+                newPstate += pstate.charAt(i);
             }
+            console.log(newPstate);
+        }
+        if (!isCorect) {
+            this.users[userid].state.incorect++;
+            this.GameEnd= this.users[userid].state.maxIncorrect <= this.users[userid].state.incorect;
+            
         }
         this.users[userid].state.proverbState = newPstate;
         return;
@@ -96,7 +125,7 @@ export class GameTable {
     }
 
     private getRandomCharForUser(userid: string): string {
-        for (var i = this.keyBoardOption.from; i < this.keyBoardOption.to; i++) {
+        for (var i = this.keyBoardOption.from; i <= this.keyBoardOption.to; i++) {
             if (this.users[userid].state.helpkeys.indexOf(String.fromCharCode(i)) < 0) {// not Contains
                 return String.fromCharCode(i);
             }
@@ -121,43 +150,55 @@ export class GameTable {
     }
 
     /// ასოსების დამალვა!
-    generateVerb(text: string): string {
-        if (text == null) return "";
+    verbMaskGenerator(text: string): string {
+        if (text == null) {
+            console.warn("text is empty ", text, this);
+            throw "text is empty ";
+        }
+  
         var keyobj = this.keyBoardOption;
-      
+
         //   todo: შესაცვლელია უკეთესი ლოგიკა!
         text.split(' ').forEach((e) => {
+         
+            if (text.indexOf(GameTable.XCHAR)>=0)
+                return;
             if (e.length >= 4) {
                 // შესაცვლელია! + random
                 var replStr = '';
-                e.split('').forEach( (ch)=> {
+                e.split('').forEach((ch) => {
+              
                     if (GameTable.IsChar(ch, keyobj)) {
-                        replStr += GameTable.XCHAR; //  ეს ნიშანი შეიცვლება ისეთ ნიშნით რომელიც ტექსტში არ უნდა იყოს. მაგ '•'
-                    } else {            
+                        replStr += GameTable.XCHAR; // '•'
+                    } else {
                         replStr += ch;
                     }
                 });
-                return text.replace(e, replStr);
+                text = text.replace(e, replStr);
             }
         });
-        return "";
+        return text;
     }
 
     ///ახალი ანადზის გენერირება
-    getProverb(): string {
+    getProverb(): string  {
         return "All good things must come to an end";
     }
 
     ///საიტიდან მოთამაშიდან მოვიდა შეტყობინება
-    UserAction(userid: string, data: any) {
+    UserAction(userid: string, data: { code: number; data: any; }) {
         //todo: მონაცემის ტიპი მოსაფიქრებელია
-        var char = <string>data; // დასამუშავებელია
-        //---------------
-        if (GameTable.IsChar(char,this.keyBoardOption) && !this.GameEnd) {// ეს დაცვა შიგნითაცააქ მაგრამ შეიძლება რიცხვი მომივიდეს უნდა დავამუშავო.
-            this.TimeControl(userid, char);
-        }
-        else {
-            this.TableStateChanged({ code: 300, state: null, data: 'ეს არ არის ასო!' });
+
+        if (data.code < 0) {
+
+            var char = <string>data.data; // დასამუშავებელია
+            //---------------
+            if (GameTable.IsChar(char, this.keyBoardOption) && !this.GameEnd) {// ეს დაცვა შიგნითაცააქ მაგრამ შეიძლება რიცხვი მომივიდეს უნდა დავამუშავო.
+                this.TimeControl(userid, char);
+            }
+            else {
+                this.TableStateChanged({ code: 300, state: null, data: 'ეს არ არის ასო!' });
+            }
         }
     }
 

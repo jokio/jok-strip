@@ -47,7 +47,7 @@ define(["require", "exports", 'JokServerEngine', 'Game'], function(require, expo
                     _this.sendToGroup(TabelID, 'msg', data);
                 });
             }
-            this.Tables[TabelID].join(socket.id);
+            this.Tables[TabelID].join(socket.userid);
             this.groups.add(socket.id, TabelID);
             socket.tabelid = TabelID;
         };
