@@ -69,7 +69,7 @@ class GameServer extends ServerEngine.JokServer {
         if (this.Tables[socket.tabelid])
 
             //delete Tabel active user not exist,
-            if (!this.Tables[socket.tabelid].leave(socket.id)) {
+            if (!this.Tables[socket.tabelid].leave(socket.userid)) {
                 delete this.Tables[socket.tabelid];
                 //todo dasamtavrebelia siebis amoReba da grupebidan waSla
             }

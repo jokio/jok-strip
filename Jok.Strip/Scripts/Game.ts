@@ -28,7 +28,7 @@ export class GameTable {
     //OPTIONS
     private keyBoardOption: KeyBoardOption;
     public static XCHAR = '•';
-    public static TIMEOUTTICK = 3000;
+    public static TIMEOUTTICK = 10000;
     public GameEnd: boolean = false;
     //-------
     users: {
@@ -221,11 +221,17 @@ export class GameTable {
  
     ///Method return true if other user is active
     public leave(userid: string) {
-        this.users[userid].state.isActive = false;
+
+        if(this.users[userid].state)
+            this.users[userid].state.isActive = false;
+        if (this.GameEnd)
+            this.gameEnd();
         this.TableStateChanged({ code: 1, state: this.GetState() });
         var tmp = false;
         for (var k in this.users)
             tmp = tmp || this.users[k].state.isActive;
+        if (!tmp)
+            this.gameEnd();
         return tmp;
     }
 
