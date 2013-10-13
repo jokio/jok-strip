@@ -2,9 +2,7 @@
     ViewBag.Title = "Play";
 }
 
-<script>
-    ///<reference path="Scripts/Common/jquery-2.0.3.js"/>
-</script>
+
 
 <h2>Play</h2>
 <div id="divChat">
@@ -13,8 +11,40 @@
 <input type="button" id="btnChat" />
 <div style="width: 800px; height: 600px; margin: auto; background-color: lightblue; text-align: center;">
     
-   <div id="divText">
+   <div id="gamers" style="width:500px;height:200px; padding-top:10px; margin:auto;">
+       <div id="divMe" style="width: 200px; height: 150px; background-color: #e4f5ff; margin:auto; float:left;">
+           <label id="lbMtext"></label><br />
+           <label id="lbMans"></label><br/>
+           <label id="lbMtime"></label><br/>
+       </div>
+       <div id="divFr" style="width: 200px; height: 150px; background-color: #e4f5ff; margin: auto; float:right;">
+           <label id="lbFtext"></label><br />
+           <label id="lbFans"></label><br />
+           <label id="lbFtime"></label><br />
+       </div>
 
    </div>
 
+
+    <div id="divKeyboard" class="keyboard">
+    
+    </div>
 </div>
+<script type="text/javascript">
+
+    window.addEventListener("load",
+   function (event) {
+       for (var i = 97; i <= 122; i++) {
+           var char = String.fromCharCode(i);
+           var button = document.createElement("button");
+           button.id = 'btn' + char;
+           button.innerText = char;
+           button.value= char;
+           button.addEventListener("click", function (e) {
+               window["gameClient"].sendCommand("msg", { code: -1, data: e.target.innerHTML});
+           }, true);
+           document.getElementById("divKeyboard").appendChild(button);
+       }
+   }, true);
+</script>
+

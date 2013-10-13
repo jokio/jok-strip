@@ -3,6 +3,7 @@
 export interface IGameToClient { // Game To Client messages
     code: number;/*
              FullState=1; //new
+             FirstState=2;
             GameEnd = 10
            error =100
         */
@@ -33,8 +34,9 @@ export class GameTable {
     //-------
     users: {
         [key: string]: {
+
             originProverb: string;
-            timeoutHendler?: number; // ასეთ გადაწყვეტილებას სინქრონიზაციის საჭვალება დაჭირდება!
+            timeInterval?: { hendler: number; createDate: Date; }; // ასეთ გადაწყვეტილებას სინქრონიზაციის საჭვალება დაჭირდება!
             state: UserState
         }
     } = {};
@@ -51,16 +53,33 @@ export class GameTable {
             userState.helpkeys = [];
             users[userid] = { originProverb: verbOption, state: userState, timeoutHendler: null };
             userState.proverbState = this.verbMaskGenerator(verbOption);
-            
-        
-            
+
+
+
         }
         users[userid].state.isActive = true;
 
-       
 
-        this.TableStateChanged({ code: 1, state: this.GetState() });
-        //  this.TimeControl(userid);
+
+        this.TableStateChanged({ code: 2, state: this.GetState() });
+        this.gameStart();
+    }
+
+    private gameStart() {
+        // Start Game
+
+        var array = new Array<UserState>();
+        for (var k in this.users) {
+
+            if (this.users[k].state.isActive)
+                array.push(this.users[k].state)
+        }
+        if (array.length >= 2) {
+            for (var k in array) {
+                this.TimeControl(array[k].userId, null);
+            }
+        }
+      
     }
 
     private TimeControl(userid: string, char?: string) {
@@ -68,23 +87,27 @@ export class GameTable {
             this.gameEnd();
             return;
         }
-        if(char)
+       
         this.setNewCharforUser(userid, char);
         this.TableStateChanged({ code: 1, state: this.GetState() });
-            clearTimeout(this.users[userid].timeoutHendler); // todo: (bug ?)
-        this.users[userid].timeoutHendler = setTimeout(() => {
-            //Timeout 'thinking logically'
-            if (this.GameEnd)
-                return;
-            this.setNewCharforUser(userid,this.getRandomCharForUser(userid));
-            //-------------------
-            this.TimeControl(userid);
-            //--
-        }, GameTable.TIMEOUTTICK);
+            if(this.users[userid].timeInterval)
+            clearInterval(this.users[userid].timeInterval.hendler); // todo: (bug ?)
+        this.users[userid].timeInterval = {
+            hendler: setTimeout(() => {
+                //Timeout 'thinking logically'
+                if (this.GameEnd)
+                    return;
+                this.setNewCharforUser(userid, this.getRandomCharForUser(userid));
+                //-------------------
+                this.TimeControl(userid);
+                //--
+            }, GameTable.TIMEOUTTICK), createDate: new Date()
+        };
     }
 
     private setNewCharforUser(userid: string, char: string) {
-     
+        if (char == null)
+            return;
         char = char.toLowerCase();
    
         if (!(GameTable.IsChar(char, this.keyBoardOption)) ||
@@ -133,8 +156,10 @@ export class GameTable {
     gameEnd() {
         this.GameEnd = true;
         this.TableStateChanged({ code: 10, state: this.GetState() });
-        for (var k in this.users)
-            clearInterval(this.users[k].timeoutHendler);
+        for (var k in this.users) {
+            if(this.users[k].timeInterval)
+            clearInterval(this.users[k].timeInterval.hendler);
+        }
     }
 
     private getRandomCharForUser(userid: string): string {
@@ -157,8 +182,11 @@ export class GameTable {
     /// ყველა მომხმარებელი
     public GetState(): UserState[] {
         var arr: UserState[] = [];
-        for (var k in this.users)
+        for (var k in this.users) {
+
+            this.users[k].state.time = this.users[k].timeInterval ? GameTable.TIMEOUTTICK - (new Date()).getTime() + this.users[k].timeInterval.createDate.getTime() : GameTable.TIMEOUTTICK;
             arr.push(this.users[k].state);
+        }
         return arr;
     }
 

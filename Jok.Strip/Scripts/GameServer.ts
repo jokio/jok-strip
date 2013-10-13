@@ -60,9 +60,10 @@ class GameServer extends ServerEngine.JokServer {
             });
            
         }
-        this.Tables[TabelID].join(socket.userid);
         this.groups.add(socket.id, TabelID);
         socket.tabelid = TabelID;
+        this.Tables[TabelID].join(socket.userid);
+       
     }
 
     onDisconnect(socket: ISocket) {
