@@ -53,9 +53,11 @@ export class GameTable {
             userState.proverbState = this.verbMaskGenerator(verbOption);
             
         
-
+            
         }
         users[userid].state.isActive = true;
+
+       
 
         this.TableStateChanged({ code: 1, state: this.GetState() });
         //  this.TimeControl(userid);
@@ -72,6 +74,8 @@ export class GameTable {
             clearTimeout(this.users[userid].timeoutHendler); // todo: (bug ?)
         this.users[userid].timeoutHendler = setTimeout(() => {
             //Timeout 'thinking logically'
+            if (this.GameEnd)
+                return;
             this.setNewCharforUser(userid,this.getRandomCharForUser(userid));
             //-------------------
             this.TimeControl(userid);
@@ -112,14 +116,14 @@ export class GameTable {
             }
            
         }
+        this.users[userid].state.proverbState = newPstate;
         if (!isCorect) {
             this.users[userid].state.incorect++;
-            this.GameEnd = (this.users[userid].state.maxIncorrect
-            <= this.users[userid].state.incorect)
-            || this.users[userid].state.proverbState.indexOf(GameTable.XCHAR) < 0;
-
         }
-        this.users[userid].state.proverbState = newPstate;
+        this.GameEnd = (this.users[userid].state.maxIncorrect
+        <= this.users[userid].state.incorect)
+        || this.users[userid].state.proverbState.indexOf(GameTable.XCHAR) < 0;
+       
         if (this.GameEnd)
             this.gameEnd();
         return;
