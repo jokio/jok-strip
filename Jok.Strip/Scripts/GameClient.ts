@@ -47,6 +47,8 @@ class GameClient extends ClientEngine.JokClient {
         var mtime = document.getElementById("lbMtime");
         var mans = document.getElementById('lbMans');
 
+      
+
         if (msg.code == 2) {
             //first run
             this.gameEnd = false;
@@ -60,7 +62,10 @@ class GameClient extends ClientEngine.JokClient {
             var me =  (msg.state[0].userId == <string> window["userid"]) ? msg.state[0] : msg.state[1];
               var fr = (msg.state[0].userId == <string>window["userid"]) ? msg.state[1] : msg.state[0];
 
-
+            if(me.helpkeys)
+                for (var k in me.helpkeys) {
+                    document.getElementById('btn' + me.helpkeys[k]).style.backgroundColor = 'red';
+            }
                    this.fTime = fr.time && fr.time > 0 ? Math.floor(fr.time / 1000) : 10;
 
                     ftext.innerHTML = fr.proverbState;
@@ -68,9 +73,9 @@ class GameClient extends ClientEngine.JokClient {
 
 
 
-            this.mTime = 10; me.time && me.time > 0 ? Math.floor(me.time / 1000) : 10;
+            this.mTime = me.time && me.time > 0 ? Math.floor(me.time / 1000) : 10;
             mtext.innerHTML = me.proverbState;
-            mans.innerHTML = me.helpkeys.join(', ');
+         //   mans.innerHTML = me.helpkeys.join(', ');
 
             if (msg.code == 10) {
                 clearInterval(this.timerHendler);
@@ -91,6 +96,7 @@ class GameClient extends ClientEngine.JokClient {
                 document.getElementById("lbMtime").innerHTML = this.mTime.toString();
             }, 1000);
 
+            
         }
 
 

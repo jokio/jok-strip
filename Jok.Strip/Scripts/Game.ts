@@ -90,7 +90,7 @@ export class GameTable {
        
         this.setNewCharforUser(userid, char);
             if(this.users[userid].timeInterval)
-            clearInterval(this.users[userid].timeInterval.hendler); // todo: (bug ?)
+            clearTimeout(this.users[userid].timeInterval.hendler); // todo: (bug ?)
         this.users[userid].timeInterval = {
             hendler: setTimeout(() => {
                 //Timeout 'thinking logically'
@@ -158,7 +158,7 @@ export class GameTable {
         this.TableStateChanged({ code: 10, state: this.GetState() });
         for (var k in this.users) {
             if(this.users[k].timeInterval)
-            clearInterval(this.users[k].timeInterval.hendler);
+            clearTimeout(this.users[k].timeInterval.hendler);
         }
     }
 
@@ -235,7 +235,7 @@ export class GameTable {
             
             var char = <string>data.data; // დასამუშავებელია
             //---------------
-            if (GameTable.IsChar(char, this.keyBoardOption)) {// ეს დაცვა შიგნითაცააქ მაგრამ შეიძლება რიცხვი მომივიდეს უნდა დავამუშავო.
+            if (GameTable.IsChar(char, this.keyBoardOption)&&this.users[userid].state.helpkeys.indexOf(char)>=0) {
                 this.TimeControl(userid, char);
             }
             else {
