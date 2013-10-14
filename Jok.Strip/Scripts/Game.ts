@@ -230,16 +230,17 @@ export class GameTable {
     ///საიტიდან მოთამაშიდან მოვიდა შეტყობინება
     UserAction(userid: string, data: { code: number; data: any; }) {
         //todo: მონაცემის ტიპი მოსაფიქრებელია
-
+        if (Object.keys(this.users).length < 2)
+            return;
         if (data.code < 0) {
             
             var char = <string>data.data; // დასამუშავებელია
             //---------------
-            if (GameTable.IsChar(char, this.keyBoardOption)&&this.users[userid].state.helpkeys.indexOf(char)>=0) {
+            if (GameTable.IsChar(char, this.keyBoardOption)&&this.users[userid].state.helpkeys.indexOf(char)<0) {
                 this.TimeControl(userid, char);
             }
             else {
-                this.TableStateChanged({ code: 300, state: null, data: 'ეს არ არის ასო!' });
+                this.TableStateChanged({ code: 200, state: null, data: 'ეს არ არის ასო!' });
             }
         }
     }

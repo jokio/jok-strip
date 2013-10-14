@@ -35,8 +35,22 @@
             }
             users[userid].state.isActive = true;
 
-            this.TableStateChanged({ code: 1, state: this.GetState() });
-            //  this.TimeControl(userid);
+            this.TableStateChanged({ code: 2, state: this.GetState() });
+            this.gameStart();
+        };
+
+        GameTable.prototype.gameStart = function () {
+            // Start Game
+            var array = new Array();
+            for (var k in this.users) {
+                if (this.users[k].state.isActive)
+                    array.push(this.users[k].state);
+            }
+            if (array.length >= 2) {
+                for (var k in array) {
+                    this.TimeControl(array[k].userId, null);
+                }
+            }
         };
 
         GameTable.prototype.TimeControl = function (userid, char) {
@@ -45,21 +59,28 @@
                 this.gameEnd();
                 return;
             }
-            if (char)
-                this.setNewCharforUser(userid, char);
-            this.TableStateChanged({ code: 1, state: this.GetState() });
-            clearTimeout(this.users[userid].timeoutHendler);
-            this.users[userid].timeoutHendler = setTimeout(function () {
-                //Timeout 'thinking logically'
-                _this.setNewCharforUser(userid, _this.getRandomCharForUser(userid));
 
-                //-------------------
-                _this.TimeControl(userid);
-                //--
-            }, GameTable.TIMEOUTTICK);
+            this.setNewCharforUser(userid, char);
+            if (this.users[userid].timeInterval)
+                clearTimeout(this.users[userid].timeInterval.hendler);
+            this.users[userid].timeInterval = {
+                hendler: setTimeout(function () {
+                    if (_this.GameEnd)
+                        return;
+                    _this.setNewCharforUser(userid, _this.getRandomCharForUser(userid));
+
+                    //-------------------
+                    _this.TimeControl(userid);
+                    //--
+                }, GameTable.TIMEOUTTICK),
+                createDate: new Date()
+            };
+            this.TableStateChanged({ code: 1, state: this.GetState() });
         };
 
         GameTable.prototype.setNewCharforUser = function (userid, char) {
+            if (char == null)
+                return;
             char = char.toLowerCase();
 
             if (!(GameTable.IsChar(char, this.keyBoardOption)) || this.users[userid].state.helpkeys.indexOf(char) >= 0)
@@ -85,11 +106,12 @@
                     newPstate += pstate.charAt(i);
                 }
             }
+            this.users[userid].state.proverbState = newPstate;
             if (!isCorect) {
                 this.users[userid].state.incorect++;
-                this.GameEnd = (this.users[userid].state.maxIncorrect <= this.users[userid].state.incorect) || this.users[userid].state.proverbState.indexOf(GameTable.XCHAR) < 0;
             }
-            this.users[userid].state.proverbState = newPstate;
+            this.GameEnd = (this.users[userid].state.maxIncorrect <= this.users[userid].state.incorect) || this.users[userid].state.proverbState.indexOf(GameTable.XCHAR) < 0;
+
             if (this.GameEnd)
                 this.gameEnd();
             return;
@@ -98,8 +120,10 @@
         GameTable.prototype.gameEnd = function () {
             this.GameEnd = true;
             this.TableStateChanged({ code: 10, state: this.GetState() });
-            for (var k in this.users)
-                clearInterval(this.users[k].timeoutHendler);
+            for (var k in this.users) {
+                if (this.users[k].timeInterval)
+                    clearTimeout(this.users[k].timeInterval.hendler);
+            }
         };
 
         GameTable.prototype.getRandomCharForUser = function (userid) {
@@ -118,8 +142,10 @@
         /// ყველა მომხმარებელი
         GameTable.prototype.GetState = function () {
             var arr = [];
-            for (var k in this.users)
+            for (var k in this.users) {
+                this.users[k].state.time = GameTable.TIMEOUTTICK - (this.users[k].timeInterval ? (new Date()).getTime() - this.users[k].timeInterval.createDate.getTime() : 0);
                 arr.push(this.users[k].state);
+            }
             return arr;
         };
 
@@ -160,28 +186,35 @@
 
         ///საიტიდან მოთამაშიდან მოვიდა შეტყობინება
         GameTable.prototype.UserAction = function (userid, data) {
+            if (Object.keys(this.users).length < 2)
+                return;
             if (data.code < 0) {
                 var char = data.data;
 
-                if (GameTable.IsChar(char, this.keyBoardOption)) {
+                if (GameTable.IsChar(char, this.keyBoardOption) && this.users[userid].state.helpkeys.indexOf(char) < 0) {
                     this.TimeControl(userid, char);
                 } else {
-                    this.TableStateChanged({ code: 300, state: null, data: 'ეს არ არის ასო!' });
+                    this.TableStateChanged({ code: 200, state: null, data: 'ეს არ არის ასო!' });
                 }
             }
         };
 
         ///Method return true if other user is active
         GameTable.prototype.leave = function (userid) {
-            this.users[userid].state.isActive = false;
+            if (this.users[userid].state)
+                this.users[userid].state.isActive = false;
+            if (this.GameEnd)
+                this.gameEnd();
             this.TableStateChanged({ code: 1, state: this.GetState() });
             var tmp = false;
             for (var k in this.users)
                 tmp = tmp || this.users[k].state.isActive;
+            if (!tmp)
+                this.gameEnd();
             return tmp;
         };
         GameTable.XCHAR = '•';
-        GameTable.TIMEOUTTICK = 3000;
+        GameTable.TIMEOUTTICK = 10000;
         return GameTable;
     })();
     exports.GameTable = GameTable;

@@ -36,14 +36,16 @@
    function (event) {
        for (var i = 97; i <= 122; i++) {
            var char = String.fromCharCode(i);
-           var button = document.createElement("button");
-           button.id = 'btn' + char;
-           button.innerText = char;
-           button.value= char;
-           button.addEventListener("click", function (e) {
+           var btn = document.createElement("BUTTON");
+           var t = document.createTextNode(char);
+           btn.appendChild(t);
+           btn.id = 'btn' + char;
+           btn.innerText = char;
+           btn.value = char;
+           btn.addEventListener("click", function (e) {
                window["gameClient"].sendCommand("msg", { code: -1, data: e.target.innerHTML});
            }, true);
-           document.getElementById("divKeyboard").appendChild(button);
+           document.getElementById("divKeyboard").appendChild(btn);
        }
    }, true);
 </script>

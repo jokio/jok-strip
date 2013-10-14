@@ -47,14 +47,14 @@ define(["require", "exports", 'JokServerEngine', 'Game'], function(require, expo
                     _this.sendToGroup(TabelID, 'msg', data);
                 });
             }
-            this.Tables[TabelID].join(socket.userid);
             this.groups.add(socket.id, TabelID);
             socket.tabelid = TabelID;
+            this.Tables[TabelID].join(socket.userid);
         };
 
         GameServer.prototype.onDisconnect = function (socket) {
             if (this.Tables[socket.tabelid])
-                if (!this.Tables[socket.tabelid].leave(socket.id)) {
+                if (!this.Tables[socket.tabelid].leave(socket.userid)) {
                     delete this.Tables[socket.tabelid];
                     //todo dasamtavrebelia siebis amoReba da grupebidan waSla
                 }

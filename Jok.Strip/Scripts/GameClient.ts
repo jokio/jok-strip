@@ -36,6 +36,7 @@ class GameClient extends ClientEngine.JokClient {
     }
 
     onMsg(msg: Game.IGameToClient) {
+        console.log(msg);
         // $('#divChat').append(msg);
       //  console.log(msg);
 
@@ -64,7 +65,7 @@ class GameClient extends ClientEngine.JokClient {
 
             if(me.helpkeys)
                 for (var k in me.helpkeys) {
-                    document.getElementById('btn' + me.helpkeys[k]).style.backgroundColor = 'red';
+                    document.getElementById('btn' + me.helpkeys[k]).style.color = 'red';
             }
                    this.fTime = fr.time && fr.time > 0 ? Math.floor(fr.time / 1000) : 10;
 
