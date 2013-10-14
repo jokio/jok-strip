@@ -89,7 +89,6 @@ export class GameTable {
         }
        
         this.setNewCharforUser(userid, char);
-        this.TableStateChanged({ code: 1, state: this.GetState() });
             if(this.users[userid].timeInterval)
             clearInterval(this.users[userid].timeInterval.hendler); // todo: (bug ?)
         this.users[userid].timeInterval = {
@@ -103,6 +102,7 @@ export class GameTable {
                 //--
             }, GameTable.TIMEOUTTICK), createDate: new Date()
         };
+        this.TableStateChanged({ code: 1, state: this.GetState() });
     }
 
     private setNewCharforUser(userid: string, char: string) {
@@ -184,7 +184,7 @@ export class GameTable {
         var arr: UserState[] = [];
         for (var k in this.users) {
 
-            this.users[k].state.time = this.users[k].timeInterval ? GameTable.TIMEOUTTICK - (new Date()).getTime() + this.users[k].timeInterval.createDate.getTime() : GameTable.TIMEOUTTICK;
+            this.users[k].state.time = GameTable.TIMEOUTTICK - (this.users[k].timeInterval ? (new Date()).getTime() - this.users[k].timeInterval.createDate.getTime() : 0);
             arr.push(this.users[k].state);
         }
         return arr;
