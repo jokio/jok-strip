@@ -32,11 +32,19 @@
                 userState.helpkeys = [];
                 users[userid] = { originProverb: verbOption, state: userState, timeoutHendler: null };
                 userState.proverbState = this.verbMaskGenerator(verbOption);
-            }
-            users[userid].state.isActive = true;
 
-            this.TableStateChanged({ code: 2, state: this.GetState() });
-            this.gameStart();
+                //---------
+                users[userid].state.isActive = true;
+                this.TableStateChanged({ code: 2, state: this.GetState() });
+                this.gameStart();
+            } else {
+                users[userid].state.isActive = true;
+                if (this.GameEnd) {
+                    this.gameEnd();
+                } else {
+                    this.TableStateChanged({ code: 1, state: this.GetState() });
+                }
+            }
         };
 
         GameTable.prototype.gameStart = function () {
@@ -214,7 +222,7 @@
             return tmp;
         };
         GameTable.XCHAR = '•';
-        GameTable.TIMEOUTTICK = 10000;
+        GameTable.TIMEOUTTICK = 30000;
         return GameTable;
     })();
     exports.GameTable = GameTable;

@@ -29,7 +29,7 @@ export class GameTable {
     //OPTIONS
     private keyBoardOption: KeyBoardOption;
     public static XCHAR = '•';
-    public static TIMEOUTTICK = 10000;
+    public static TIMEOUTTICK = 30000;
     public GameEnd: boolean = false;
     //-------
     users: {
@@ -53,16 +53,21 @@ export class GameTable {
             userState.helpkeys = [];
             users[userid] = { originProverb: verbOption, state: userState, timeoutHendler: null };
             userState.proverbState = this.verbMaskGenerator(verbOption);
-
-
+            //---------
+            users[userid].state.isActive = true;
+            this.TableStateChanged({ code: 2, state: this.GetState() });
+            this.gameStart();
 
         }
-        users[userid].state.isActive = true;
-
-
-
-        this.TableStateChanged({ code: 2, state: this.GetState() });
-        this.gameStart();
+        else {
+            users[userid].state.isActive = true;
+            if (this.GameEnd) {
+                this.gameEnd();
+            }
+            else {
+                this.TableStateChanged({ code: 1, state: this.GetState() });
+            }
+        }
     }
 
     private gameStart() {
@@ -180,7 +185,8 @@ export class GameTable {
 
     }
     /// ყველა მომხმარებელი
-    public GetState(): UserState[] {
+    public GetState(): UserState[]{
+      
         var arr: UserState[] = [];
         for (var k in this.users) {
 

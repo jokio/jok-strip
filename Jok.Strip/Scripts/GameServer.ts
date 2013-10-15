@@ -44,22 +44,35 @@ class GameServer extends ServerEngine.JokServer {
         //+ მაგიდა რომელზეც მხოლოდ ერთი მოთამაშეა და დაემატოს. 
         //bug: საპოვნელია ეს მოთამაშე ხომ არაა უკვე სხვა მაგიდაზეც!
         
+
+
         var TabelID = -1;
+
         for (var key in this.Tables) {
-            if (Object.keys(this.Tables[key].users).length != 2)
-            {
-                TabelID = key;
-                break;
+            for (var ukey in this.Tables[key].users) {
+                if (this.Tables[key].users[ukey].state.userId == socket.userid) {
+                    TabelID = key;
+                    break;
+                }
             }
         }
-        if (TabelID<0)
-        {
-            TabelID = Math.abs(Math.random() * 10000000);
-            this.Tables[TabelID] = new Game.GameTable((data: Game.IGameToClient) => {
-                this.sendToGroup(TabelID, 'msg', data);
-            });
-           
+
+        if (TabelID == -1) {
+            for (var key in this.Tables) {
+                if (Object.keys(this.Tables[key].users).length != 2) {
+                    TabelID = key;
+                    break;
+                }
+            }
+
+            if (TabelID < 0) {
+                TabelID = Math.abs(Math.random() * 10000000);
+                this.Tables[TabelID] = new Game.GameTable((data: Game.IGameToClient) => {
+                    this.sendToGroup(TabelID, 'msg', data);
+                });
+            }
         }
+
         this.groups.add(socket.id, TabelID);
         socket.tabelid = TabelID;
         this.Tables[TabelID].join(socket.userid);
