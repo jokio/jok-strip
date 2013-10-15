@@ -73,6 +73,6 @@ define(["require", "exports", 'JokServerEngine', 'Game'], function(require, expo
         return GameServer;
     })(ServerEngine.JokServer);
 
-    GameServer.Start(3000);
+    GameServer.Start(process.env.PORT || 3000);
 });
 //# sourceMappingURL=GameServer.js.map

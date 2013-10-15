@@ -91,4 +91,4 @@ class GameServer extends ServerEngine.JokServer {
     }
 }
 
-GameServer.Start(3000);
+GameServer.Start(process.env.PORT || 3000);
