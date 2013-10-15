@@ -2,6 +2,8 @@
 
 export interface IGameToClient { // Game To Client messages
     code: number;/*
+     -1 user char message
+    -10 user restart reqvest
              FullState=1; //new
              FirstState=2;
             GameEnd = 10
@@ -20,6 +22,7 @@ export class UserState {
     public time: number;
     public incorect: number;
     public maxIncorrect: number;
+    
 }
 export class KeyBoardOption{ from: number; to: number }
 
@@ -45,14 +48,8 @@ export class GameTable {
 
         var users = this.users;
         if (users[userid] == null) {
-            var verbOption = this.getProverb();
-            var userState = new UserState();
-            userState.incorect = 0;
-            userState.maxIncorrect = 5; //todo; ჩასასწორებელია
-            userState.userId = userid;
-            userState.helpkeys = [];
-            users[userid] = { originProverb: verbOption, state: userState, timeoutHendler: null };
-            userState.proverbState = this.verbMaskGenerator(verbOption);
+
+            this.createState(userid);
             //---------
             users[userid].state.isActive = true;
             this.TableStateChanged({ code: 2, state: this.GetState() });
@@ -70,9 +67,22 @@ export class GameTable {
         }
     }
 
+    createState(userid:string):UserState {
+        var verbOption = this.getProverb();
+        var userState = new UserState();
+        userState.incorect = 0;
+        userState.maxIncorrect = 5; //todo; ჩასასწორებელია
+        userState.userId = userid;
+        userState.helpkeys = [];
+        userState.proverbState = this.verbMaskGenerator(verbOption);
+        this.users[userid] = { originProverb: verbOption, state: userState, timeoutHendler: null };
+        return userState;
+    } 
+
+
+
     private gameStart() {
         // Start Game
-
         var array = new Array<UserState>();
         for (var k in this.users) {
 
