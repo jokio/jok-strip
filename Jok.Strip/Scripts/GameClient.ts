@@ -76,8 +76,8 @@ class GameClient extends ClientEngine.JokClient {
 
             this.mTime = me.time && me.time > 0 ? Math.floor(me.time / 1000) : 10;
             mtext.innerHTML = me.proverbState;
-         //   mans.innerHTML = me.helpkeys.join(', ');
-
+            //   mans.innerHTML = me.helpkeys.join(', ');
+            mans.innerHTML = (100 - 100*me.incorect / me.maxIncorrect).toString() + "%";
             if (msg.code == 10) {
                 clearInterval(this.timerHendler);
                 this.gameEnd = true;
