@@ -1,1 +1,1 @@
-﻿web: node Jok.Pool/Scripts/Jok.Pool.Server.js
+﻿web: node Jok.Pool/Scripts/Common/server.js
