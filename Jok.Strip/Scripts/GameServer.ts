@@ -60,19 +60,19 @@ class GameServer extends ServerEngine.JokServer {
         if (TabelID == -1) {
             for (var key in this.Tables) {
                 if (Object.keys(this.Tables[key].users).length != 2) {
-                    TabelID = key;
-                    break;
-                }
-            }
-
-            if (TabelID < 0) {
-                TabelID = Math.abs(Math.random() * 10000000);
-                this.Tables[TabelID] = new Game.GameTable((data: Game.IGameToClient) => {
-                    this.sendToGroup(TabelID, 'msg', data);
-                });
+                TabelID = key;
+                break;
             }
         }
 
+            if (TabelID < 0) {
+            TabelID = Math.abs(Math.random() * 10000000);
+            this.Tables[TabelID] = new Game.GameTable((data: Game.IGameToClient) => {
+                this.sendToGroup(TabelID, 'msg', data);
+            });
+            }
+        }
+           
         this.groups.add(socket.id, TabelID);
         socket.tabelid = TabelID;
         this.Tables[TabelID].join(socket.userid);
@@ -104,4 +104,4 @@ class GameServer extends ServerEngine.JokServer {
     }
 }
 
-GameServer.Start(3000);
+GameServer.Start(process.env.PORT || 3000);

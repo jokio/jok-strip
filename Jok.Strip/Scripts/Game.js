@@ -35,8 +35,8 @@
 
                 //---------
                 users[userid].state.isActive = true;
-                this.TableStateChanged({ code: 2, state: this.GetState() });
-                this.gameStart();
+            this.TableStateChanged({ code: 2, state: this.GetState() });
+            this.gameStart();
             } else {
                 users[userid].state.isActive = true;
                 if (this.GameEnd) {

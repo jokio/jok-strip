@@ -46,19 +46,19 @@ define(["require", "exports", 'JokServerEngine', 'Game'], function(require, expo
             }
 
             if (TabelID == -1) {
-                for (var key in this.Tables) {
-                    if (Object.keys(this.Tables[key].users).length != 2) {
-                        TabelID = key;
-                        break;
-                    }
+            for (var key in this.Tables) {
+                if (Object.keys(this.Tables[key].users).length != 2) {
+                    TabelID = key;
+                    break;
                 }
+            }
 
-                if (TabelID < 0) {
-                    TabelID = Math.abs(Math.random() * 10000000);
-                    this.Tables[TabelID] = new Game.GameTable(function (data) {
-                        _this.sendToGroup(TabelID, 'msg', data);
-                    });
-                }
+            if (TabelID < 0) {
+                TabelID = Math.abs(Math.random() * 10000000);
+                this.Tables[TabelID] = new Game.GameTable(function (data) {
+                    _this.sendToGroup(TabelID, 'msg', data);
+                });
+            }
             }
 
             this.groups.add(socket.id, TabelID);
@@ -87,6 +87,6 @@ define(["require", "exports", 'JokServerEngine', 'Game'], function(require, expo
         return GameServer;
     })(ServerEngine.JokServer);
 
-    GameServer.Start(3000);
+    GameServer.Start(process.env.PORT || 3000);
 });
 //# sourceMappingURL=GameServer.js.map
