@@ -34,11 +34,10 @@ export class GameTable {
     public static XCHAR = '•';
     public static TIMEOUTTICK = 30000;
     public GameEnd: boolean = false;
+    public OriginalProverb: string;
     //-------
     users: {
         [key: string]: {
-
-            originProverb: string;
             timeInterval?: { hendler: number; createDate: Date; }; // ასეთ გადაწყვეტილებას სინქრონიზაციის საჭვალება დაჭირდება!
             state: UserState
         }
@@ -46,6 +45,9 @@ export class GameTable {
 
     public join(userid: string) {
 
+        if (this.OriginalProverb == null || this.OriginalProverb.length > 1) {
+            this.OriginalProverb = this.getProverb();
+        }
         var users = this.users;
         if (users[userid] == null) {
 
@@ -68,16 +70,15 @@ export class GameTable {
     }
 
     createState(userid:string):UserState {
-        var verbOption = this.getProverb();
-        var userState = new UserState();
-        userState.incorect = 0;
-        userState.maxIncorrect = 5; //todo; ჩასასწორებელია
-        userState.userId = userid;
-        userState.helpkeys = [];
-        userState.proverbState = this.verbMaskGenerator(verbOption);
-        this.users[userid] = { originProverb: verbOption, state: userState, timeoutHendler: null };
+            var userState = new UserState();
+            userState.incorect = 0;
+            userState.maxIncorrect = 5; //todo; ჩასასწორებელია
+            userState.userId = userid;
+            userState.helpkeys = [];
+            userState.proverbState = this.verbMaskGenerator(this.OriginalProverb);
+        this.users[userid] = { state: userState, timeoutHendler: null };
         return userState;
-    } 
+        }
 
 
 
@@ -131,7 +132,7 @@ export class GameTable {
     
         this.users[userid].state.helpkeys.push(char);
    
-        var orgp = this.users[userid].originProverb.toLowerCase();
+        var orgp = this.OriginalProverb.toLowerCase();
       
         var pstate = this.users[userid].state.proverbState;
     
@@ -139,14 +140,14 @@ export class GameTable {
         var isCorect = false;
       
     
-        if (this.users[userid].originProverb.length != this.users[userid].state.proverbState.length)
+        if (this.OriginalProverb.length != this.users[userid].state.proverbState.length)
             throw "sthring not match";
-        for (var i = 0; i < this.users[userid].originProverb.length; i++) {
+        for (var i = 0; i < this.OriginalProverb.length; i++) {
            
             if (pstate.charAt(i) == GameTable.XCHAR && orgp.charAt(i) == char) {
                 //originalidan aRdgena
                 
-                newPstate += this.users[userid].originProverb.charAt(i);
+                newPstate += thisOriginalProverb.charAt(i);
                 isCorect = true;
             } else {
               
@@ -214,28 +215,22 @@ export class GameTable {
             throw "text is empty ";
         }
   
-        var keyobj = this.keyBoardOption;
-
+      
+        var result = '';
         //   todo: შესაცვლელია უკეთესი ლოგიკა!
         text.split(' ').forEach((e) => {
-         
-            if (text.indexOf(GameTable.XCHAR)>=0)
-                return;
-            if (e.length >= 4) {
-                // შესაცვლელია! + random
-                var replStr = '';
+     
+                
                 e.split('').forEach((ch) => {
               
-                    if (GameTable.IsChar(ch, keyobj)) {
-                        replStr += GameTable.XCHAR; // '•'
+                    if (GameTable.IsChar(ch, this.keyBoardOption)) {
+                        result += GameTable.XCHAR; // '•'
                     } else {
-                        replStr += ch;
+                        result += ch;
                     }
                 });
-                text = text.replace(e, replStr);
-            }
         });
-        return text;
+        return result;
     }
 
     ///ახალი ანადზის გენერირება
