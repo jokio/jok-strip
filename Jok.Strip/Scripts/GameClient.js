@@ -7,9 +7,9 @@ var __extends = this.__extends || function (d, b) {
     __.prototype = b.prototype;
     d.prototype = new __();
 };
-define(["require", "exports", 'JokClientEngine'], function(require, exports, __ClientEngine__) {
+define(["require", "exports", 'JokClientEngine', 'Game'], function(require, exports, __ClientEngine__, __Game__) {
     var ClientEngine = __ClientEngine__;
-    
+    var Game = __Game__;
 
     var GameClient = (function (_super) {
         __extends(GameClient, _super);
@@ -24,7 +24,9 @@ define(["require", "exports", 'JokClientEngine'], function(require, exports, __C
         }
         GameClient.prototype.onConnect = function () {
             console.log('connected');
+
             //---- Install
+            this.loadCanvas();
             //-----
         };
 
@@ -44,20 +46,10 @@ define(["require", "exports", 'JokClientEngine'], function(require, exports, __C
             var _this = this;
             console.log(msg);
 
-            // $('#divChat').append(msg);
-            //  console.log(msg);
-            //-------- take elements
-            var ftext = document.getElementById('lbFtext');
-            var fans = document.getElementById('lbFans');
-            var ftime = document.getElementById("lbFtime");
-            var mtext = document.getElementById('lbMtext');
-            var mtime = document.getElementById("lbMtime");
-            var mans = document.getElementById('lbMans');
-
             if (msg.code == 2) {
                 //first run
                 this.gameEnd = false;
-                mtime.innerHTML = 'გთხოვთ დაელოდოთ მეორე მოთამაშეს';
+                this.drawScreen(2, 'გთხოვთ დაელოდოთ მეორე მოთამაშეს', null);
             }
 
             if (!this.gameEnd && (msg.code == 1 || msg.code == 10)) {
@@ -70,33 +62,102 @@ define(["require", "exports", 'JokClientEngine'], function(require, exports, __C
                     }
                 this.fTime = fr.time && fr.time > 0 ? Math.floor(fr.time / 1000) : 10;
 
-                ftext.innerHTML = fr.proverbState;
-                fans.innerHTML = fr.helpkeys.join(', ');
+                // ftext.innerHTML = fr.proverbState;
+                // fans.innerHTML = fr.helpkeys.join(', ');
+                this.drawScreen(msg.code, me.proverbState, fr.proverbState);
 
                 this.mTime = me.time && me.time > 0 ? Math.floor(me.time / 1000) : 10;
-                mtext.innerHTML = me.proverbState;
 
-                //   mans.innerHTML = me.helpkeys.join(', ');
-                mans.innerHTML = (100 - 100 * me.incorect / me.maxIncorrect).toString() + "%";
                 if (msg.code == 10) {
                     clearInterval(this.timerHendler);
                     this.gameEnd = true;
-                    mtime.innerHTML = "თამაში დასრულებულია";
-                    ftime.innerHTML = "თამაში დასრულებულია";
+
+                    // mtime.innerHTML = "თამაში დასრულებულია";
+                    //ftime.innerHTML = "თამაში დასრულებულია";
                     return;
                 }
                 if (this.timerHendler == -1)
                     this.timerHendler = setInterval(function () {
+                        var ctx = _this.context;
+                        ctx.fillStyle = '#888888';
+                        ctx.fillRect(10, 150, 580, 200);
+                        ctx.fillStyle = '#FFFFFF';
                         _this.mTime--;
                         _this.fTime--;
                         if (_this.mTime <= 0)
                             _this.mTime = 10;
                         if (_this.fTime <= 0)
                             _this.fTime = 10;
-                        ftime.innerHTML = _this.fTime.toString();
-                        document.getElementById("lbMtime").innerHTML = _this.mTime.toString();
+                        ctx.fillText("თქვენი დრო:" + _this.mTime.toString(), 20, 160);
+                        ctx.fillText("მოწინააღმდეგის დრო" + _this.fTime.toString(), 20, 190);
                     }, 1000);
             }
+        };
+
+        //--CANVAS
+        GameClient.prototype.drawScreen = function (code, text1, text2) {
+            var ctx = this.context;
+            var x = 5;
+            var y = 5;
+            var w = 30;
+            var h = 30;
+            var q = 5;
+
+            //--clear
+            ctx.fillStyle = '#888888';
+            ctx.fillRect(0, 0, 600, 400);
+            ctx.font = '20px Arial';
+            ctx.textBaseline = 'top';
+            ctx.fillStyle = '#FFFFFF';
+            if (code == 2) {
+                ctx.fillText(text1, 20, 160);
+            }
+
+            if (code == 1) {
+                ctx.lineWidth = 2;
+                var arr = text1.split('');
+
+                var j = 0, i = 0;
+                var ti = 0, tj = 0;
+                for (i = 0; i < arr.length; i++) {
+                    if (x + w > 600 - q) {
+                        x = q;
+                        y = q + y + h;
+                    }
+                    if (ti * (w + q) + 13 > 600) {
+                        tj++;
+                        ti = 0;
+                    }
+                    if (text1.charAt(i) == Game.GameTable.XCHAR) {
+                        if (text2.charAt(i) == Game.GameTable.XCHAR)
+                            ctx.strokeStyle = '#FFFFFF';
+else
+                            ctx.strokeStyle = '#ECA6A6';
+                    } else if (text2.charAt(i) == Game.GameTable.XCHAR) {
+                        ctx.strokeStyle = '#E2FFE2';
+                    } else {
+                        ctx.strokeStyle = '#EBE2FF';
+                    }
+
+                    ctx.strokeRect(x, y, w, h);
+                    x = x + w + q;
+                    ctx.fillText(arr[i], ti * (w + q) + 13, 8 + (h + q) * tj);
+                    ti++;
+                }
+            }
+        };
+
+        GameClient.prototype.loadCanvas = function () {
+            if (!this.isCanvasSupported())
+                return false;
+            this.theCanvas = document.getElementById("canvasOne");
+            this.context = this.theCanvas.getContext('2d');
+        };
+
+        GameClient.prototype.isCanvasSupported = function () {
+            //droebit MODERNIZE
+            var elem = document.createElement('canvasOne');
+            return true;
         };
 
         GameClient.Start = function (url) {
