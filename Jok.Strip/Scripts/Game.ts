@@ -44,9 +44,10 @@ export class GameTable {
     } = {};
 
     public join(userid: string) {
-
+       
         if (this.OriginalProverb == null || this.OriginalProverb.length > 1) {
             this.OriginalProverb = this.getProverb();
+            
         }
         var users = this.users;
         if (users[userid] == null) {

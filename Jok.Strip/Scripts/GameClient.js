@@ -53,26 +53,28 @@ define(["require", "exports", 'JokClientEngine', 'Game'], function(require, expo
             }
 
             if (!this.gameEnd && (msg.code == 1 || msg.code == 10)) {
-                var me = (msg.state[0].userId == window["userid"]) ? msg.state[0] : msg.state[1];
-                var fr = (msg.state[0].userId == window["userid"]) ? msg.state[1] : msg.state[0];
+                this.mState = (msg.state[0].userId == window["userid"]) ? msg.state[0] : msg.state[1];
+                this.fState = (msg.state[0].userId == window["userid"]) ? msg.state[1] : msg.state[0];
 
-                if (me.helpkeys)
-                    for (var k in me.helpkeys) {
-                        document.getElementById('btn' + me.helpkeys[k]).style.color = 'red';
+                if (this.mState.helpkeys)
+                    for (var k in this.mState.helpkeys) {
+                        document.getElementById('btn' + this.mState.helpkeys[k]).style.color = 'red';
                     }
-                this.fTime = fr.time && fr.time > 0 ? Math.floor(fr.time / 1000) : 10;
+                this.fState.time = this.fState.time && this.fState.time > 0 ? Math.floor(this.fState.time / 1000) : 10;
 
                 // ftext.innerHTML = fr.proverbState;
                 // fans.innerHTML = fr.helpkeys.join(', ');
-                this.drawScreen(msg.code, me.proverbState, fr.proverbState);
+                this.drawScreen(msg.code, this.mState.proverbState, this.fState.proverbState);
 
-                this.mTime = me.time && me.time > 0 ? Math.floor(me.time / 1000) : 10;
+                this.mState.time = this.mState.time && this.mState.time > 0 ? Math.floor(this.mState.time / 1000) : 10;
 
                 if (msg.code == 10) {
                     clearInterval(this.timerHendler);
                     this.gameEnd = true;
+                    this.drawScreen(1, this.mState.proverbState, this.fState.proverbState);
 
-                    // mtime.innerHTML = "თამაში დასრულებულია";
+                    this.drawScreen(msg.code, "თამაში დასრულებულია", null);
+
                     //ftime.innerHTML = "თამაში დასრულებულია";
                     return;
                 }
@@ -82,14 +84,14 @@ define(["require", "exports", 'JokClientEngine', 'Game'], function(require, expo
                         ctx.fillStyle = '#888888';
                         ctx.fillRect(10, 150, 580, 200);
                         ctx.fillStyle = '#FFFFFF';
-                        _this.mTime--;
-                        _this.fTime--;
-                        if (_this.mTime <= 0)
-                            _this.mTime = 10;
-                        if (_this.fTime <= 0)
-                            _this.fTime = 10;
-                        ctx.fillText("თქვენი დრო:" + _this.mTime.toString(), 20, 160);
-                        ctx.fillText("მოწინააღმდეგის დრო" + _this.fTime.toString(), 20, 190);
+                        _this.mState.time--;
+                        _this.fState.time--;
+                        if (_this.mState.time <= 0)
+                            _this.mState.time = 10;
+                        if (_this.fState.time <= 0)
+                            _this.fState.time = 10;
+                        ctx.fillText("თქვენი დრო:" + _this.mState.time.toString() + "   სიცოცხლე:" + (100 - 100 * _this.mState.incorect / _this.mState.maxIncorrect).toString() + "%", 20, 160);
+                        ctx.fillText("მოწინააღმდეგის დრო:" + _this.fState.time.toString() + "   სიცოცხლე:" + (100 - 100 * _this.fState.incorect / _this.fState.maxIncorrect).toString() + "%", 20, 190);
                     }, 1000);
             }
         };
@@ -104,17 +106,21 @@ define(["require", "exports", 'JokClientEngine', 'Game'], function(require, expo
             var q = 5;
 
             //--clear
-            ctx.fillStyle = '#888888';
-            ctx.fillRect(0, 0, 600, 400);
-            ctx.font = '20px Arial';
-            ctx.textBaseline = 'top';
             ctx.fillStyle = '#FFFFFF';
-            if (code == 2) {
+
+            if (code == 2 || code == 10) {
+                ctx.fillStyle = '#888888';
+                ctx.fillRect(10, 150, 580, 200);
+                ctx.fillStyle = '#FFFFFF';
                 ctx.fillText(text1, 20, 160);
             }
 
             if (code == 1) {
+                //Semovida
+                ctx.fillStyle = '#888888';
+                ctx.fillRect(0, 0, 600, 400);
                 ctx.lineWidth = 2;
+                ctx.fillStyle = '#FFFFFF';
                 var arr = text1.split('');
 
                 var j = 0, i = 0;
@@ -150,12 +156,19 @@ else
         GameClient.prototype.loadCanvas = function () {
             if (!this.isCanvasSupported())
                 return false;
+
             this.theCanvas = document.getElementById("canvasOne");
             this.context = this.theCanvas.getContext('2d');
+
+            this.context.fillStyle = '#888888';
+            this.context.fillRect(0, 0, 600, 400);
+            this.context.font = '20px Arial';
+            this.context.textBaseline = 'top';
         };
 
         GameClient.prototype.isCanvasSupported = function () {
             //droebit MODERNIZE
+            Game.UserState;
             var elem = document.createElement('canvasOne');
             return true;
         };

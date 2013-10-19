@@ -49,47 +49,52 @@ class GameClient extends ClientEngine.JokClient {
         //დასამატებელია არასწორი არასწორის დამატება.
         if (!this.gameEnd && (msg.code == 1 || msg.code == 10)) {
 
-            var me =  (msg.state[0].userId == <string> window["userid"]) ? msg.state[0] : msg.state[1];
-              var fr = (msg.state[0].userId == <string>window["userid"]) ? msg.state[1] : msg.state[0];
+            this.mState =  (msg.state[0].userId == <string> window["userid"]) ? msg.state[0] : msg.state[1];
+            this.fState = (msg.state[0].userId == <string>window["userid"]) ? msg.state[1] : msg.state[0];
 
-            if(me.helpkeys)
-                for (var k in me.helpkeys) {
-                    document.getElementById('btn' + me.helpkeys[k]).style.color = 'red';
+            if (this.mState.helpkeys)
+                for (var k in this.mState.helpkeys) {
+                    document.getElementById('btn' + this.mState.helpkeys[k]).style.color = 'red';
             }
-                   this.fTime = fr.time && fr.time > 0 ? Math.floor(fr.time / 1000) : 10;
+            this.fState.time = this.fState.time && this.fState.time > 0 ? Math.floor(this.fState.time / 1000) : 10;
 
             // ftext.innerHTML = fr.proverbState;
             // fans.innerHTML = fr.helpkeys.join(', ');
 
-            this.drawScreen(msg.code, me.proverbState, fr.proverbState);
+            this.drawScreen(<number>msg.code, <string>this.mState.proverbState, <string> this.fState.proverbState);
 
-            this.mTime = me.time && me.time > 0 ? Math.floor(me.time / 1000) : 10;
+            this.mState.time = this.mState.time && this.mState.time > 0 ? Math.floor(this.mState.time / 1000) : 10;
            // mtext.innerHTML = me.proverbState;
             //   mans.innerHTML = me.helpkeys.join(', ');
            // mans.innerHTML = (100 - 100*me.incorect / me.maxIncorrect).toString() + "%";
             if (msg.code == 10) {
                 clearInterval(this.timerHendler);
                 this.gameEnd = true;
-               // mtime.innerHTML = "თამაში დასრულებულია";
-               //ftime.innerHTML = "თამაში დასრულებულია";
+                this.drawScreen(1, <string>this.mState.proverbState, <string> this.fState.proverbState);
+
+                this.drawScreen(msg.code, "თამაში დასრულებულია", null);
+                
+                
+                //ftime.innerHTML = "თამაში დასრულებულია";
                 return;
             }
-           if(this.timerHendler==-1)
-               this.timerHendler = setInterval(() => {
-                   var ctx = this.context;
-                   ctx.fillStyle = '#888888';
-                   ctx.fillRect(10, 150, 580, 200);
-                   ctx.fillStyle = '#FFFFFF';
-                this.mTime--;
-               this.fTime--;
-                if (this.mTime <= 0)
-                    this.mTime = 10;
-                if (this.fTime <= 0)
-                    this.fTime = 10;
-                   ctx.fillText("თქვენი დრო:"+this.mTime.toString(), 20, 160);
-                   ctx.fillText("მოწინააღმდეგის დრო" + this.fTime.toString(), 20, 190);
-              
-            }, 1000);
+            if (this.timerHendler == -1) 
+                this.timerHendler = setInterval(() => {
+                    var ctx = this.context;
+                    ctx.fillStyle = '#888888';
+                    ctx.fillRect(10, 150, 580, 200);
+                    ctx.fillStyle = '#FFFFFF';
+                    this.mState.time--;
+                    this.fState.time--;
+                    if (this.mState.time <= 0)
+                        this.mState.time = 10;
+                    if (this.fState.time <= 0)
+                        this.fState.time = 10;
+                    ctx.fillText("თქვენი დრო:" + this.mState.time.toString() + "   სიცოცხლე:" + (100 - 100 * this.mState.incorect / this.mState.maxIncorrect).toString() + "%", 20, 160);
+                    ctx.fillText("მოწინააღმდეგის დრო:" + this.fState.time.toString() + "   სიცოცხლე:" + (100 - 100 * this.fState.incorect / this.fState.maxIncorrect).toString() + "%", 20, 190);
+
+                }, 1000);
+            
 
             
         }
@@ -102,20 +107,23 @@ class GameClient extends ClientEngine.JokClient {
         var w = 30; var h = 30;
         var q = 5;
 //--clear
-        ctx.fillStyle = '#888888';
-        ctx.fillRect(0, 0, 600, 400);
-        ctx.font = '20px Arial';
-        ctx.textBaseline = 'top';
         ctx.fillStyle = '#FFFFFF';
-        if (code == 2) {
+        
+        if (code == 2 || code == 10) {
+            ctx.fillStyle = '#888888';
+            ctx.fillRect(10, 150, 580, 200);
+            ctx.fillStyle = '#FFFFFF';
             ctx.fillText(text1, 20, 160);
-        }
-        
-        
 
-        if (code==1) {
-           
+        }
+      
+        if (code == 1) {
+            //Semovida
+        
+            ctx.fillStyle = '#888888';
+            ctx.fillRect(0, 0, 600, 400);  
             ctx.lineWidth = 2;
+            ctx.fillStyle = '#FFFFFF';
             var arr = text1.split('');
           
          
@@ -158,20 +166,27 @@ class GameClient extends ClientEngine.JokClient {
     loadCanvas():boolean {
         if (!this.isCanvasSupported())
             return false;
-        this.theCanvas =<HTMLCanvasElement> document.getElementById("canvasOne");
+
+        this.theCanvas = <HTMLCanvasElement> document.getElementById("canvasOne");
         this.context = this.theCanvas.getContext('2d');
+
+        this.context.fillStyle = '#888888';
+        this.context.fillRect(0, 0, 600, 400);
+        this.context.font = '20px Arial';
+        this.context.textBaseline = 'top';
     }
     
     isCanvasSupported(): boolean {
     //droebit MODERNIZE
+        Game.UserState
         var elem = <HTMLCanvasElement> document.createElement('canvasOne');
         return true;//!!(elem.getContext && elem.getContext('2d'));
 }
     //--------------------
    
     gameEnd:boolean;
-    fTime: number;
-    mTime: number;
+    mState: Game.UserState;
+    fState: Game.UserState;
     timerHendler: number=-1;
     static Start(url): any {
         return new GameClient().connect(url);
