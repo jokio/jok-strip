@@ -35,7 +35,7 @@ define(["require", "exports", 'JokServerEngine', 'Game'], function(require, expo
             //+ მაგიდა რომელზეც მხოლოდ ერთი მოთამაშეა და დაემატოს.
             //bug: საპოვნელია ეს მოთამაშე ხომ არაა უკვე სხვა მაგიდაზეც!
             var TabelID = -1;
-
+            this.groups.add(socket.id, socket.userid);
             for (var key in this.Tables) {
                 for (var ukey in this.Tables[key].users) {
                     if (this.Tables[key].users[ukey].state.userId == socket.userid) {
@@ -46,21 +46,21 @@ define(["require", "exports", 'JokServerEngine', 'Game'], function(require, expo
             }
 
             if (TabelID == -1) {
-            for (var key in this.Tables) {
-                if (Object.keys(this.Tables[key].users).length != 2) {
-                    TabelID = key;
-                    break;
+                for (var key in this.Tables) {
+                    if (Object.keys(this.Tables[key].users).length != 2) {
+                        TabelID = key;
+                        break;
+                    }
+                }
+
+                if (TabelID < 0) {
+                    TabelID = Math.abs(Math.random() * 10000000);
+                    this.Tables[TabelID] = new Game.GameTable(function (groupid, data) {
+                        _this.sendToGroup(groupid == null ? TabelID.toString() : groupid, 'msg', data);
+                    });
                 }
             }
-
-            if (TabelID < 0) {
-                TabelID = Math.abs(Math.random() * 10000000);
-                this.Tables[TabelID] = new Game.GameTable(function (data) {
-                    _this.sendToGroup(TabelID, 'msg', data);
-                });
-            }
-            }
-
+            this.groups.add(socket.id, socket.userid);
             this.groups.add(socket.id, TabelID);
             socket.tabelid = TabelID;
             this.Tables[TabelID].join(socket.userid);

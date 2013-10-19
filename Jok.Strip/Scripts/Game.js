@@ -22,29 +22,41 @@
             this.keyBoardOption = { from: 97, to: 122 };
         }
         GameTable.prototype.join = function (userid) {
+            if (this.OriginalProverb == null || this.OriginalProverb.length > 1) {
+                this.OriginalProverb = this.getProverb();
+            }
             var users = this.users;
             if (users[userid] == null) {
-                var verbOption = this.getProverb();
-                var userState = new UserState();
-                userState.incorect = 0;
-                userState.maxIncorrect = 5;
-                userState.userId = userid;
-                userState.helpkeys = [];
-                users[userid] = { originProverb: verbOption, state: userState, timeoutHendler: null };
-                userState.proverbState = this.verbMaskGenerator(verbOption);
+                this.createState(userid);
 
                 //---------
                 users[userid].state.isActive = true;
-            this.TableStateChanged({ code: 2, state: this.GetState() });
-            this.gameStart();
+                this.sendUsersState(2);
+                this.gameStart();
             } else {
                 users[userid].state.isActive = true;
                 if (this.GameEnd) {
                     this.gameEnd();
                 } else {
-                    this.TableStateChanged({ code: 1, state: this.GetState() });
+                    this.sendUsersState(1);
                 }
             }
+        };
+
+        GameTable.prototype.sendUsersState = function (code) {
+            for (var k in this.users)
+                this.TableStateChanged(k, { code: code, state: this.getState(k) });
+        };
+
+        GameTable.prototype.createState = function (userid) {
+            var userState = new UserState();
+            userState.incorect = 0;
+            userState.maxIncorrect = 5;
+            userState.userId = userid;
+            userState.helpkeys = [];
+            userState.proverbState = this.verbMaskGenerator(this.OriginalProverb);
+            this.users[userid] = { state: userState, timeoutHendler: null };
+            return userState;
         };
 
         GameTable.prototype.gameStart = function () {
@@ -83,7 +95,7 @@
                 }, GameTable.TIMEOUTTICK),
                 createDate: new Date()
             };
-            this.TableStateChanged({ code: 1, state: this.GetState() });
+            this.sendUsersState(1);
         };
 
         GameTable.prototype.setNewCharforUser = function (userid, char) {
@@ -96,19 +108,21 @@
 
             this.users[userid].state.helpkeys.push(char);
 
-            var orgp = this.users[userid].originProverb.toLowerCase();
+            var orgp = this.OriginalProverb.toLowerCase();
 
             var pstate = this.users[userid].state.proverbState;
 
             var newPstate = '';
             var isCorect = false;
 
-            if (this.users[userid].originProverb.length != this.users[userid].state.proverbState.length)
+            if (this.OriginalProverb.length != this.users[userid].state.proverbState.length) {
+                console.log(this.OriginalProverb + "     :        " + this.users[userid].state.proverbState);
                 throw "sthring not match";
-            for (var i = 0; i < this.users[userid].originProverb.length; i++) {
+            }
+            for (var i = 0; i < this.OriginalProverb.length; i++) {
                 if (pstate.charAt(i) == GameTable.XCHAR && orgp.charAt(i) == char) {
                     //originalidan aRdgena
-                    newPstate += this.users[userid].originProverb.charAt(i);
+                    newPstate += this.OriginalProverb.charAt(i);
                     isCorect = true;
                 } else {
                     newPstate += pstate.charAt(i);
@@ -127,7 +141,7 @@
 
         GameTable.prototype.gameEnd = function () {
             this.GameEnd = true;
-            this.TableStateChanged({ code: 10, state: this.GetState() });
+            this.sendUsersState(10);
             for (var k in this.users) {
                 if (this.users[k].timeInterval)
                     clearTimeout(this.users[k].timeInterval.hendler);
@@ -148,48 +162,61 @@
         };
 
         /// ყველა მომხმარებელი
-        GameTable.prototype.GetState = function () {
+        GameTable.prototype.getState = function (userid) {
             var arr = [];
+            var tmp;
             for (var k in this.users) {
                 this.users[k].state.time = GameTable.TIMEOUTTICK - (this.users[k].timeInterval ? (new Date()).getTime() - this.users[k].timeInterval.createDate.getTime() : 0);
-                arr.push(this.users[k].state);
+                if (userid != k) {
+                    tmp = JSON.parse(JSON.stringify(this.users[k].state));
+                    tmp.helpkeys = [];
+                    tmp.proverbState = this.hideProverbState(tmp.proverbState);
+                } else {
+                    tmp = this.users[k].state;
+                }
+                arr.push(tmp);
             }
             return arr;
         };
 
+        GameTable.prototype.hideProverbState = function (str) {
+            var result = "";
+            try  {
+                var arr = str.split('');
+                for (var s in arr)
+                    result += GameTable.IsChar(arr[s], this.keyBoardOption) ? ' ' : arr[s];
+            } finally {
+                return result;
+            }
+        };
+
         /// ასოსების დამალვა!
         GameTable.prototype.verbMaskGenerator = function (text) {
+            var _this = this;
             if (text == null) {
                 console.log("method verbMaskGenerator(text: string)");
                 console.warn("text is empty", text, this);
                 throw "text is empty ";
             }
 
-            var keyobj = this.keyBoardOption;
+            var result = '';
 
             //   todo: შესაცვლელია უკეთესი ლოგიკა!
-            text.split(' ').forEach(function (e) {
-                if (text.indexOf(GameTable.XCHAR) >= 0)
-                    return;
-                if (e.length >= 4) {
-                    // შესაცვლელია! + random
-                    var replStr = '';
-                    e.split('').forEach(function (ch) {
-                        if (GameTable.IsChar(ch, keyobj)) {
-                            replStr += GameTable.XCHAR;
-                        } else {
-                            replStr += ch;
-                        }
-                    });
-                    text = text.replace(e, replStr);
-                }
+            text.split('').forEach(function (e) {
+                e.split('').forEach(function (ch) {
+                    if (GameTable.IsChar(ch, _this.keyBoardOption)) {
+                        result += GameTable.XCHAR;
+                    } else {
+                        result += ch;
+                    }
+                });
             });
-            return text;
+            return result;
         };
 
         ///ახალი ანადზის გენერირება
         GameTable.prototype.getProverb = function () {
-            return "All good things must come to an end";
+            return "All good things, must come to an end.";
         };
 
         ///საიტიდან მოთამაშიდან მოვიდა შეტყობინება
@@ -202,7 +229,7 @@
                 if (GameTable.IsChar(char, this.keyBoardOption) && this.users[userid].state.helpkeys.indexOf(char) < 0) {
                     this.TimeControl(userid, char);
                 } else {
-                    this.TableStateChanged({ code: 200, state: null, data: 'ეს არ არის ასო!' });
+                    this.TableStateChanged(null, { code: 200, state: null, data: 'ეს არ არის ასო!' });
                 }
             }
         };
@@ -213,7 +240,7 @@
                 this.users[userid].state.isActive = false;
             if (this.GameEnd)
                 this.gameEnd();
-            this.TableStateChanged({ code: 1, state: this.GetState() });
+            this.sendUsersState(1);
             var tmp = false;
             for (var k in this.users)
                 tmp = tmp || this.users[k].state.isActive;
@@ -222,7 +249,7 @@
             return tmp;
         };
         GameTable.XCHAR = '•';
-        GameTable.TIMEOUTTICK = 30000;
+        GameTable.TIMEOUTTICK = 15000;
         return GameTable;
     })();
     exports.GameTable = GameTable;

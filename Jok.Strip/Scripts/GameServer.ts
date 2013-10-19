@@ -32,7 +32,8 @@ class GameServer extends ServerEngine.JokServer {
 
     onConnect(socket: ISocket) {
         //todo Sesacvlelia!
-    this.groups.add(socket.id, 'test');
+        
+        this.groups.add(socket.id, 'test');
     }
     
 
@@ -47,7 +48,7 @@ class GameServer extends ServerEngine.JokServer {
 
 
         var TabelID = -1;
-
+        this.groups.add(socket.id, socket.userid);
         for (var key in this.Tables) {
             for (var ukey in this.Tables[key].users) {
                 if (this.Tables[key].users[ukey].state.userId == socket.userid) {
@@ -65,14 +66,15 @@ class GameServer extends ServerEngine.JokServer {
             }
         }
 
+            
             if (TabelID < 0) {
             TabelID = Math.abs(Math.random() * 10000000);
-            this.Tables[TabelID] = new Game.GameTable((data: Game.IGameToClient) => {
-                this.sendToGroup(TabelID, 'msg', data);
+                this.Tables[TabelID] = new Game.GameTable((groupid: string, data: Game.IGameToClient) => {
+                    this.sendToGroup(groupid == null?TabelID.toString():groupid, 'msg', data);
             });
             }
         }
-           
+        this.groups.add(socket.id, socket.userid);
         this.groups.add(socket.id, TabelID);
         socket.tabelid = TabelID;
         this.Tables[TabelID].join(socket.userid);
@@ -81,7 +83,6 @@ class GameServer extends ServerEngine.JokServer {
 
     onDisconnect(socket: ISocket) {
         if (this.Tables[socket.tabelid])
-
             //delete Tabel active user not exist,
             if (!this.Tables[socket.tabelid].leave(socket.userid)) {
                 delete this.Tables[socket.tabelid];

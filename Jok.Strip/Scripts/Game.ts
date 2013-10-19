@@ -32,7 +32,7 @@ export class GameTable {
     //OPTIONS
     private keyBoardOption: KeyBoardOption;
     public static XCHAR = '•';
-    public static TIMEOUTTICK = 30000;
+    public static TIMEOUTTICK = 15000;
     public GameEnd: boolean = false;
     public OriginalProverb: string;
     //-------
@@ -54,7 +54,7 @@ export class GameTable {
             this.createState(userid);
             //---------
             users[userid].state.isActive = true;
-            this.TableStateChanged({ code: 2, state: this.GetState() });
+            this.sendUsersState(2);
             this.gameStart();
 
         }
@@ -64,9 +64,16 @@ export class GameTable {
                 this.gameEnd();
             }
             else {
-                this.TableStateChanged({ code: 1, state: this.GetState() });
+                this.sendUsersState(1);
             }
         }
+    }
+
+    public sendUsersState(code:number) {
+        //1
+        
+        for(var k in this.users)
+            this.TableStateChanged(k, { code:code, state: this.getState(k) });
     }
 
     createState(userid:string):UserState {
@@ -118,7 +125,7 @@ export class GameTable {
                 //--
             }, GameTable.TIMEOUTTICK), createDate: new Date()
         };
-        this.TableStateChanged({ code: 1, state: this.GetState() });
+        this.sendUsersState(1);
     }
 
     private setNewCharforUser(userid: string, char: string) {
@@ -138,16 +145,18 @@ export class GameTable {
     
         var newPstate = '';
         var isCorect = false;
-      
-    
-        if (this.OriginalProverb.length != this.users[userid].state.proverbState.length)
+
+
+        if (this.OriginalProverb.length != this.users[userid].state.proverbState.length) {
+            console.log(this.OriginalProverb + "     :        " + this.users[userid].state.proverbState);
             throw "sthring not match";
+        }
         for (var i = 0; i < this.OriginalProverb.length; i++) {
            
             if (pstate.charAt(i) == GameTable.XCHAR && orgp.charAt(i) == char) {
                 //originalidan aRdgena
                 
-                newPstate += thisOriginalProverb.charAt(i);
+                newPstate += this.OriginalProverb.charAt(i);
                 isCorect = true;
             } else {
               
@@ -171,7 +180,7 @@ export class GameTable {
 
     gameEnd() {
         this.GameEnd = true;
-        this.TableStateChanged({ code: 10, state: this.GetState() });
+        this.sendUsersState(10);
         for (var k in this.users) {
             if(this.users[k].timeInterval)
             clearTimeout(this.users[k].timeInterval.hendler);
@@ -196,15 +205,35 @@ export class GameTable {
 
     }
     /// ყველა მომხმარებელი
-    public GetState(): UserState[]{
+    public getState(userid:string): UserState[]{
       
         var arr: UserState[] = [];
+        var tmp: UserState;
         for (var k in this.users) {
 
             this.users[k].state.time = GameTable.TIMEOUTTICK - (this.users[k].timeInterval ? (new Date()).getTime() - this.users[k].timeInterval.createDate.getTime() : 0);
-            arr.push(this.users[k].state);
+            if (userid != k) {
+            tmp= <UserState>JSON.parse(JSON.stringify(this.users[k].state));
+                tmp.helpkeys = []; // clear keys
+                tmp.proverbState = this.hideProverbState(tmp.proverbState);
+            } else {
+                tmp = this.users[k].state;
+            }
+            arr.push(tmp);
         }
         return arr;
+    }
+
+    private hideProverbState(str: string): string {
+        var result = "";
+        try {
+            var arr = str.split('');
+            for (var s in arr)
+                result += GameTable.IsChar(arr[s], this.keyBoardOption) ? ' ' : arr[s];
+        }
+        finally {
+            return result;
+        }
     }
 
     /// ასოსების დამალვა!
@@ -218,7 +247,7 @@ export class GameTable {
       
         var result = '';
         //   todo: შესაცვლელია უკეთესი ლოგიკა!
-        text.split(' ').forEach((e) => {
+        text.split('').forEach((e) => {
      
                 
                 e.split('').forEach((ch) => {
@@ -235,7 +264,7 @@ export class GameTable {
 
     ///ახალი ანადზის გენერირება
     getProverb(): string  {
-        return "All good things must come to an end";
+        return "All good things, must come to an end.";
     }
 
     ///საიტიდან მოთამაშიდან მოვიდა შეტყობინება
@@ -251,12 +280,12 @@ export class GameTable {
                 this.TimeControl(userid, char);
             }
             else {
-                this.TableStateChanged({ code: 200, state: null, data: 'ეს არ არის ასო!' });
+                this.TableStateChanged(null,{ code: 200, state: null, data: 'ეს არ არის ასო!' });
             }
         }
     }
 
-    constructor(public TableStateChanged: (state: IGameToClient) => void) {
+    constructor(public TableStateChanged: (groupid: string,state: IGameToClient) => void) {
         // event ჩაჯდეს ნაკადში ! მოგვიანებით.
         this.keyBoardOption = { from: 97, to: 122 };
        
@@ -270,7 +299,7 @@ export class GameTable {
             this.users[userid].state.isActive = false;
         if (this.GameEnd)
             this.gameEnd();
-        this.TableStateChanged({ code: 1, state: this.GetState() });
+        this.sendUsersState(1);
         var tmp = false;
         for (var k in this.users)
             tmp = tmp || this.users[k].state.isActive;
