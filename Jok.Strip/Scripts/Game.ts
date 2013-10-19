@@ -1,5 +1,5 @@
 ﻿
-
+//todo: gasasworebelia testis cvlileba
 export interface IGameToClient { // Game To Client messages
     code: number;/*
      -1 user char message

@@ -46,7 +46,7 @@ class GameClient extends ClientEngine.JokClient {
 
         }
 
-
+        //დასამატებელია არასწორი არასწორის დამატება.
         if (!this.gameEnd && (msg.code == 1 || msg.code == 10)) {
 
             var me =  (msg.state[0].userId == <string> window["userid"]) ? msg.state[0] : msg.state[1];
@@ -117,7 +117,7 @@ class GameClient extends ClientEngine.JokClient {
            
             ctx.lineWidth = 2;
             var arr = text1.split('');
-           
+          
          
             var j = 0, i = 0;
             var ti = 0, tj = 0;
