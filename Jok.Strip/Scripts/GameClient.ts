@@ -147,13 +147,15 @@ class GameClient extends ClientEngine.JokClient {
                     tj++;
                     ti = 0;
                 }
-                if (text1.charAt(i) == Game.GameTable.XCHAR) {
+               // if (text1.charAt(i) == Game.GameTable.XCHAR) {
                     //if (text2.charAt(i) == Game.GameTable.XCHAR)
                     ctx.strokeStyle = '#FFFFFF';
                     //else 
                     //   ctx.strokeStyle = '#ECA6A6';
-                }
-                if (text2.charAt(i) != Game.GameTable.XCHAR && text1.charAt(i)!=text2.charAt(i)) {
+                
+                if (text2.charAt(i) != Game.GameTable.XCHAR && text1.charAt(i) != text2.charAt(i)) {
+                    console.log(text1);
+                    console.log(text2);
                     ctx.strokeStyle = '#21A527';
                 }
                 if (Game.GameTable.IsChar(text1.charAt(i), this.keyboarOption)
