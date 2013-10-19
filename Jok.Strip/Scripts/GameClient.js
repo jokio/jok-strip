@@ -46,8 +46,14 @@ define(["require", "exports", 'JokClientEngine', 'Game'], function(require, expo
             var _this = this;
             console.log(msg);
 
+            if (msg.code == 3) {
+                //keyboard option
+                console.log(msg.data);
+                this.keyboarOption = msg.data;
+            }
+
             if (msg.code == 2) {
-                //first run
+                //first run full state
                 this.gameEnd = false;
                 this.drawScreen(2, 'გთხოვთ დაელოდოთ მეორე მოთამაშეს', null);
             }
@@ -81,7 +87,7 @@ define(["require", "exports", 'JokClientEngine', 'Game'], function(require, expo
                 if (this.timerHendler == -1)
                     this.timerHendler = setInterval(function () {
                         var ctx = _this.context;
-                        ctx.fillStyle = '#888888';
+                        ctx.fillStyle = '#ADD8E6';
                         ctx.fillRect(10, 150, 580, 200);
                         ctx.fillStyle = '#FFFFFF';
                         _this.mState.time--;
@@ -109,7 +115,7 @@ define(["require", "exports", 'JokClientEngine', 'Game'], function(require, expo
             ctx.fillStyle = '#FFFFFF';
 
             if (code == 2 || code == 10) {
-                ctx.fillStyle = '#888888';
+                ctx.fillStyle = '#ADD8E6';
                 ctx.fillRect(10, 150, 580, 200);
                 ctx.fillStyle = '#FFFFFF';
                 ctx.fillText(text1, 20, 160);
@@ -117,7 +123,7 @@ define(["require", "exports", 'JokClientEngine', 'Game'], function(require, expo
 
             if (code == 1) {
                 //Semovida
-                ctx.fillStyle = '#888888';
+                ctx.fillStyle = '#ADD8E6';
                 ctx.fillRect(0, 0, 600, 400);
                 ctx.lineWidth = 2;
                 ctx.fillStyle = '#FFFFFF';
@@ -130,22 +136,23 @@ define(["require", "exports", 'JokClientEngine', 'Game'], function(require, expo
                         x = q;
                         y = q + y + h;
                     }
+
                     if (ti * (w + q) + 13 > 600) {
                         tj++;
                         ti = 0;
                     }
                     if (text1.charAt(i) == Game.GameTable.XCHAR) {
-                        if (text2.charAt(i) == Game.GameTable.XCHAR)
-                            ctx.strokeStyle = '#FFFFFF';
-else
-                            ctx.strokeStyle = '#ECA6A6';
-                    } else if (text2.charAt(i) == Game.GameTable.XCHAR) {
-                        ctx.strokeStyle = '#E2FFE2';
-                    } else {
-                        ctx.strokeStyle = '#EBE2FF';
+                        //if (text2.charAt(i) == Game.GameTable.XCHAR)
+                        ctx.strokeStyle = '#FFFFFF';
+                        //else
+                        //   ctx.strokeStyle = '#ECA6A6';
                     }
+                    if (text2.charAt(i) != Game.GameTable.XCHAR && text1.charAt(i) != text2.charAt(i)) {
+                        ctx.strokeStyle = '#21A527';
+                    }
+                    if (Game.GameTable.IsChar(text1.charAt(i), this.keyboarOption) || text1.charAt(i) == Game.GameTable.XCHAR)
+                        ctx.strokeRect(x, y, w, h);
 
-                    ctx.strokeRect(x, y, w, h);
                     x = x + w + q;
                     ctx.fillText(arr[i], ti * (w + q) + 13, 8 + (h + q) * tj);
                     ti++;
@@ -160,7 +167,7 @@ else
             this.theCanvas = document.getElementById("canvasOne");
             this.context = this.theCanvas.getContext('2d');
 
-            this.context.fillStyle = '#888888';
+            this.context.fillStyle = '#ADD8E6';
             this.context.fillRect(0, 0, 600, 400);
             this.context.font = '20px Arial';
             this.context.textBaseline = 'top';

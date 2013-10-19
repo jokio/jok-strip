@@ -8,8 +8,9 @@ export interface IGameToClient { // Game To Client messages
              FirstState=2;
             GameEnd = 10
            error =100
-        */
-    state: UserState[];
+    keyboardOptionSend = 3 //keyboard option for users    
+    */
+    state?: UserState[];
     data?: any;
 }
 
@@ -50,6 +51,7 @@ export class GameTable {
             
         }
         var users = this.users;
+        this.TableStateChanged(null, { code: 3, data: this.keyBoardOption });
         if (users[userid] == null) {
 
             this.createState(userid);
@@ -68,6 +70,7 @@ export class GameTable {
                 this.sendUsersState(1);
             }
         }
+       
     }
 
     public sendUsersState(code:number) {

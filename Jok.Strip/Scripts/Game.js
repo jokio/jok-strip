@@ -26,6 +26,7 @@
                 this.OriginalProverb = this.getProverb();
             }
             var users = this.users;
+            this.TableStateChanged(null, { code: 3, data: this.keyBoardOption });
             if (users[userid] == null) {
                 this.createState(userid);
 
