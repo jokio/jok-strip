@@ -151,6 +151,8 @@
     <Content Include="Scripts\Common\r.js" />
     <Content Include="Scripts\Common\require.js" />
     <Content Include="Scripts\Common\server.js" />
+    <Content Include="Scripts\Common\kinetic-v4.4.3.js" />
+    <Content Include="Scripts\Common\kinetic-v4.4.3.min.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -179,6 +181,7 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="Scripts\typings\jquery.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\kinetic.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
   </ItemGroup>
   <PropertyGroup>
