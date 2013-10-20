@@ -11,8 +11,8 @@ namespace Jok.Strip
             bundles.Add(new ScriptBundle("~/bundles/js").Include(
                         "~/Scripts/Common/jquery-{version}.js",
                         "~/Scripts/Common/EventEmitter.js",
-                        "~/Scripts/Common/engine.io-client.js",
-                        "~/Scripts/Common/kinetic-v4.4.3.min.js"
+                        "~/Scripts/Common/engine.io-client.js"
+                       
                         ));
 
             bundles.Add(new StyleBundle("~/bundles/css").Include("~/Content/site.css"));

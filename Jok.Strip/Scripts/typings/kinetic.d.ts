@@ -1,17 +1,44 @@
-declare 
-module Kinetic {
-    class Node {
-        constructor (config);
+/**
+ * Typing for the KineticJS JavaScript Library v.0.0.1
+ * http://www.superdopey.nl/techblog/
+ * Copyright 2012, Ralph de Ruijter
+ * Licensed under the MIT or GPL Version 2 licenses.
+ * Date: Oct 6 2012
+ *
+ * Copyright (C) 2012 by Ralph de Ruijter
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+declare
+ module Kinetic {
+    export class Node {
+        constructor(config);
         clone(attrs): Node;
         getAbsoluteOpacity(): number;
         getAbsolutePosition(): Vector2d;
         getAbsoluteTransform(): any;
         getAbsoluteZIndex(): number;
         getAttrs(): any;
-        getAttr(configElement:any): any;
+        getAttr(configElement: any): any;
         getDragBounds(): any;
         getDragConstraint(): any;
-        getDraggable(): boolean; 
+        getDraggable(): boolean;
         getId(): any;
         getLayer(): any;
         getLevel(): number;
@@ -40,7 +67,7 @@ module Kinetic {
         moveToTop(): void;
         moveUp(): void;
         off(typesStr: string): void;
-        on(typesStr: string, handler: () =>{ }): void;
+        on(typesStr: string, handler: () => {}): void;
         rotate(theta: number): void;
         rotateDeg(deg: number): void;
 
@@ -67,7 +94,7 @@ module Kinetic {
         transitionTo(config: any): void;
     }
 
-    class Container extends Node {
+    export class Container extends Node {
         add(child);
         clone(attrs): Container;
         get(selector);
@@ -78,7 +105,7 @@ module Kinetic {
         removeChildren();
     }
 
-    class Stage extends Container {
+    export class Stage extends Container {
         add(layer: Layer);
         clear();
         draw();
@@ -98,14 +125,14 @@ module Kinetic {
         setSize(width: number, height: number);
         setWidth(width: number);
         toDataURL(config);
-        toImage(config, callback: () =>{ });
+        toImage(config, callback: () => {});
         toJSON();
     }
 
-    class Layer extends Container {
-        constructor (config?: LayerConfig);
-        afterDraw(handler: () =>{ });
-        beforeDraw(handler: () =>{ });
+    export class Layer extends Container {
+        constructor(config?: LayerConfig);
+        afterDraw(handler: () => {});
+        beforeDraw(handler: () => {});
         clear();
         draw();
         drawBuffer();
@@ -118,38 +145,38 @@ module Kinetic {
         toDataURL(config);
     }
 
-    class Canvas {
+    export class Canvas {
 
     }
 
-    class Shape extends Node {
+    export class Shape extends Node {
         applyLineJoin(): void;
         drawImage(): void;
         fill(): void;
-        fillText(text:string): void;
+        fillText(text: string): void;
         getCanvas(): Canvas;
         getContext(): any;
         getDrawFunc();
-        getFill():string;
+        getFill(): string;
         getLineJoin();
         getShadow();
         getSize(): any;
         getStroke();
         getStrokeWidth(): number;
         intersects(point): boolean;
-        setDrawFunc(drawFunc: () =>{ });
-        setFill(fill:string);
+        setDrawFunc(drawFunc: () => {});
+        setFill(fill: string);
         setLineJoin();
         setShadow(config);
         setSize();
-        setStroke(stroke:string);
+        setStroke(stroke: string);
         setStrokeWidth(strokeWidth: number);
         stroke();
-        strokeText(text:string);
+        strokeText(text: string);
     }
 
-    class Rect extends  Shape {
-        constructor (config: RectConfig);
+    export class Rect extends Shape {
+        constructor(config: RectConfig);
         getCornerRadius(): number;
         getHeight(): number;
         getWidth(): number;
@@ -158,32 +185,32 @@ module Kinetic {
         setWidth(width: number);
     }
 
-    class Circle extends  Shape {
-        constructor (config: CircleConfig);
+    export class Circle extends Shape {
+        constructor(config: CircleConfig);
         getRadius(): number;
         setRadius(radius: number);
     }
 
-    class Ellipse extends  Shape {
-        constructor (config: CircleConfig);
+    export class Ellipse extends Shape {
+        constructor(config: CircleConfig);
         getRadius(): number;
         setRadius(radius: number);
     }
 
-    class Group extends Container {
-        constructor (config: ObjectOptionsConfig);
+    export class Group extends Container {
+        constructor(config: ObjectOptionsConfig);
     }
 
-    class Collection {
+    export class Collection {
         apply(method, val);
-        each(func: () =>{ });
+        each(func: () => {});
     }
 
-    class Image extends Shape {
-        constructor (config: ImageConfig);
+    export class Image extends Shape {
+        constructor(config: ImageConfig);
         applyFilter(config);
         clearImageBuffer();
-        createImageBuffer(callback: () =>{ });
+        createImageBuffer(callback: () => {});
         getCrop();
         getFilter();
         getHeight(): number;
@@ -196,8 +223,8 @@ module Kinetic {
         setWidth(width: number);
     }
 
-    class Line extends Shape {
-        constructor (config: LineConfig);
+    export class Line extends Shape {
+        constructor(config: LineConfig);
         getDashArray();
         getLineCap();
         getPoints();
@@ -206,30 +233,30 @@ module Kinetic {
         setPoints(can: Array);
     }
 
-    class Path extends Shape {
-        constructor (config: PathConfig);
+    export class Path extends Shape {
+        constructor(config: PathConfig);
         getData(): string;
         static parsePathData(data: string);
         setData(SVG: string);
     }
 
-    class Polygon extends Shape {
-        constructor (config: PolygonConfig);
+    export class Polygon extends Shape {
+        constructor(config: PolygonConfig);
         getPoints();
         setPoints(points);
     }
 
-    class RegularPolygon extends Shape {
-        constructor (config: RegularPolygonConfig);
+    export class RegularPolygon extends Shape {
+        constructor(config: RegularPolygonConfig);
         getRadius(): number;
         getSides(): number;
         setRadius(radius: number);
         setSides(sides: number);
     }
 
-    class Sprite extends Shape {
-        constructor (config: SpriteConfig);
-        afterFrame(index: number, func: () =>{ });
+    export class Sprite extends Shape {
+        constructor(config: SpriteConfig);
+        afterFrame(index: number, func: () => {});
         getAnimation(): string;
         getAnimations();
         getIndex(): number;
@@ -240,8 +267,8 @@ module Kinetic {
         stop();
     }
 
-    class Star extends Shape {
-        constructor (config: StarConfig);
+    export class Star extends Shape {
+        constructor(config: StarConfig);
         getInnerRadius(): number;
         getNumPoints(): number;
         getOuterRadius(): number;
@@ -250,8 +277,8 @@ module Kinetic {
         setOuterRadius(radius: number);
     }
 
-    class Text extends Shape {
-        constructor (config: TextConfig);
+    export class Text extends Shape {
+        constructor(config: TextConfig);
         getAlign(): string;
         getBoxHeight(): number;
         getBoxWidth(): number;
@@ -284,7 +311,7 @@ module Kinetic {
         setWidth(width: number);
     }
 
-    class TextPath extends Shape {
+    export class TextPath extends Shape {
         contructor(config);
         getFontFamily(): string;
         getFontSize(): number;
@@ -304,60 +331,60 @@ module Kinetic {
         setTextStrokeWidth(textStrokeWidth: number);
     }
 
-    class Transition {
-        constructor (node: Node, config);
+    export class Transition {
+        constructor(node: Node, config);
         start();
         stop();
     }
 
-    interface CropConfig {
+    export interface CropConfig {
         x: number;
         y: number;
         width: number;
         height: number;
     }
 
-    class Animation extends Container {
+    export class Animation extends Container {
         start();
         stop();
     }
 
-    interface StageConfig extends ObjectOptionsConfig {
+    export interface StageConfig extends ObjectOptionsConfig {
         container: string;
         width: number;
         height: number;
     }
 
-    interface LayerConfig extends ObjectOptionsConfig {
+    export interface LayerConfig extends ObjectOptionsConfig {
         clearBeforeDraw?: boolean;
     }
 
-    //shape configs class
-    interface RectConfig extends DrawOptionsConfig, ObjectOptionsConfig {
+    //shape configs export class
+    export interface RectConfig extends DrawOptionsConfig, ObjectOptionsConfig {
         width: number;
         height: number;
         cornerRadius?: number;
     }
 
-    interface CircleConfig extends DrawOptionsConfig, ObjectOptionsConfig {
+    export interface CircleConfig extends DrawOptionsConfig, ObjectOptionsConfig {
         radius: number;
     }
 
-    interface ImageConfig extends DrawOptionsConfig, ObjectOptionsConfig {
+    export interface ImageConfig extends DrawOptionsConfig, ObjectOptionsConfig {
         image: any;
         width?: number;
         height?: number;
         crop?: any;
     }
 
-    interface SpriteConfig extends DrawOptionsConfig, ObjectOptionsConfig {
+    export interface SpriteConfig extends DrawOptionsConfig, ObjectOptionsConfig {
         image: any;
         animations: any;
         animation: any;
         frameRate?: number;
     }
 
-    interface TextConfig extends DrawOptionsConfig, ObjectOptionsConfig {
+    export interface TextConfig extends DrawOptionsConfig, ObjectOptionsConfig {
         text: string;
         fontSize?: number;
         fontFamily?: string;
@@ -373,36 +400,36 @@ module Kinetic {
         cornerRadius?: number;
     }
 
-    interface LineConfig extends DrawOptionsConfig, ObjectOptionsConfig {
+    export interface LineConfig extends DrawOptionsConfig, ObjectOptionsConfig {
         points: any;
         lineCap?: string;
         dashArray?: any;
     }
 
-    interface PolygonConfig extends DrawOptionsConfig, ObjectOptionsConfig {
+    export interface PolygonConfig extends DrawOptionsConfig, ObjectOptionsConfig {
         points: any;
     }
 
-    interface RegularPolygonConfig extends DrawOptionsConfig, ObjectOptionsConfig {
+    export interface RegularPolygonConfig extends DrawOptionsConfig, ObjectOptionsConfig {
         sides: number;
         radius: number;
     }
 
-    interface PathConfig extends DrawOptionsConfig, ObjectOptionsConfig {
+    export interface PathConfig extends DrawOptionsConfig, ObjectOptionsConfig {
         data: string;
     }
 
-    interface StarConfig extends DrawOptionsConfig, ObjectOptionsConfig {
+    export interface StarConfig extends DrawOptionsConfig, ObjectOptionsConfig {
         numPoints: number;
         outerRadius: number;
         innerRadius: number;
     }
 
-    interface CustomConfig extends DrawOptionsConfig, ObjectOptionsConfig {
-        drawFunc: () =>{ };
+    export interface CustomConfig extends DrawOptionsConfig, ObjectOptionsConfig {
+        drawFunc: () => {};
     }
 
-    interface DrawOptionsConfig {
+    export interface DrawOptionsConfig {
         fill?: string;
         stroke?: string;
         strokeWidth?: number;
@@ -410,12 +437,12 @@ module Kinetic {
         shadow?: any;
     }
 
-    interface Vector2d {
+    export interface Vector2d {
         x: number;
         y: number;
     }
 
-    interface ObjectOptionsConfig {
+    export interface ObjectOptionsConfig {
         x?: number;
         y?: number;
         visible?: boolean;
@@ -431,8 +458,4 @@ module Kinetic {
         dragConstraint?: string;
         dragBounds?: any;
     }
-
-    
 }
-
-//declare var Kinetic: KineticNS.Kinetic;

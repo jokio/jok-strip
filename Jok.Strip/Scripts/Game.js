@@ -32,7 +32,8 @@
 
                 //---------
                 users[userid].state.isActive = true;
-                this.sendUsersState(2);
+
+                //   this.sendUsersState(2);
                 this.gameStart();
             } else {
                 users[userid].state.isActive = true;
@@ -42,6 +43,7 @@
                     this.sendUsersState(1);
                 }
             }
+            this.sendUsersState(2);
         };
 
         GameTable.prototype.sendUsersState = function (code) {
@@ -230,7 +232,7 @@
                 if (GameTable.IsChar(char, this.keyBoardOption) && this.users[userid].state.helpkeys.indexOf(char) < 0) {
                     this.TimeControl(userid, char);
                 } else {
-                    this.TableStateChanged(null, { code: 200, state: null, data: 'ეს არ არის ასო!' });
+                    this.TableStateChanged(null, { code: 100, state: null, data: 'ეს არ არის ასო!' });
                 }
             }
         };

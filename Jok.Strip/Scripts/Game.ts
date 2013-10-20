@@ -4,8 +4,8 @@ export interface IGameToClient { // Game To Client messages
     code: number;/*
      -1 user char message
     -10 user restart reqvest
-             FullState=1; //new
-             FirstState=2;
+             state=1; //new
+             FirstState=2; // Game Full State
             GameEnd = 10
            error =100
     keyboardOptionSend = 3 //keyboard option for users    
@@ -57,7 +57,7 @@ export class GameTable {
             this.createState(userid);
             //---------
             users[userid].state.isActive = true;
-            this.sendUsersState(2);
+         //   this.sendUsersState(2);
             this.gameStart();
 
         }
@@ -70,6 +70,7 @@ export class GameTable {
                 this.sendUsersState(1);
             }
         }
+        this.sendUsersState(2);
        
     }
 
@@ -284,7 +285,7 @@ export class GameTable {
                 this.TimeControl(userid, char);
             }
             else {
-                this.TableStateChanged(null,{ code: 200, state: null, data: 'ეს არ არის ასო!' });
+                this.TableStateChanged(null,{ code: 100, state: null, data: 'ეს არ არის ასო!' });
             }
         }
     }

@@ -3,14 +3,14 @@
 /// <reference path="typings/jquery.d.ts"/>
 /// <reference path="typings/kinetic.d.ts"/>
 
+
 import ClientEngine = require('JokClientEngine');
 import Game = require('Game');
 
 class GameClient extends ClientEngine.JokClient {
-
+    
     constructor() {
         super();
-
         this.on('connect', this.onConnect);
         this.on('disconnect', this.onDisconnect);
         this.on('authorize', this.onAuthorize);
@@ -39,69 +39,60 @@ class GameClient extends ClientEngine.JokClient {
 
     onMsg(msg: Game.IGameToClient) {
         console.log(msg);
-
         if (msg.code == 3) {
             //keyboard option
-            console.log(msg.data);
             this.keyboarOption = <Game.KeyBoardOption>msg.data;
+            return;
         }
+
+        if (msg.code == 200) {
+            return;
+        }
+
+        this.mState = (msg.state[0].userId == <string> window["userid"]) && msg.state ? msg.state[0] : msg.state[1];
+        this.fState = (msg.state[0].userId == <string>window["userid"] && msg.state) ? msg.state[1] : msg.state[0];
 
         if (msg.code == 2) {
             //first run full state
             this.gameEnd = false;
-            this.drawScreen(2, 'გთხოვთ დაელოდოთ მეორე მოთამაშეს', null);
+            //'გთხოვთ, დაელოდოთ მეორე მოთამაშეს.'
+            this.drawScreen(2, this.mState.proverbState, null);
 
         }
 
         //დასამატებელია არასწორი არასწორის დამატება.
         if (!this.gameEnd && (msg.code == 1 || msg.code == 10)) {
-
-            this.mState = (msg.state[0].userId == <string> window["userid"]) ? msg.state[0] : msg.state[1];
-            this.fState = (msg.state[0].userId == <string>window["userid"]) ? msg.state[1] : msg.state[0];
-
             if (this.mState.helpkeys)
                 for (var k in this.mState.helpkeys) {
                     document.getElementById('btn' + this.mState.helpkeys[k]).style.color = 'red';
                 }
-            this.fState.time = this.fState.time && this.fState.time > 0 ? Math.floor(this.fState.time / 1000) : 10;
+            if (this.fState) {
+                this.fState.time = this.fState.time && this.fState.time > 0 ? Math.floor(this.fState.time / 1000) : 10;
+            }
 
-            // ftext.innerHTML = fr.proverbState;
-            // fans.innerHTML = fr.helpkeys.join(', ');
-
-            this.drawScreen(<number>msg.code, <string>this.mState.proverbState, <string> this.fState.proverbState);
+            this.drawScreen(msg.code, this.mState.proverbState, this.fState.proverbState);
 
             this.mState.time = this.mState.time && this.mState.time > 0 ? Math.floor(this.mState.time / 1000) : 10;
-            // mtext.innerHTML = me.proverbState;
-            //   mans.innerHTML = me.helpkeys.join(', ');
-            // mans.innerHTML = (100 - 100*me.incorect / me.maxIncorrect).toString() + "%";
             if (msg.code == 10) {
                 clearInterval(this.timerHendler);
                 this.gameEnd = true;
                 this.drawScreen(1, <string>this.mState.proverbState, <string> this.fState.proverbState);
-
                 this.drawScreen(msg.code, "თამაში დასრულებულია", null);
-
-
-                //ftime.innerHTML = "თამაში დასრულებულია";
                 return;
             }
             if (this.timerHendler == -1)
                 this.timerHendler = setInterval(() => {
-                    //var ctx = this.context;
-                    //ctx.fillStyle = '#ADD8E6';
-                    //ctx.fillRect(10, 150, 580, 200);
-                    //ctx.fillStyle = '#FFFFFF';
-                    //this.mState.time--;
-                    //this.fState.time--;
-                    //if (this.mState.time <= 0)
-                    //    this.mState.time = 10;
-                    //if (this.fState.time <= 0)
-                    //    this.fState.time = 10;
+                    this.mState.time--;
+                    this.fState.time--;
+                    if (this.mState.time <= 0)
+                        this.mState.time = 10;
+                    if (this.fState.time <= 0)
+                        this.fState.time = 10;
                     //ctx.fillText("თქვენი დრო:" + this.mState.time.toString() + "   სიცოცხლე:" + (100 - 100 * this.mState.incorect / this.mState.maxIncorrect).toString() + "%", 20, 160);
                     //ctx.fillText("მოწინააღმდეგის დრო:" + this.fState.time.toString() + "   სიცოცხლე:" + (100 - 100 * this.fState.incorect / this.fState.maxIncorrect).toString() + "%", 20, 190);
-
+                    this.drawScreen(null, null, null);
                 }, 1000);
-
+           
 
 
         }
@@ -110,41 +101,59 @@ class GameClient extends ClientEngine.JokClient {
     //--CANVAS
     stage: Kinetic.Stage;
     layer: Kinetic.Layer;
-    rects: Kinetic.Rect[]=[];
-    chars: Kinetic.Text[]=[];
+    rects: Kinetic.Rect[] = [];
+    chars: Kinetic.Text[] = [];
+    drawScreen(code?: number, text1?: string, text2?: string) {
 
-    drawScreen(code: number, text1?: string, text2?: string) {
+        if (code == null) {
+            //drawState
+           // console.log(1.1);
+            if (!(!this.gameEnd&&this.mState && this.fState && this.fState.proverbState && this.mState.proverbState))
+                return;
+           // console.log(1.2);
+           // this.layer.clear();
+            var chars = this.mState.proverbState.split('');
+           // console.log(1.3);
+            for (var i = 0; i < chars.length; i++) {
+                    if (this.fState.proverbState.charAt(i) != Game.GameTable.XCHAR && this.mState.proverbState.charAt(i) != this.fState.proverbState.charAt(i)) {
+                        this.rects[i].setStroke('#21A527');
+                       
+                    }
+                    this.chars[i].setText(chars[i]);
+                    this.layer.draw();
+            }
 
-
+           // console.log(1.4);
+            return;
+        }
 
         var maxWidth: number = <number>this.layer.getAttr('width');
         ////--clear
-   
-        if (code == 2) {
+        if (code == 2 && this.chars.length<2) {
+           // console.log('2');
             //
             //clear ALL
             //
             //todo:gasatania globalur parametrebad
-            var x = 5; var y = 5;
-          
             var q = 5;
+            var x = q; var y = q;
             var rectWidth = 40;
             var rectheight = 40;
-                 //loadorFullUpdate
-            var chararr=text1.split('');
-            for (var i = 0; i <chararr.length; i++)
-            {
+            //loadorFullUpdate
+            var chararr = text1.split('');
+            for (var i = 0; i < chararr.length; i++) {
                 var rect = new Kinetic.Rect({
-                    x: x,
+                    x: x + q,
                     y: y,
                     width: rectWidth,
                     height: rectheight,
                     stroke: 'white',
                     strokeWidth: 2
                 });
+               // console.log('2.1');
                 var char = new Kinetic.Text({
-                    x: x,
-                    y: y + 10,
+                    x: x + q,
+                    y: y + q * 2,
                     text: chararr[i],
                     fontSize: 24,
                     fontFamily: 'Calibri',
@@ -156,74 +165,34 @@ class GameClient extends ClientEngine.JokClient {
 
                 this.chars.push(char);
                 this.rects.push(rect);
-                this.layer.add(char);
                 this.layer.add(rect);
-                console.log((x + rectWidth + q).toString() + "  -"+i+"-  " + maxWidth);
-                if (x + rectWidth +  2*q > maxWidth) { // თუ კობი გარეთ ხვდება
-                    
-                    x = 0 - rectWidth;
+                this.layer.add(char);
+                if (!Game.GameTable.IsChar(chararr[i], this.keyboarOption) && Game.GameTable.XCHAR != chararr[i]) {
+                    rect.setOpacity(0);
+                }
+                x = x + (rectWidth + q);
+                if (x + rectWidth > maxWidth) { // თუ კობი გარეთ ხვდება
+                    x = q;
                     y = q + y + rectheight; // კუბის ჩაწევა
                 }
-                x = x + rectWidth + q;
             }
+           // console.log(2.2);
             this.layer.draw();
-                        
+            return;
         }
         if (code == 10) {
-            //ctx.fillStyle = '#ADD8E6';
-            //ctx.fillRect(10, 150, 580, 200);
-            //ctx.fillStyle = '#FFFFFF';
-            //ctx.fillText(text1, 20, 160);
+            //        if (text2.charAt(i) != Game.GameTable.XCHAR && text1.charAt(i) != text2.charAt(i)) {
+            //            console.log(text1);
+            //            console.log(text2);
+            //            ctx.strokeStyle = '#21A527';
+            //        }
+            //        if (Game.GameTable.IsChar(text1.charAt(i), this.keyboarOption)
+            //            || text1.charAt(i) == Game.GameTable.XCHAR)
+            //            ctx.strokeRect(x, y, w, h);
 
         }
-
-        //if (code == 1) {
-        //    //Semovida
-
-        //    ctx.fillStyle = '#ADD8E6';
-        //    ctx.fillRect(0, 0, 600, 400);
-        //    ctx.lineWidth = 2;
-        //    ctx.fillStyle = '#FFFFFF';
-        //    var arr = text1.split('');
-
-
-        //    var j = 0, i = 0;
-        //    var ti = 0, tj = 0;
-        //    for (i = 0; i < arr.length; i++) {
-        //        // ctx.strokeStyle = '#FFFFFF';
-        //        if (x + w > 600 - q) { // თუ კობი გარეთ ხვდება
-        //            x = q;
-        //            y = q + y + h; // კუბის ჩაწევა
-        //        }
-
-
-        //        if (ti * (w + q) + 13 > 600) {
-        //            tj++;
-        //            ti = 0;
-        //        }
-        //        // if (text1.charAt(i) == Game.GameTable.XCHAR) {
-        //        //if (text2.charAt(i) == Game.GameTable.XCHAR)
-        //        ctx.strokeStyle = '#FFFFFF';
-        //        //else 
-        //        //   ctx.strokeStyle = '#ECA6A6';
-
-        //        if (text2.charAt(i) != Game.GameTable.XCHAR && text1.charAt(i) != text2.charAt(i)) {
-        //            console.log(text1);
-        //            console.log(text2);
-        //            ctx.strokeStyle = '#21A527';
-        //        }
-        //        if (Game.GameTable.IsChar(text1.charAt(i), this.keyboarOption)
-        //            || text1.charAt(i) == Game.GameTable.XCHAR)
-        //            ctx.strokeRect(x, y, w, h);
-
-        //        x = x + w + q;
-        //        ctx.fillText(arr[i], ti * (w + q) + 13, 8 + (h + q) * tj);
-        //        ti++;
-        //    }
-      //  }
-
     }
- 
+
 
 
     loadCanvas(): boolean {
@@ -231,6 +200,7 @@ class GameClient extends ClientEngine.JokClient {
             return false;
         //layer
         this.layer = new Kinetic.Layer({
+            
             x: 0,
             y: 0,
             width: 780,
@@ -243,6 +213,9 @@ class GameClient extends ClientEngine.JokClient {
             height: 330
         });
         this.stage.add(this.layer);
+
+      
+       
     }
 
     isCanvasSupported(): boolean {
@@ -251,21 +224,30 @@ class GameClient extends ClientEngine.JokClient {
         var elem = <HTMLCanvasElement> document.createElement('canvasOne');
         return true;//!!(elem.getContext && elem.getContext('2d'));
     }
-    //--------------------
-    keyboarOption: Game.KeyBoardOption;
-    gameEnd: boolean;
-    mState: Game.UserState;
-    fState: Game.UserState;
-    timerHendler: number = -1;
+    //repaint
+
+
+
+    //-------------------- 
+    drawTimerer = -1;
+keyboarOption: Game.KeyBoardOption;
+gameEnd: boolean;
+mState: Game.UserState;
+fState: Game.UserState;
+timerHendler: number = -1;
     static Start(url): any {
-        return new GameClient().connect(url);
+    return new GameClient().connect(url);
     }
 }
 
 
-
-
-
+//window['requestAnimFrame'] = (function () {
+//    //return window['requestAnimationFrame'] ||
+//    //    window['webkitRequestAnimationFrame'] ||
+//    //    window['mozRequestAnimationFrame'] ||
+//     return   function (callback) {
+//            window.setTimeout(callback, 200);
+//        };
+//})();
 var w: any = window;
-
 GameClient.Start('ws://localhost:3000/?token=' + w.userid);

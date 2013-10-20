@@ -181,7 +181,7 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="Scripts\typings\jquery.d.ts" />
-    <TypeScriptCompile Include="Scripts\typings\kinetic.d.ts" />
+    <TypeScriptCompile Include="Scripts\typings\Kinetic.d.ts" />
     <TypeScriptCompile Include="Scripts\typings\node\node.d.ts" />
   </ItemGroup>
   <PropertyGroup>

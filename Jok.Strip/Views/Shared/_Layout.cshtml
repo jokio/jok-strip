@@ -10,12 +10,15 @@
     @Styles.Render("~/bundles/css")
     @Scripts.Render("~/bundles/js")
     <style>
-        body{
-            padding:0;
+        body {
+            padding: 0;
         }
     </style>
 </head>
 <body>
+    @*FUK*@
+    <script type="text/javascript" src="~/Scripts/Common/kinetic-v4.4.3.min.js"></script>
+
     <script src="~/Scripts/Common/require.js" data-main="/Scripts/Common/client"></script>
     @RenderBody()
 </body>

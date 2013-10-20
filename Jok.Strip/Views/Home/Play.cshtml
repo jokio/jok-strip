@@ -5,11 +5,13 @@
 
 
 <h2>Play</h2>
-<div id="divChat">
-</div>
-<input id='inpchat' />
-<input type="button" id="btnChat" />
-<script type="text/javascript" src="~/Scripts/Common/kinetic-v4.4.3.min.js"></script>
+
+<style type="text/css">
+    #divKeyboard button {
+   background-color:red;
+         }
+</style>
+
 <div style="width: 800px; height: 600px; background-color: lightblue; margin:auto;">
 
     
@@ -17,9 +19,7 @@
             
         </div>
 
-
-
-    <div id="divKeyboard" class=" margin:auto; background-color: lightblue">
+    <div id="divKeyboard" class=" width:800; margin:auto; background-color: lightblue">
 
     </div>
 </div>
@@ -28,7 +28,7 @@
    function (event) {
        for (var i = 97; i <= 122; i++) {
            var char = String.fromCharCode(i);
-           var btn = document.createElement("BUTTON");
+           var btn = document.createElement("button");
            var t = document.createTextNode(char);
            btn.appendChild(t);
            btn.id = 'btn' + char;
