@@ -75,8 +75,7 @@ export class GameTable {
     }
 
     public sendUsersState(code:number) {
-        //1
-        
+        //1    
         for(var k in this.users)
             this.TableStateChanged(k, { code:code, state: this.getState(k) });
     }
@@ -84,7 +83,7 @@ export class GameTable {
     createState(userid:string):UserState {
             var userState = new UserState();
             userState.incorect = 0;
-            userState.maxIncorrect = 5; //todo; ჩასასწორებელია
+            userState.maxIncorrect = GameTable.MaxIncorrectCounter(this.OriginalProverb,this.keyBoardOption); //todo: ჩასასწორებელია
             userState.userId = userid;
             userState.helpkeys = [];
             userState.proverbState = this.verbMaskGenerator(this.OriginalProverb);
@@ -92,7 +91,18 @@ export class GameTable {
         return userState;
         }
 
-
+    public static MaxIncorrectCounter(str: string, keyboardOption: KeyBoardOption):number {
+        var arr = [];
+        var tmp = '';
+        for (var i = 0; i < str.length; i++) {
+            tmp =str.charAt(i).toLowerCase();
+            if (GameTable.IsChar(tmp,keyboardOption)&&arr.indexOf(tmp) > 0) {
+                arr.push(tmp);
+            }
+        }
+        //(y-x)*70%
+        return ((keyboardOption.to - keyboardOption.from) - arr.length) * 0.7;
+    }
 
     private gameStart() {
         // Start Game
