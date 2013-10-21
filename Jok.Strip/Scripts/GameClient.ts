@@ -39,20 +39,20 @@ class GameClient extends ClientEngine.JokClient {
 
     onMsg(msg: Game.IGameToClient) {
         console.log(msg);
-        if (msg.code == 3) {
+        if (msg.code == Game.Codes.KeyboardOptionSend) {
             //keyboard option
             this.keyboarOption = <Game.KeyBoardOption>msg.data;
             return;
         }
 
-        if (msg.code == 200) {
+        if (msg.code== Game.Codes.BadChar) {
             return;
         }
 
         this.mState = (msg.state[0].userId == <string> window["userid"]) && msg.state ? msg.state[0] : msg.state[1];
         this.fState = (msg.state[0].userId == <string>window["userid"] && msg.state) ? msg.state[1] : msg.state[0];
 
-        if (msg.code == 2) {
+        if (msg.code == Game.Codes.FirstState) {
             //first run full state
             this.gameEnd = false;
             //'გთხოვთ, დაელოდოთ მეორე მოთამაშეს.'
@@ -61,22 +61,22 @@ class GameClient extends ClientEngine.JokClient {
         }
 
         //დასამატებელია არასწორი არასწორის დამატება.
-        if (!this.gameEnd && (msg.code == 1 || msg.code == 10)) {
+        if (!this.gameEnd && (msg.code == Game.Codes.State || msg.code == Game.Codes.GameEnd)) {
             if (this.mState.helpkeys)
                 for (var k in this.mState.helpkeys) {
                     document.getElementById('btn' + this.mState.helpkeys[k]).style.color = 'red';
                 }
             if (this.fState) {
-                this.fState.time = this.fState.time && this.fState.time > 0 ? Math.floor(this.fState.time / 1000) : 10;
+                this.fState.time = this.fState.time && this.fState.time > 0 ? Math.floor(this.fState.time / 1000) : Game.GameTable.TIMEOUTTICK / 1000;
             }
 
             this.drawScreen(msg.code, this.mState.proverbState, this.fState.proverbState);
 
-            this.mState.time = this.mState.time && this.mState.time > 0 ? Math.floor(this.mState.time / 1000) : 10;
-            if (msg.code == 10) {
+            this.mState.time = this.mState.time && this.mState.time > 0 ? Math.floor(this.mState.time / 1000) : Game.GameTable.TIMEOUTTICK / 1000;
+            if (msg.code == Game.Codes.GameEnd) {
                 clearInterval(this.timerHendler);
                 this.gameEnd = true;
-                this.drawScreen(1, <string>this.mState.proverbState, <string> this.fState.proverbState);
+                this.drawScreen(Game.Codes.State, <string>this.mState.proverbState, <string> this.fState.proverbState);
                 this.drawScreen(msg.code, "თამაში დასრულებულია", null);
                 return;
             }
@@ -85,16 +85,13 @@ class GameClient extends ClientEngine.JokClient {
                     this.mState.time--;
                     this.fState.time--;
                     if (this.mState.time <= 0)
-                        this.mState.time = 10;
+                        this.mState.time = Game.GameTable.TIMEOUTTICK/1000;
                     if (this.fState.time <= 0)
-                        this.fState.time = 10;
+                        this.fState.time = Game.GameTable.TIMEOUTTICK / 1000;
                     //ctx.fillText("თქვენი დრო:" + this.mState.time.toString() + "   სიცოცხლე:" + (100 - 100 * this.mState.incorect / this.mState.maxIncorrect).toString() + "%", 20, 160);
                     //ctx.fillText("მოწინააღმდეგის დრო:" + this.fState.time.toString() + "   სიცოცხლე:" + (100 - 100 * this.fState.incorect / this.fState.maxIncorrect).toString() + "%", 20, 190);
                     this.drawScreen(null, null, null);
                 }, 1000);
-           
-
-
         }
 
     }
@@ -103,7 +100,7 @@ class GameClient extends ClientEngine.JokClient {
     layer: Kinetic.Layer;
     rects: Kinetic.Rect[] = [];
     chars: Kinetic.Text[] = [];
-    drawScreen(code?: number, text1?: string, text2?: string) {
+    drawScreen(code?: Game.Codes, text1?: string, text2?: string) {
 
         if (code == null) {
             //drawState
@@ -117,7 +114,6 @@ class GameClient extends ClientEngine.JokClient {
             for (var i = 0; i < chars.length; i++) {
                     if (this.fState.proverbState.charAt(i) != Game.GameTable.XCHAR && this.mState.proverbState.charAt(i) != this.fState.proverbState.charAt(i)) {
                         this.rects[i].setStroke('#21A527');
-                       
                     }
                     this.chars[i].setText(chars[i]);
                     this.layer.draw();
@@ -129,7 +125,7 @@ class GameClient extends ClientEngine.JokClient {
 
         var maxWidth: number = <number>this.layer.getAttr('width');
         ////--clear
-        if (code == 2 && this.chars.length<2) {
+        if (code == Game.Codes.FirstState && this.chars.length<2) {
            // console.log('2');
             //
             //clear ALL
@@ -180,15 +176,8 @@ class GameClient extends ClientEngine.JokClient {
             this.layer.draw();
             return;
         }
-        if (code == 10) {
-            //        if (text2.charAt(i) != Game.GameTable.XCHAR && text1.charAt(i) != text2.charAt(i)) {
-            //            console.log(text1);
-            //            console.log(text2);
-            //            ctx.strokeStyle = '#21A527';
-            //        }
-            //        if (Game.GameTable.IsChar(text1.charAt(i), this.keyboarOption)
-            //            || text1.charAt(i) == Game.GameTable.XCHAR)
-            //            ctx.strokeRect(x, y, w, h);
+        if (code == code.GameEnd) {
+         //dasasruli // mogebuli unda vaCveno
 
         }
     }

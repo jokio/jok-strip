@@ -1,19 +1,20 @@
 ﻿
 //todo: gasasworebelia testis cvlileba
 export interface IGameToClient { // Game To Client messages
-    code: number;/*
-     -1 user char message
-    -10 user restart reqvest
-             state=1; //new
-             FirstState=2; // Game Full State
-            GameEnd = 10
-           error =100
-    keyboardOptionSend = 3 //keyboard option for users    
-    */
+    code:Codes;
     state?: UserState[];
     data?: any;
 }
-
+export enum Codes {
+    RestartRequest= -10,
+    UserChar= -1,
+    State= 1,
+    FirstState= 2,
+    KeyboardOptionSend = 3,
+    WinnerText= 4,
+    GameEnd= 10,
+    BadChar= 101
+}
 
 export class UserState {
     public userId: string;
@@ -51,30 +52,26 @@ export class GameTable {
             
         }
         var users = this.users;
-        this.TableStateChanged(null, { code: 3, data: this.keyBoardOption });
+        this.TableStateChanged(null, { code: Codes.KeyboardOptionSend, data: this.keyBoardOption });
         if (users[userid] == null) {
-
             this.createState(userid);
             //---------
             users[userid].state.isActive = true;
-         //   this.sendUsersState(2);
             this.gameStart();
-
         }
         else {
             users[userid].state.isActive = true;
             if (this.GameEnd) {
                 this.gameEnd();
-            }
-            else {
-                this.sendUsersState(1);
+            } else {
+                this.sendUsersState(Codes.FirstState);
+                this.sendUsersState(Codes.State);
             }
         }
-        this.sendUsersState(2);
-       
+        this.sendUsersState(Codes.FirstState);
     }
 
-    public sendUsersState(code:number) {
+    public sendUsersState(code:Codes) {
         //1    
         for(var k in this.users)
             this.TableStateChanged(k, { code:code, state: this.getState(k) });
@@ -140,7 +137,7 @@ export class GameTable {
                 //--
             }, GameTable.TIMEOUTTICK), createDate: new Date()
         };
-        this.sendUsersState(1);
+        this.sendUsersState(Codes.State);
     }
 
     private setNewCharforUser(userid: string, char: string) {
@@ -195,7 +192,8 @@ export class GameTable {
 
     gameEnd() {
         this.GameEnd = true;
-        this.sendUsersState(10);
+        this.sendUsersState(Codes.GameEnd);
+        this.sendUsersState(Codes.WinnerText);
         for (var k in this.users) {
             if(this.users[k].timeInterval)
             clearTimeout(this.users[k].timeInterval.hendler);
@@ -258,15 +256,10 @@ export class GameTable {
             console.warn("text is empty", text, this);
             throw "text is empty ";
         }
-  
-      
         var result = '';
         //   todo: შესაცვლელია უკეთესი ლოგიკა!
-        text.split('').forEach((e) => {
-     
-                
+        text.split('').forEach((e) => {       
                 e.split('').forEach((ch) => {
-              
                     if (GameTable.IsChar(ch, this.keyBoardOption)) {
                         result += GameTable.XCHAR; // '•'
                     } else {
@@ -283,19 +276,18 @@ export class GameTable {
     }
 
     ///საიტიდან მოთამაშიდან მოვიდა შეტყობინება
-    UserAction(userid: string, data: { code: number; data: any; }) {
+    UserAction(userid: string, data: { code: Codes; data: any; }) {
         //todo: მონაცემის ტიპი მოსაფიქრებელია
         if (Object.keys(this.users).length < 2)
             return;
-        if (data.code < 0) {
-            
+        if (data.code < 0) {// Received codes should be less than zero.
             var char = <string>data.data; // დასამუშავებელია
             //---------------
             if (GameTable.IsChar(char, this.keyBoardOption)&&this.users[userid].state.helpkeys.indexOf(char)<0) {
                 this.TimeControl(userid, char);
             }
             else {
-                this.TableStateChanged(null,{ code: 100, state: null, data: 'ეს არ არის ასო!' });
+                this.TableStateChanged(null,{ code: Codes.BadChar, state: null, data: 'ეს არ არის ასო!' });
             }
         }
     }
@@ -314,7 +306,7 @@ export class GameTable {
             this.users[userid].state.isActive = false;
         if (this.GameEnd)
             this.gameEnd();
-        this.sendUsersState(1);
+        this.sendUsersState(Codes.State);
         var tmp = false;
         for (var k in this.users)
             tmp = tmp || this.users[k].state.isActive;
