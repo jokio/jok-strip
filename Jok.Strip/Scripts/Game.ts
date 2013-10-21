@@ -6,12 +6,13 @@ export interface IGameToClient { // Game To Client messages
     data?: any;
 }
 export enum Codes {
-    RestartRequest= -10,
-    UserChar= -1,
+    C_RestartRequest= -50,
+    C_UserChar= -1,
     State= 1,
     FirstState= 2,
     KeyboardOptionSend = 3,
     WinnerText= 4,
+    RestartState =50,
     GameEnd= 10,
     BadChar= 101
 }
@@ -40,16 +41,17 @@ export class GameTable {
     //-------
     users: {
         [key: string]: {
+            RestartRequest?: boolean;
             timeInterval?: { hendler: number; createDate: Date; }; // ასეთ გადაწყვეტილებას სინქრონიზაციის საჭვალება დაჭირდება!
             state: UserState
         }
     } = {};
 
     public join(userid: string) {
-       
+
         if (this.OriginalProverb == null || this.OriginalProverb.length > 1) {
             this.OriginalProverb = this.getProverb();
-            
+
         }
         var users = this.users;
         this.TableStateChanged(null, { code: Codes.KeyboardOptionSend, data: this.keyBoardOption });
@@ -61,45 +63,60 @@ export class GameTable {
         }
         else {
             users[userid].state.isActive = true;
+            this.sendUsersState(Codes.FirstState);
             if (this.GameEnd) {
                 this.gameEnd();
             } else {
-                this.sendUsersState(Codes.FirstState);
                 this.sendUsersState(Codes.State);
             }
         }
         this.sendUsersState(Codes.FirstState);
     }
 
-    public sendUsersState(code:Codes) {
-        //1    
-        for(var k in this.users)
-            this.TableStateChanged(k, { code:code, state: this.getState(k) });
+    RestartState() {
+
+        //todo: GavtiSo timerebi
+        this.OriginalProverb = this.getProverb();
+        for (var uid in this.users) {
+            if (this.users[uid].timeInterval)
+                clearTimeout(this.users[uid].timeInterval.hendler);
+            this.createState(uid);
+            this.users[uid].timeInterval = null;
+        }
+        this.sendUsersState(Codes.RestartState);//nakadi
     }
 
-    createState(userid:string):UserState {
-            var userState = new UserState();
-            userState.incorect = 0;
-            userState.maxIncorrect = GameTable.MaxIncorrectCounter(this.OriginalProverb,this.keyBoardOption); //todo: ჩასასწორებელია
-            userState.userId = userid;
-            userState.helpkeys = [];
-            userState.proverbState = this.verbMaskGenerator(this.OriginalProverb);
-        this.users[userid] = { state: userState, timeoutHendler: null };
-        return userState;
-        }
 
-    public static MaxIncorrectCounter(str: string, keyboardOption: KeyBoardOption):number {
+    public sendUsersState(code: Codes) {
+        //1    
+        for (var k in this.users)
+            this.TableStateChanged(k, { code: code, state: this.getState(k) });
+    }
+
+    createState(userid: string): UserState {
+        var userState = new UserState();
+        userState.incorect = 0;
+        userState.maxIncorrect = GameTable.MaxIncorrectCounter(this.OriginalProverb, this.keyBoardOption); //todo: ჩასასწორებელია
+        userState.userId = userid;
+        userState.helpkeys = [];
+        userState.proverbState = this.verbMaskGenerator(this.OriginalProverb);
+        this.users[userid] = { state: userState, timeInterval: null,RestartRequest:null};
+        return userState;
+    }
+
+    public static MaxIncorrectCounter(str: string, keyboardOption: KeyBoardOption): number {
         var arr = [];
         var tmp = '';
         for (var i = 0; i < str.length; i++) {
-            tmp =str.charAt(i).toLowerCase();
-            if (GameTable.IsChar(tmp,keyboardOption)&&arr.indexOf(tmp) > 0) {
+            tmp = str.charAt(i).toLowerCase();
+            if (GameTable.IsChar(tmp, keyboardOption) && arr.indexOf(tmp) > 0) {
                 arr.push(tmp);
             }
         }
         //(y-x)*70%
         return ((keyboardOption.to - keyboardOption.from) - arr.length) * 0.7;
     }
+
 
     private gameStart() {
         // Start Game
@@ -277,10 +294,11 @@ export class GameTable {
 
     ///საიტიდან მოთამაშიდან მოვიდა შეტყობინება
     UserAction(userid: string, data: { code: Codes; data: any; }) {
+       
         //todo: მონაცემის ტიპი მოსაფიქრებელია
         if (Object.keys(this.users).length < 2)
             return;
-        if (data.code < 0) {// Received codes should be less than zero.
+        if (data.code == Codes.C_UserChar) {// Received codes should be less than zero.
             var char = <string>data.data; // დასამუშავებელია
             //---------------
             if (GameTable.IsChar(char, this.keyBoardOption)&&this.users[userid].state.helpkeys.indexOf(char)<0) {
@@ -288,6 +306,26 @@ export class GameTable {
             }
             else {
                 this.TableStateChanged(null,{ code: Codes.BadChar, state: null, data: 'ეს არ არის ასო!' });
+            }
+            return;
+        }
+        if (data.code == Codes.C_RestartRequest) {
+            this.users[userid].RestartRequest = true;
+            var count = 0;
+            for (var u in this.users) {
+                if (this.users[u].RestartRequest && this.users[u].state.isActive)
+                {
+                    //todo:Sesacvlelia Seizleba gaasxas isActiveze
+                    count++;
+                } 
+            }
+            if (count >= 2) {
+
+                this.RestartState();
+                setTimeout(() => {
+                    this.gameStart();
+                    this.sendUsersState(Codes.State);
+                }, 2);//
             }
         }
     }

@@ -8,7 +8,7 @@
 
 <style type="text/css">
 
-    btnstyle {
+    btnstyle, #divKeyboard button {
         outline: none;
         -webkit-box-shadow: rgba(0,0,0,0.2) 0 1px 0 0;
         -moz-box-shadow: rgba(0,0,0,0.2) 0 1px 0 0;
@@ -62,7 +62,10 @@
            btn.innerText = char;
            btn.value = char;
            btn.addEventListener("click", function (e) {
-               window["gameClient"].sendCommand("msg", { code: -1, data: e.target.innerHTML });
+               //todo: Sesacvlelia
+               window["gameClient"].sendChar(e.target.innerHTML);
+               
+               //testi
            }, true);
            document.getElementById("divKeyboard").appendChild(btn);
        }
