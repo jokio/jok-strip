@@ -59,8 +59,10 @@ class GameClient extends ClientEngine.JokClient {
 
         this.mState = (msg.state[0].userId == <string> window["userid"]) && msg.state ? msg.state[0] : msg.state[1];
         this.fState = (msg.state[0].userId == <string>window["userid"] && msg.state) ? msg.state[1] : msg.state[0];
-
-
+        if (this.fState) {
+            this.fState.time = this.fState.time && this.fState.time > 0 ? Math.floor(this.fState.time / 1000) : Game.GameTable.TIMEOUTTICK / 1000;
+        }
+        this.mState.time = this.mState.time && this.mState.time > 0 ? Math.floor(this.mState.time / 1000) : Game.GameTable.TIMEOUTTICK / 1000;
         if (msg.code == Game.Codes.RestartState) {
             //clear current state
             //canvas
@@ -69,14 +71,10 @@ class GameClient extends ClientEngine.JokClient {
 
         }
 
-
-
-
-
-
         if (msg.code == Game.Codes.FirstState) {
             //first run full state
             this.gameEnd = false;
+            this.timerHendler = -1;
             //'გთხოვთ, დაელოდოთ მეორე მოთამაშეს.'
             this.drawScreen(Game.Codes.FirstState, this.mState.proverbState, null);
 
@@ -92,13 +90,11 @@ class GameClient extends ClientEngine.JokClient {
                     element.style.position = "fixed";
 
                 }
-            if (this.fState) {
-                this.fState.time = this.fState.time && this.fState.time > 0 ? Math.floor(this.fState.time / 1000) : Game.GameTable.TIMEOUTTICK / 1000;
-            }
+          
             console.log('0.0.1');
             this.drawScreen(msg.code, null, null);
             console.log('0.0.2');
-            this.mState.time = this.mState.time && this.mState.time > 0 ? Math.floor(this.mState.time / 1000) : Game.GameTable.TIMEOUTTICK / 1000;
+            
             if (msg.code == Game.Codes.GameEnd) {
                 clearInterval(this.timerHendler);
                 this.gameEnd = true;
@@ -106,25 +102,35 @@ class GameClient extends ClientEngine.JokClient {
               
                 return;
             }
+            console.log('0.0.3');
+            console.log(this.timerHendler);
             if (this.timerHendler == -1)
-                this.timerHendler = setInterval(() => {
-                    this.mState.time--;
-                    this.fState.time--;
-                    if (this.mState.time <= 0)
-                        this.mState.time = Game.GameTable.TIMEOUTTICK/1000;
-                    if (this.fState.time <= 0)
-                        this.fState.time = Game.GameTable.TIMEOUTTICK / 1000;
-                    //ctx.fillText("თქვენი დრო:" + this.mState.time.toString() + "   სიცოცხლე:" + (100 - 100 * this.mState.incorect / this.mState.maxIncorrect).toString() + "%", 20, 160);
-                    //ctx.fillText("მოწინააღმდეგის დრო:" + this.fState.time.toString() + "   სიცოცხლე:" + (100 - 100 * this.fState.incorect / this.fState.maxIncorrect).toString() + "%", 20, 190);
-                    this.drawScreen(null, null, null);
-                }, 1000);
+                this.timerHendler = setInterval(()=>this.timerTick(), 1000);
         }
 
     }
-
+    timerTick() {
+        this.mState.time--;
+        this.fState.time--;
+        if (this.mState.time <= 0)
+            this.mState.time = Game.GameTable.TIMEOUTTICK / 1000;
+        if (this.fState.time <= 0)
+            this.fState.time = Game.GameTable.TIMEOUTTICK / 1000;
+        this.drawScreen(null, null, null);
+    }
     synchronizeCanvasObject() {
-
-
+        $('#divKeyboard button').each(function (i, el:HTMLElement) {
+            el.style['visibility']= 'initial';
+            el.style['position']='initial';
+        });
+        this.gameEnd = false;
+        
+        this.layer.removeChildren();
+        this.chars = [];
+        this.rects = [];
+        this.drawScreen(Game.Codes.FirstState, this.mState.proverbState, null);
+        clearInterval(this.timerHendler);
+        this.timerHendler = setInterval(()=> { this.timerTick() }, 1000);;
     }
 
     RestartGame()

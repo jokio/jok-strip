@@ -59,6 +59,7 @@ export class GameTable {
             this.createState(userid);
             //---------
             users[userid].state.isActive = true;
+            this.sendUsersState(Codes.FirstState);
             this.gameStart();
         }
         else {
@@ -70,7 +71,6 @@ export class GameTable {
                 this.sendUsersState(Codes.State);
             }
         }
-        this.sendUsersState(Codes.FirstState);
     }
 
     RestartState() {
@@ -83,6 +83,7 @@ export class GameTable {
             this.createState(uid);
             this.users[uid].timeInterval = null;
         }
+        this.GameEnd = false;
         this.sendUsersState(Codes.RestartState);//nakadi
     }
 
@@ -322,6 +323,7 @@ export class GameTable {
             if (count >= 2) {
 
                 this.RestartState();
+
                 setTimeout(() => {
                     this.gameStart();
                     this.sendUsersState(Codes.State);
