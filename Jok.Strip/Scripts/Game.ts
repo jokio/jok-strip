@@ -109,7 +109,7 @@ export class GameTable {
         var tmp = '';
         for (var i = 0; i < str.length; i++) {
             tmp = str.charAt(i).toLowerCase();
-            if (GameTable.IsChar(tmp, keyboardOption) && arr.indexOf(tmp) > 0) {
+            if (GameTable.IsChar(tmp, keyboardOption) && arr.indexOf(tmp) <0) {
                 arr.push(tmp);
             }
         }
