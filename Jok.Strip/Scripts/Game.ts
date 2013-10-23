@@ -13,9 +13,11 @@ export enum Codes {
     FirstState= 2,
     KeyboardOptionSend = 3,
     WinnerText= 4,
-    RestartState =50,
+    UserDisconected=6, 
+    RestartState = 50,
     GameEnd= 10,
     BadChar= 101
+    
 }
 
 export class UserState {
@@ -30,6 +32,13 @@ export class UserState {
 }
 export class KeyBoardOption{ from: number; to: number }
 
+export enum GameState {
+    FirstState,
+    Stoped,
+    Ended,
+    Restarted,
+    Running
+}
 export class GameTable {
 
 
@@ -37,7 +46,7 @@ export class GameTable {
     private keyBoardOption: KeyBoardOption;
     public static XCHAR = '•';
     public static TIMEOUTTICK = 15000;
-    public GameEnd: boolean = false;
+    public TableState: GameState = GameState.FirstState;
     public OriginalProverb: string;
     //-------
     users: {
@@ -47,6 +56,20 @@ export class GameTable {
             state: UserState
         }
     } = {};
+
+    public static IsWinner(fUser: UserState, sUser: UserState):boolean {
+        //აბრუნებს true თუ პირველი გამარჯვებულია აბრუნებს false თუ მეორე გამარჯვებულია
+        //იმის გამო აქ ბევრი ნაკადი შეუძლებელია  შეუძლებელია რომელიმე არ იყოს გამარჯვებული.
+        //ეს ბაგია და გამოსწორება მოსაფიქრებელია.
+        if (fUser.proverbState.indexOf(GameTable.XCHAR) < 0)
+            return true; //pirvelma gaimarjva 
+        
+        if (sUser.proverbState.indexOf(GameTable.XCHAR) < 0)
+            return false; // meore moxmarebelma gaimarjva
+        //თუ არცერთი არ შესრულდა გაიმარჯვოს ვინც უფრო ცოცხალია
+        return fUser.incorect < sUser.incorect;
+        
+    }
 
     public join(userid: string) {
 
@@ -66,10 +89,13 @@ export class GameTable {
         else {
             users[userid].state.isActive = true;
             this.sendUsersState(Codes.FirstState);
-            if (this.GameEnd) {
+            if (this.TableState == GameState.Ended) {
                 this.gameEnd();
             } else {
-                this.sendUsersState(Codes.State);
+                if (this.users[userid].timeInterval&&this.users[userid].timeInterval.hendler) {
+                    console.log('s-3');
+                    this.sendUsersState(Codes.State,'s-3');
+                }
             }
         }
     }
@@ -79,20 +105,22 @@ export class GameTable {
         //todo: GavtiSo timerebi
         this.OriginalProverb = this.getProverb();
         for (var uid in this.users) {
-            if (this.users[uid].timeInterval)
+            if (this.users[uid].timeInterval && this.users[uid].timeInterval.hendler)
                 clearTimeout(this.users[uid].timeInterval.hendler);
             this.createState(uid);
             this.users[uid].timeInterval = null;
         }
-        this.GameEnd = false;
+        
+        this.TableState = GameState.Restarted;
         this.sendUsersState(Codes.RestartState);//nakadi
     }
 
 
-    public sendUsersState(code: Codes) {
-        //1    
+    public sendUsersState(code: Codes, data?:any) {
+        if (GameState.Running != this.TableState && (code == code.State || code == Codes.UserDisconected))
+            return;
         for (var k in this.users)
-            this.TableStateChanged(k, { code: code, state: this.getState(k) });
+            this.TableStateChanged(k, { code: code, state: this.getState(k), data: data});
     }
 
     createState(userid: string): UserState {
@@ -116,7 +144,7 @@ export class GameTable {
             }
         }
         //(y-x)*70%
-        return ((keyboardOption.to - keyboardOption.from) - arr.length) * 0.7;
+        return Math.round(((keyboardOption.to - keyboardOption.from) - arr.length) * 0.7);
     }
 
 
@@ -137,18 +165,19 @@ export class GameTable {
     }
 
     private TimeControl(userid: string, char?: string) {
-        if (this.GameEnd) {
+    
+        if (this.TableState== GameState.Ended) {
             this.gameEnd();
             return;
         }
        
         this.setNewCharforUser(userid, char);
-            if(this.users[userid].timeInterval)
+        if (this.users[userid].timeInterval && this.users[userid].timeInterval.hendler)
             clearTimeout(this.users[userid].timeInterval.hendler); // todo: (bug ?)
         this.users[userid].timeInterval = {
             hendler: setTimeout(() => {
                 //Timeout 'thinking logically'
-                if (this.GameEnd)
+                if (this.TableState == GameState.Ended || this.TableState == GameState.Stoped)
                     return;
                 this.setNewCharforUser(userid, this.getRandomCharForUser(userid));
                 //-------------------
@@ -156,7 +185,8 @@ export class GameTable {
                 //--
             }, GameTable.TIMEOUTTICK), createDate: new Date()
         };
-        this.sendUsersState(Codes.State);
+     
+        this.sendUsersState(Codes.State,'s-4');
     }
 
     private setNewCharforUser(userid: string, char: string) {
@@ -199,18 +229,19 @@ export class GameTable {
         if (!isCorect) {
             this.users[userid].state.incorect++;
         }
-        this.GameEnd = (this.users[userid].state.maxIncorrect
+       var end = (this.users[userid].state.maxIncorrect
         <= this.users[userid].state.incorect)
         || this.users[userid].state.proverbState.indexOf(GameTable.XCHAR) < 0;
-       
-        if (this.GameEnd)
+
+        if (end) {
+            this.TableState = GameState.Ended;
             this.gameEnd();
-        return;
+        }return;
 
     }
 
     gameEnd() {
-        this.GameEnd = true;
+       this.TableState = GameState.Ended;
         this.sendUsersState(Codes.GameEnd);
         this.sendUsersState(Codes.WinnerText);
         for (var k in this.users) {
@@ -301,17 +332,28 @@ export class GameTable {
         if (data.code == Codes.C_FirstGameStart) {
             this.users[userid].RestartRequest = false;
             this.gameStart();
+            var tu = 0;
+            for (var u in this.users) {
+                if (this.users[u].RestartRequest == false && this.users[u].state.isActive)
+                    tu++;
+            }
+            if (tu == 2)
+                this.TableState = GameState.Running;
         }
         if (Object.keys(this.users).length < 2)
             return;
-        if (data.code == Codes.C_UserChar) {// Received codes should be less than zero.
+        if (data.code == Codes.C_UserChar && this.TableState == GameState.Running) {// Received codes should be less than zero.
             var char = <string>data.data; // დასამუშავებელია
             //---------------
-            if (GameTable.IsChar(char, this.keyBoardOption)&&this.users[userid].state.helpkeys.indexOf(char)<0) {
-                this.TimeControl(userid, char);
+            if (GameTable.IsChar(char, this.keyBoardOption)) {
+                if (this.users[userid].state.helpkeys.indexOf(char) < 0) {
+                    this.TimeControl(userid, char);
+                } else {
+                    this.TableStateChanged(userid, { code: Codes.BadChar, state: null, data: 'ეს ასო უკვე გამოყენებულია' });
+                }
             }
             else {
-                this.TableStateChanged(null,{ code: Codes.BadChar, state: null, data: 'ეს არ არის ასო!' });
+                this.TableStateChanged(userid,{ code: Codes.BadChar, state: null, data: 'ეს არ არის ასო!' });
             }
             return;
         }
@@ -328,11 +370,8 @@ export class GameTable {
             if (count >= 2) {
 
                 this.RestartState();
-
-                setTimeout(() => {
-                    this.gameStart();
-                    this.sendUsersState(Codes.State);
-                }, 2);//
+                this.gameStart();
+          
             }
         }
     }
@@ -346,12 +385,13 @@ export class GameTable {
  
     ///Method return true if other user is active
     public leave(userid: string) {
-
+        console.log('Leave--');
         if(this.users[userid].state)
             this.users[userid].state.isActive = false;
-        if (this.GameEnd)
+        if (this.TableState==GameState.Ended)
             this.gameEnd();
-        this.sendUsersState(Codes.State);
+        console.log('Disconect');
+            this.sendUsersState(Codes.UserDisconected);
         var tmp = false;
         for (var k in this.users)
             tmp = tmp || this.users[k].state.isActive;

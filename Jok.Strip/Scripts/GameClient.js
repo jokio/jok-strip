@@ -20,7 +20,7 @@ define(["require", "exports", 'JokClientEngine', 'Game'], function(require, expo
             this.chars = [];
             //repaint
             //--------------------
-            this.drawTimerer = -1;
+            this.drawAllow = false;
             this.timerHendler = -1;
             this.on('connect', this.onConnect);
             this.on('disconnect', this.onDisconnect);
@@ -47,90 +47,184 @@ define(["require", "exports", 'JokClientEngine', 'Game'], function(require, expo
             console.log('disconnected');
         };
 
+        GameClient.prototype.sendChar = function (char) {
+            this.sendCommand("msg", { code: Game.Codes.C_UserChar, data: char });
+        };
+
         GameClient.prototype.onMsg = function (msg) {
-            var _this = this;
             console.log(msg);
-            if (msg.code == 3) {
+            if (msg.code == Game.Codes.KeyboardOptionSend) {
                 //keyboard option
                 this.keyboarOption = msg.data;
                 return;
             }
 
-            if (msg.code == 200) {
+            if (msg.code == Game.Codes.BadChar) {
                 return;
             }
-
             this.mState = (msg.state[0].userId == window["userid"]) && msg.state ? msg.state[0] : msg.state[1];
             this.fState = (msg.state[0].userId == window["userid"] && msg.state) ? msg.state[1] : msg.state[0];
-
-            if (msg.code == 2) {
+            if (this.fState) {
+                this.fState.time = this.fState.time && this.fState.time > 0 ? Math.floor(this.fState.time / 1000) : Game.GameTable.TIMEOUTTICK / 1000;
+            }
+            this.mState.time = this.mState.time && this.mState.time > 0 ? Math.floor(this.mState.time / 1000) : Game.GameTable.TIMEOUTTICK / 1000;
+            if (msg.code == Game.Codes.RestartState) {
+                //clear current state
+                //canvas
+                this.synchronizeCanvasObject();
+                //canvas
+            }
+            if (msg.code == Game.Codes.FirstState) {
                 //first run full state
                 this.gameEnd = false;
+                this.drawAllow = false;
 
                 //'გთხოვთ, დაელოდოთ მეორე მოთამაშეს.'
-                this.drawScreen(2, this.mState.proverbState, null);
+                this.drawScreen(Game.Codes.FirstState, this.mState.proverbState, null);
             }
 
-            if (!this.gameEnd && (msg.code == 1 || msg.code == 10)) {
+            if (!this.gameEnd && (msg.code == Game.Codes.State || msg.code == Game.Codes.GameEnd)) {
                 if (this.mState.helpkeys)
                     for (var k in this.mState.helpkeys) {
-                        document.getElementById('btn' + this.mState.helpkeys[k]).style.color = 'red';
+                        //test
+                        var element = document.getElementById('btn' + this.mState.helpkeys[k]);
+                        element.style.visibility = "hidden";
+                        element.style.position = "fixed";
                     }
-                if (this.fState) {
-                    this.fState.time = this.fState.time && this.fState.time > 0 ? Math.floor(this.fState.time / 1000) : 10;
-                }
+                console.log('0.0.1');
+                this.drawScreen(msg.code, null, null);
+                console.log('0.0.2');
 
-                this.drawScreen(msg.code, this.mState.proverbState, this.fState.proverbState);
-
-                this.mState.time = this.mState.time && this.mState.time > 0 ? Math.floor(this.mState.time / 1000) : 10;
-                if (msg.code == 10) {
-                    clearInterval(this.timerHendler);
+                if (msg.code == Game.Codes.GameEnd) {
+                    this.drawAllow = false;
                     this.gameEnd = true;
-                    this.drawScreen(1, this.mState.proverbState, this.fState.proverbState);
-                    this.drawScreen(msg.code, "თამაში დასრულებულია", null);
+                    this.drawScreen(Game.Codes.State, this.mState.proverbState, this.fState.proverbState);
+
+                    //ღილაკების დამალვა.
+                    $('#divKeyboard button').each(function (i, element) {
+                        element.style["visibility"] = "hidden";
+                        element.style['position'] = 'absolute';
+                    });
+
+                    //კიდევ ვითამაშოს გამოჩენა
+                    var bt = $('#btnplayAgain')[0];
+                    bt.style['visibility'] = 'visible';
+                    bt.style['position'] = 'initial';
+
+                    //მოგებულის გამოჩენა
+                    this.drawAllow = false;
+                    var winner = Game.GameTable.IsWinner(this.mState, this.fState) ? this.mState : this.fState;
+                    this.pntext.setText('გამარჯვებულია: ' + winner.userId);
+                    this.layer.draw();
                     return;
                 }
-                if (this.timerHendler == -1)
-                    this.timerHendler = setInterval(function () {
-                        _this.mState.time--;
-                        _this.fState.time--;
-                        if (_this.mState.time <= 0)
-                            _this.mState.time = 10;
-                        if (_this.fState.time <= 0)
-                            _this.fState.time = 10;
+                console.log('0.0.3');
+                console.log(this.timerHendler);
+            }
+            if (msg.code == Game.Codes.State) {
+                this.drawAllow = true;
+                this.animateWhile();
+            }
+        };
 
-                        //ctx.fillText("თქვენი დრო:" + this.mState.time.toString() + "   სიცოცხლე:" + (100 - 100 * this.mState.incorect / this.mState.maxIncorrect).toString() + "%", 20, 160);
-                        //ctx.fillText("მოწინააღმდეგის დრო:" + this.fState.time.toString() + "   სიცოცხლე:" + (100 - 100 * this.fState.incorect / this.fState.maxIncorrect).toString() + "%", 20, 190);
-                        _this.drawScreen(null, null, null);
-                    }, 1000);
+        GameClient.prototype.timerTick = function () {
+            if (this.mState.time <= 0)
+                this.mState.time = Game.GameTable.TIMEOUTTICK / 1000;
+            if (this.fState.time <= 0)
+                this.fState.time = Game.GameTable.TIMEOUTTICK / 1000;
+            this.drawScreen(null, null, null);
+            this.mState.time--;
+            this.fState.time--;
+        };
+
+        GameClient.prototype.updatePage = function () {
+            var bt = $('#btnplayAgain')[0];
+            this.drawAllow = true;
+            bt.style['visibility'] = 'hidden';
+            bt.style['position'] = 'absolute';
+            console.log('5.2');
+            $('#divKeyboard button').each(function (i, el) {
+                el.style['visibility'] = 'initial';
+                el.style['position'] = 'initial';
+            });
+        };
+
+        GameClient.prototype.synchronizeCanvasObject = function () {
+            console.log('5.1');
+            this.gameEnd = false;
+            this.updatePage();
+            this.layer.removeChildren();
+            this.chars = [];
+            this.rects = [];
+            this.drawScreen(Game.Codes.FirstState, this.mState.proverbState, null);
+            this.drawAllow = true;
+        };
+
+        GameClient.getPercent = function (dec) {
+            return Math.round(100 * Math.abs((1 - dec)));
+        };
+        GameClient.prototype.RestartGame = function () {
+            this.pntext.setText('');
+            this.layer.draw();
+            this.updatePage();
+            if (this.gameEnd) {
+                console.log('4.3');
+                this.sendCommand("msg", { code: Game.Codes.C_RestartRequest });
+            } else {
+                console.log('4.5');
+                this.sendCommand('msg', { code: Game.Codes.C_FirstGameStart });
+            }
+        };
+
+        GameClient.prototype.animateWhile = function () {
+            var _this = this;
+            clearTimeout(this.timerHendler);
+            if (this.drawAllow) {
+                this.timerTick();
+                this.timerHendler = setTimeout(function () {
+                    return _this.animateWhile();
+                }, 1000);
             }
         };
 
         GameClient.prototype.drawScreen = function (code, text1, text2) {
             if (code == null) {
-                if (!(!this.gameEnd && this.mState && this.fState && this.fState.proverbState && this.mState.proverbState))
+                console.log('1.0');
+                if (!this.drawAllow)
                     return;
+                console.log(1.1);
+                if (!(!this.gameEnd && this.mState && this.fState && this.fState.proverbState && this.mState.proverbState)) {
+                    console.log('test. Ar unda Semovides. 1.1.2');
+                    return;
+                }
+                console.log(1.2);
 
-                // console.log(1.2);
                 // this.layer.clear();
                 var chars = this.mState.proverbState.split('');
-
+                console.log(1.3);
                 for (var i = 0; i < chars.length; i++) {
                     if (this.fState.proverbState.charAt(i) != Game.GameTable.XCHAR && this.mState.proverbState.charAt(i) != this.fState.proverbState.charAt(i)) {
                         this.rects[i].setStroke('#21A527');
                     }
                     this.chars[i].setText(chars[i]);
-                    this.layer.draw();
                 }
 
-                // console.log(1.4);
+                //todo: optimizacia max incoreqtze Sesazlebelia!
+                console.log('1.4.3');
+
+                //RENDER
+                this.pntext.setText('თქვენ სიცოცხლე: ' + GameClient.getPercent(this.mState.incorect / this.mState.maxIncorrect) + '%    დარჩენილი დრო: ' + this.mState.time + '\r\n' + ' მოწინააღმდეგე სიცოცხლე: ' + GameClient.getPercent(this.fState.incorect / this.fState.maxIncorrect) + ' %    დარჩენილი დრო: ' + this.fState.time);
+                console.log('1.4.4');
+                this.layer.draw();
+                console.log(1.4);
                 return;
             }
 
             var maxWidth = this.layer.getAttr('width');
 
-            if (code == 2 && this.chars.length < 2) {
-                // console.log('2');
+            if (code == Game.Codes.FirstState && this.chars.length < 2) {
+                console.log('2');
+
                 //
                 //clear ALL
                 //
@@ -152,8 +246,7 @@ define(["require", "exports", 'JokClientEngine', 'Game'], function(require, expo
                         stroke: 'white',
                         strokeWidth: 2
                     });
-
-                    // console.log('2.1');
+                    console.log('2.1');
                     var char = new Kinetic.Text({
                         x: x + q,
                         y: y + q * 2,
@@ -178,42 +271,50 @@ define(["require", "exports", 'JokClientEngine', 'Game'], function(require, expo
                         y = q + y + rectheight;
                     }
                 }
-
-                // console.log(2.2);
+                console.log(2.2);
+                y = q + y + rectheight;
+                this.pntext = new Kinetic.Text({
+                    x: q,
+                    y: y + q * 2,
+                    text: '',
+                    fontSize: 16,
+                    fontFamily: 'Calibri',
+                    width: maxWidth,
+                    align: 'center',
+                    fill: 'black'
+                });
+                this.layer.add(this.pntext);
                 this.layer.draw();
                 return;
             }
-            if (code == 10) {
-                //        if (text2.charAt(i) != Game.GameTable.XCHAR && text1.charAt(i) != text2.charAt(i)) {
-                //            console.log(text1);
-                //            console.log(text2);
-                //            ctx.strokeStyle = '#21A527';
-                //        }
-                //        if (Game.GameTable.IsChar(text1.charAt(i), this.keyboarOption)
-                //            || text1.charAt(i) == Game.GameTable.XCHAR)
-                //            ctx.strokeRect(x, y, w, h);
+            if (code == Game.Codes.GameEnd) {
+                //dasasruli // mogebuli unda vaCveno
+                this.drawScreen(null, null, null);
+                //გამოვიტანოთ ვინ გაიმარჯვა
+                //გამოვითანოთ ხელახლა თამაშის ღილაკი
             }
         };
 
         GameClient.prototype.loadCanvas = function () {
             if (!this.isCanvasSupported())
                 return false;
+            if (this.layer == null || this.stage == null) {
+                //layer
+                this.layer = new Kinetic.Layer({
+                    x: 0,
+                    y: 0,
+                    width: 780,
+                    height: 300
+                });
 
-            //layer
-            this.layer = new Kinetic.Layer({
-                x: 0,
-                y: 0,
-                width: 780,
-                height: 300
-            });
-
-            //stage
-            this.stage = new Kinetic.Stage({
-                container: 'canvasOne',
-                width: 780,
-                height: 330
-            });
-            this.stage.add(this.layer);
+                //stage
+                this.stage = new Kinetic.Stage({
+                    container: 'canvasOne',
+                    width: 780,
+                    height: 330
+                });
+                this.stage.add(this.layer);
+            }
         };
 
         GameClient.prototype.isCanvasSupported = function () {

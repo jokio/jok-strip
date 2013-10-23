@@ -1,4 +1,19 @@
 ﻿define(["require", "exports"], function(require, exports) {
+    (function (Codes) {
+        Codes[Codes["C_RestartRequest"] = -50] = "C_RestartRequest";
+        Codes[Codes["C_FirstGameStart"] = -2] = "C_FirstGameStart";
+        Codes[Codes["C_UserChar"] = -1] = "C_UserChar";
+        Codes[Codes["State"] = 1] = "State";
+        Codes[Codes["FirstState"] = 2] = "FirstState";
+        Codes[Codes["KeyboardOptionSend"] = 3] = "KeyboardOptionSend";
+        Codes[Codes["WinnerText"] = 4] = "WinnerText";
+        Codes[Codes["UserDisconected"] = 6] = "UserDisconected";
+        Codes[Codes["RestartState"] = 50] = "RestartState";
+        Codes[Codes["GameEnd"] = 10] = "GameEnd";
+        Codes[Codes["BadChar"] = 101] = "BadChar";
+    })(exports.Codes || (exports.Codes = {}));
+    var Codes = exports.Codes;
+
     var UserState = (function () {
         function UserState() {
         }
@@ -12,61 +27,112 @@
     })();
     exports.KeyBoardOption = KeyBoardOption;
 
+    (function (GameState) {
+        GameState[GameState["FirstState"] = 0] = "FirstState";
+        GameState[GameState["Stoped"] = 1] = "Stoped";
+        GameState[GameState["Ended"] = 2] = "Ended";
+        GameState[GameState["Restarted"] = 3] = "Restarted";
+        GameState[GameState["Running"] = 4] = "Running";
+    })(exports.GameState || (exports.GameState = {}));
+    var GameState = exports.GameState;
     var GameTable = (function () {
         function GameTable(TableStateChanged) {
             this.TableStateChanged = TableStateChanged;
-            this.GameEnd = false;
+            this.TableState = GameState.FirstState;
             //-------
             this.users = {};
             // event ჩაჯდეს ნაკადში ! მოგვიანებით.
             this.keyBoardOption = { from: 97, to: 122 };
         }
+        GameTable.IsWinner = function (fUser, sUser) {
+            if (fUser.proverbState.indexOf(GameTable.XCHAR) < 0)
+                return true;
+
+            if (sUser.proverbState.indexOf(GameTable.XCHAR) < 0)
+                return false;
+
+            //თუ არცერთი არ შესრულდა გაიმარჯვოს ვინც უფრო ცოცხალია
+            return fUser.incorect < sUser.incorect;
+        };
+
         GameTable.prototype.join = function (userid) {
             if (this.OriginalProverb == null || this.OriginalProverb.length > 1) {
                 this.OriginalProverb = this.getProverb();
             }
             var users = this.users;
-            this.TableStateChanged(null, { code: 3, data: this.keyBoardOption });
+            this.TableStateChanged(null, { code: Codes.KeyboardOptionSend, data: this.keyBoardOption });
             if (users[userid] == null) {
                 this.createState(userid);
 
                 //---------
                 users[userid].state.isActive = true;
-
-                //   this.sendUsersState(2);
+                this.sendUsersState(Codes.FirstState);
                 this.gameStart();
             } else {
                 users[userid].state.isActive = true;
-                if (this.GameEnd) {
+                this.sendUsersState(Codes.FirstState);
+                if (this.TableState == GameState.Ended) {
                     this.gameEnd();
                 } else {
-                    this.sendUsersState(1);
+                    if (this.users[userid].timeInterval && this.users[userid].timeInterval.hendler) {
+                        console.log('s-3');
+                        this.sendUsersState(Codes.State, 's-3');
+                    }
                 }
             }
-            this.sendUsersState(2);
         };
 
-        GameTable.prototype.sendUsersState = function (code) {
+        GameTable.prototype.RestartState = function () {
+            //todo: GavtiSo timerebi
+            this.OriginalProverb = this.getProverb();
+            for (var uid in this.users) {
+                if (this.users[uid].timeInterval && this.users[uid].timeInterval.hendler)
+                    clearTimeout(this.users[uid].timeInterval.hendler);
+                this.createState(uid);
+                this.users[uid].timeInterval = null;
+            }
+
+            this.TableState = GameState.Restarted;
+            this.sendUsersState(Codes.RestartState);
+        };
+
+        GameTable.prototype.sendUsersState = function (code, data) {
+            if (GameState.Running != this.TableState && (code == code.State || code == Codes.UserDisconected))
+                return;
             for (var k in this.users)
-                this.TableStateChanged(k, { code: code, state: this.getState(k) });
+                this.TableStateChanged(k, { code: code, state: this.getState(k), data: data });
         };
 
         GameTable.prototype.createState = function (userid) {
             var userState = new UserState();
             userState.incorect = 0;
-            userState.maxIncorrect = 5;
+            userState.maxIncorrect = GameTable.MaxIncorrectCounter(this.OriginalProverb, this.keyBoardOption);
             userState.userId = userid;
             userState.helpkeys = [];
             userState.proverbState = this.verbMaskGenerator(this.OriginalProverb);
-            this.users[userid] = { state: userState, timeoutHendler: null };
+            this.users[userid] = { state: userState, timeInterval: null, RestartRequest: null };
             return userState;
+        };
+
+        GameTable.MaxIncorrectCounter = function (str, keyboardOption) {
+            var arr = [];
+            var tmp = '';
+            for (var i = 0; i < str.length; i++) {
+                tmp = str.charAt(i).toLowerCase();
+                if (GameTable.IsChar(tmp, keyboardOption) && arr.indexOf(tmp) < 0) {
+                    arr.push(tmp);
+                }
+            }
+
+            //(y-x)*70%
+            return Math.round(((keyboardOption.to - keyboardOption.from) - arr.length) * 0.7);
         };
 
         GameTable.prototype.gameStart = function () {
             // Start Game
             var array = new Array();
             for (var k in this.users) {
-                if (this.users[k].state.isActive)
+                if (this.users[k].state.isActive && this.users[k].RestartRequest == false)
                     array.push(this.users[k].state);
             }
             if (array.length >= 2) {
@@ -78,17 +144,17 @@
 
         GameTable.prototype.TimeControl = function (userid, char) {
             var _this = this;
-            if (this.GameEnd) {
+            if (this.TableState == GameState.Ended) {
                 this.gameEnd();
                 return;
             }
 
             this.setNewCharforUser(userid, char);
-            if (this.users[userid].timeInterval)
+            if (this.users[userid].timeInterval && this.users[userid].timeInterval.hendler)
                 clearTimeout(this.users[userid].timeInterval.hendler);
             this.users[userid].timeInterval = {
                 hendler: setTimeout(function () {
-                    if (_this.GameEnd)
+                    if (_this.TableState == GameState.Ended || _this.TableState == GameState.Stoped)
                         return;
                     _this.setNewCharforUser(userid, _this.getRandomCharForUser(userid));
 
@@ -98,7 +164,8 @@
                 }, GameTable.TIMEOUTTICK),
                 createDate: new Date()
             };
-            this.sendUsersState(1);
+
+            this.sendUsersState(Codes.State, 's-4');
         };
 
         GameTable.prototype.setNewCharforUser = function (userid, char) {
@@ -135,16 +202,19 @@
             if (!isCorect) {
                 this.users[userid].state.incorect++;
             }
-            this.GameEnd = (this.users[userid].state.maxIncorrect <= this.users[userid].state.incorect) || this.users[userid].state.proverbState.indexOf(GameTable.XCHAR) < 0;
+            var end = (this.users[userid].state.maxIncorrect <= this.users[userid].state.incorect) || this.users[userid].state.proverbState.indexOf(GameTable.XCHAR) < 0;
 
-            if (this.GameEnd)
+            if (end) {
+                this.TableState = GameState.Ended;
                 this.gameEnd();
+            }
             return;
         };
 
         GameTable.prototype.gameEnd = function () {
-            this.GameEnd = true;
-            this.sendUsersState(10);
+            this.TableState = GameState.Ended;
+            this.sendUsersState(Codes.GameEnd);
+            this.sendUsersState(Codes.WinnerText);
             for (var k in this.users) {
                 if (this.users[k].timeInterval)
                     clearTimeout(this.users[k].timeInterval.hendler);
@@ -201,7 +271,6 @@
                 console.warn("text is empty", text, this);
                 throw "text is empty ";
             }
-
             var result = '';
 
             //   todo: შესაცვლელია უკეთესი ლოგიკა!
@@ -224,26 +293,58 @@
 
         ///საიტიდან მოთამაშიდან მოვიდა შეტყობინება
         GameTable.prototype.UserAction = function (userid, data) {
+            if (data.code == Codes.C_FirstGameStart) {
+                this.users[userid].RestartRequest = false;
+                this.gameStart();
+                var tu = 0;
+                for (var u in this.users) {
+                    if (this.users[u].RestartRequest == false && this.users[u].state.isActive)
+                        tu++;
+                }
+                if (tu == 2)
+                    this.TableState = GameState.Running;
+            }
             if (Object.keys(this.users).length < 2)
                 return;
-            if (data.code < 0) {
+            if (data.code == Codes.C_UserChar && this.TableState == GameState.Running) {
                 var char = data.data;
 
-                if (GameTable.IsChar(char, this.keyBoardOption) && this.users[userid].state.helpkeys.indexOf(char) < 0) {
-                    this.TimeControl(userid, char);
+                if (GameTable.IsChar(char, this.keyBoardOption)) {
+                    if (this.users[userid].state.helpkeys.indexOf(char) < 0) {
+                        this.TimeControl(userid, char);
+                    } else {
+                        this.TableStateChanged(userid, { code: Codes.BadChar, state: null, data: 'ეს ასო უკვე გამოყენებულია' });
+                    }
                 } else {
-                    this.TableStateChanged(null, { code: 100, state: null, data: 'ეს არ არის ასო!' });
+                    this.TableStateChanged(userid, { code: Codes.BadChar, state: null, data: 'ეს არ არის ასო!' });
+                }
+                return;
+            }
+            if (data.code == Codes.C_RestartRequest) {
+                this.users[userid].RestartRequest = true;
+                var count = 0;
+                for (var u in this.users) {
+                    if (this.users[u].RestartRequest && this.users[u].state.isActive) {
+                        //todo:Sesacvlelia Seizleba gaasxas isActiveze
+                        count++;
+                    }
+                }
+                if (count >= 2) {
+                    this.RestartState();
+                    this.gameStart();
                 }
             }
         };
 
         ///Method return true if other user is active
         GameTable.prototype.leave = function (userid) {
+            console.log('Leave--');
             if (this.users[userid].state)
                 this.users[userid].state.isActive = false;
-            if (this.GameEnd)
+            if (this.TableState == GameState.Ended)
                 this.gameEnd();
-            this.sendUsersState(1);
+            console.log('Disconect');
+            this.sendUsersState(Codes.UserDisconected);
             var tmp = false;
             for (var k in this.users)
                 tmp = tmp || this.users[k].state.isActive;

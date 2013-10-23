@@ -54,9 +54,6 @@ class GameClient extends ClientEngine.JokClient {
            
             return;
         }
-
-
-
         this.mState = (msg.state[0].userId == <string> window["userid"]) && msg.state ? msg.state[0] : msg.state[1];
         this.fState = (msg.state[0].userId == <string>window["userid"] && msg.state) ? msg.state[1] : msg.state[0];
         if (this.fState) {
@@ -68,18 +65,14 @@ class GameClient extends ClientEngine.JokClient {
             //canvas
             this.synchronizeCanvasObject();
             //canvas
-
         }
-
         if (msg.code == Game.Codes.FirstState) {
             //first run full state
             this.gameEnd = false;
-            this.timerHendler = -1;
+            this.drawAllow = false;
             //'გთხოვთ, დაელოდოთ მეორე მოთამაშეს.'
             this.drawScreen(Game.Codes.FirstState, this.mState.proverbState, null);
-
         }
-
         //დასამატებელია არასწორი არასწორის დამატება.
         if (!this.gameEnd && (msg.code == Game.Codes.State || msg.code == Game.Codes.GameEnd)) {
             if (this.mState.helpkeys)
@@ -88,44 +81,58 @@ class GameClient extends ClientEngine.JokClient {
                     var element = document.getElementById('btn' + this.mState.helpkeys[k]);
                     element.style.visibility = "hidden";
                     element.style.position = "fixed";
-
                 }
-          
             console.log('0.0.1');
             this.drawScreen(msg.code, null, null);
             console.log('0.0.2');
-            
+         
             if (msg.code == Game.Codes.GameEnd) {
-                clearInterval(this.timerHendler);
+                this.drawAllow = false;
                 this.gameEnd = true;
                 this.drawScreen(Game.Codes.State, <string>this.mState.proverbState, <string> this.fState.proverbState);
+                //ღილაკების დამალვა.
                 $('#divKeyboard button').each(function (i, element: HTMLElement) {
                     element.style["visibility"] = "hidden";
                     element.style['position'] = 'absolute';
-                    
+
                 });
+                //კიდევ ვითამაშოს გამოჩენა
+                var bt = $('#btnplayAgain')[0];
+                bt.style['visibility'] = 'visible';
+                bt.style['position'] = 'initial';
+                //მოგებულის გამოჩენა
+                this.drawAllow = false;
+                var winner = Game.GameTable.IsWinner(this.mState, this.fState) ? this.mState : this.fState;
+                this.pntext.setText('გამარჯვებულია: ' + winner.userId);
+                this.layer.draw();
                 return;
             }
             console.log('0.0.3');
             console.log(this.timerHendler);
-            if (this.timerHendler == -1)
-                this.timerHendler = setInterval(()=>this.timerTick(), 1000);
+            
+        }
+        if (msg.code == Game.Codes.State) {
+            this.drawAllow = true;
+            this.animateWhile();
         }
 
     }
+
     timerTick() {
-        this.mState.time--;
-        this.fState.time--;
-        if (this.mState.time <= 0)
-            this.mState.time = Game.GameTable.TIMEOUTTICK / 1000;
-        if (this.fState.time <= 0)
-            this.fState.time = Game.GameTable.TIMEOUTTICK / 1000;
-        this.drawScreen(null, null, null);
-    }
+        
+            if (this.mState.time <= 0)
+                this.mState.time = Game.GameTable.TIMEOUTTICK / 1000;
+            if (this.fState.time <= 0)
+                this.fState.time = Game.GameTable.TIMEOUTTICK / 1000;
+            this.drawScreen(null, null, null);
+            this.mState.time--;
+            this.fState.time--;
+        
+        }
 
     updatePage() {
         var bt = $('#btnplayAgain')[0];
-
+        this.drawAllow = true;
         bt.style['visibility'] = 'hidden';
         bt.style['position'] = 'absolute';
         console.log('5.2');
@@ -143,12 +150,17 @@ class GameClient extends ClientEngine.JokClient {
         this.chars = [];
         this.rects = [];
         this.drawScreen(Game.Codes.FirstState, this.mState.proverbState, null);
-        clearInterval(this.timerHendler);
-        this.timerHendler = setInterval(()=> { this.timerTick() }, 1000);;
+        this.drawAllow = true;
     }
 
+    public static getPercent(dec: number):number{
+
+      return   Math.round(100 * Math.abs((1 - dec))); // /100 
+    }
     RestartGame()
     {
+        this.pntext.setText('');
+        this.layer.draw();
         this.updatePage();
         if (this.gameEnd) {
             console.log('4.3');
@@ -157,15 +169,26 @@ class GameClient extends ClientEngine.JokClient {
             console.log('4.5');
             this.sendCommand('msg', { code: Game.Codes.C_FirstGameStart });}
     }
+
+    animateWhile() {
+        clearTimeout(this.timerHendler);
+        if (this.drawAllow) {
+            this.timerTick();
+            this.timerHendler = setTimeout(()=>this.animateWhile(), 1000);
+        }}
+
     //--CANVAS
     stage: Kinetic.Stage;
     layer: Kinetic.Layer;
     rects: Kinetic.Rect[] = [];
     chars: Kinetic.Text[] = [];
+    pntext: Kinetic.Text;
     drawScreen(code?: Game.Codes, text1?: string, text2?: string) {
 
         if (code == null) {
-            //drawState
+            console.log('1.0');
+            if (!this.drawAllow)
+                return;
              console.log(1.1);
             if (!(!this.gameEnd && this.mState && this.fState && this.fState.proverbState && this.mState.proverbState)) {
                 console.log('test. Ar unda Semovides. 1.1.2');
@@ -179,10 +202,15 @@ class GameClient extends ClientEngine.JokClient {
                     if (this.fState.proverbState.charAt(i) != Game.GameTable.XCHAR && this.mState.proverbState.charAt(i) != this.fState.proverbState.charAt(i)) {
                         this.rects[i].setStroke('#21A527');
                     }
-                    this.chars[i].setText(chars[i]);
-                    this.layer.draw();
+                this.chars[i].setText(chars[i]);
             }
-
+            //todo: optimizacia max incoreqtze Sesazlebelia!
+            console.log('1.4.3');
+            //RENDER
+          
+            this.pntext.setText('თქვენ სიცოცხლე: ' + GameClient.getPercent(this.mState.incorect / this.mState.maxIncorrect) + '%    დარჩენილი დრო: ' + this.mState.time + '\r\n' + ' მოწინააღმდეგე სიცოცხლე: ' + GameClient.getPercent(this.fState.incorect / this.fState.maxIncorrect) + ' %    დარჩენილი დრო: ' + this.fState.time)
+            console.log('1.4.4');
+             this.layer.draw();
             console.log(1.4);
             return;
         }
@@ -237,12 +265,28 @@ class GameClient extends ClientEngine.JokClient {
                 }
             }
             console.log(2.2);
+            y = q + y + rectheight
+            this.pntext = new Kinetic.Text({
+                x: q,
+                y: y + q * 2,
+                text: '',
+                fontSize: 16,
+                fontFamily: 'Calibri',
+                width: maxWidth,
+                align: 'center',
+                fill: 'black'
+            });
+            this.layer.add(this.pntext);
             this.layer.draw();
             return;
         }
         if (code == Game.Codes.GameEnd) {
             //dasasruli // mogebuli unda vaCveno
+           
             this.drawScreen(null, null, null);
+            //გამოვიტანოთ ვინ გაიმარჯვა
+
+            //გამოვითანოთ ხელახლა თამაშის ღილაკი
         }
     }
 
@@ -283,7 +327,7 @@ class GameClient extends ClientEngine.JokClient {
 
 
     //-------------------- 
-    drawTimerer = -1;
+ drawAllow = false;
 keyboarOption: Game.KeyBoardOption;
 gameEnd: boolean;
 mState: Game.UserState;
