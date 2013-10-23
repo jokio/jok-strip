@@ -99,7 +99,11 @@ class GameClient extends ClientEngine.JokClient {
                 clearInterval(this.timerHendler);
                 this.gameEnd = true;
                 this.drawScreen(Game.Codes.State, <string>this.mState.proverbState, <string> this.fState.proverbState);
-              
+                $('#divKeyboard button').each(function (i, element: HTMLElement) {
+                    element.style["visibility"] = "hidden";
+                    element.style['position'] = 'absolute';
+                    
+                });
                 return;
             }
             console.log('0.0.3');
@@ -118,13 +122,23 @@ class GameClient extends ClientEngine.JokClient {
             this.fState.time = Game.GameTable.TIMEOUTTICK / 1000;
         this.drawScreen(null, null, null);
     }
-    synchronizeCanvasObject() {
-        $('#divKeyboard button').each(function (i, el:HTMLElement) {
-            el.style['visibility']= 'initial';
-            el.style['position']='initial';
+
+    updatePage() {
+        var bt = $('#btnplayAgain')[0];
+
+        bt.style['visibility'] = 'hidden';
+        bt.style['position'] = 'absolute';
+        console.log('5.2');
+        $('#divKeyboard button').each(function (i, el: HTMLElement) {
+            el.style['visibility'] = 'initial';
+            el.style['position'] = 'initial';
         });
+    }
+
+    synchronizeCanvasObject() {
+        console.log('5.1');
         this.gameEnd = false;
-        
+        this.updatePage();
         this.layer.removeChildren();
         this.chars = [];
         this.rects = [];
@@ -135,7 +149,13 @@ class GameClient extends ClientEngine.JokClient {
 
     RestartGame()
     {
-        this.sendCommand("msg", { code: Game.Codes.C_RestartRequest});
+        this.updatePage();
+        if (this.gameEnd) {
+            console.log('4.3');
+            this.sendCommand("msg", { code: Game.Codes.C_RestartRequest });
+        } else {
+            console.log('4.5');
+            this.sendCommand('msg', { code: Game.Codes.C_FirstGameStart });}
     }
     //--CANVAS
     stage: Kinetic.Stage;

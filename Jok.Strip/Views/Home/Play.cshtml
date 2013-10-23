@@ -8,7 +8,7 @@
 
 <style type="text/css">
 
-    btnstyle, #divKeyboard button {
+    .btnstyle,  #divKeyboard button {
         outline: none;
         -webkit-box-shadow: rgba(0,0,0,0.2) 0 1px 0 0;
         -moz-box-shadow: rgba(0,0,0,0.2) 0 1px 0 0;
@@ -25,7 +25,8 @@
         text-shadow: #b2e2f5 0 1px 0;
     }
     #divKeyboard button {
-        
+        visibility:hidden;
+        position:absolute;
         padding: 5px;
         width: 65px;
         height: 65px;
@@ -44,14 +45,22 @@
         <div id="canvasOne" style="color: lightblue">
             
         </div>
-
-    <div id="divKeyboard" style=" width:800px; margin:auto; background-color: lightblue;text-align:center">
+    <div style="width: 100%; margin: auto; background-color: lightblue; text-align: center">
+        <button id="btnplayAgain" class="btnstyle" onclick="PlayAgain()">თამაშის დაწყება</button></div>
+    <div id="divKeyboard" style= "width:800px; margin:auto; background-color: lightblue;text-align:center">
 
     </div>
 </div>
+<script src="~/Scripts/Common/jquery-2.0.3.js" type="text/javascript"></script>
 <script type="text/javascript">
+    var playAgain = false;
+    function PlayAgain() {
+        window["gameClient"].RestartGame();
+    }
+
     window.addEventListener("load",
    function (event) {
+
        for (var i = 97; i <= 122; i++) {
            var char = String.fromCharCode(i);
            var btn = document.createElement("button");
@@ -66,6 +75,12 @@
            }, true);
            document.getElementById("divKeyboard").appendChild(btn);
        }
+
+       if (window['gameClient']['timerHendler'] !=-1) {
+           window['gameClient']['timerHendler']['updatePage']();
+       }
+
+
    }, true);
 </script>
 

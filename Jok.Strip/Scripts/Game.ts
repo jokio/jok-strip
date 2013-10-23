@@ -7,6 +7,7 @@ export interface IGameToClient { // Game To Client messages
 }
 export enum Codes {
     C_RestartRequest= -50,
+    C_FirstGameStart=-2,
     C_UserChar= -1,
     State= 1,
     FirstState= 2,
@@ -124,7 +125,7 @@ export class GameTable {
         var array = new Array<UserState>();
         for (var k in this.users) {
 
-            if (this.users[k].state.isActive)
+            if (this.users[k].state.isActive && this.users[k].RestartRequest==false)
                 array.push(this.users[k].state)
         }
         if (array.length >= 2) {
@@ -295,8 +296,12 @@ export class GameTable {
 
     ///საიტიდან მოთამაშიდან მოვიდა შეტყობინება
     UserAction(userid: string, data: { code: Codes; data: any; }) {
-       
+
         //todo: მონაცემის ტიპი მოსაფიქრებელია
+        if (data.code == Codes.C_FirstGameStart) {
+            this.users[userid].RestartRequest = false;
+            this.gameStart();
+        }
         if (Object.keys(this.users).length < 2)
             return;
         if (data.code == Codes.C_UserChar) {// Received codes should be less than zero.
