@@ -384,7 +384,7 @@
             return tmp;
         };
         GameTable.XCHAR = '•';
-        GameTable.TIMEOUTTICK = 3000;
+        GameTable.TIMEOUTTICK = 15000;
         return GameTable;
     })();
     exports.GameTable = GameTable;

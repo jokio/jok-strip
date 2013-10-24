@@ -147,6 +147,7 @@ define(["require", "exports", 'JokClientEngine', 'Game'], function(require, expo
                 el.style['visibility'] = 'initial';
                 el.style['position'] = 'initial';
             });
+            this.layer.clear();
         };
 
         GameClient.prototype.synchronizeCanvasObject = function () {
@@ -156,8 +157,10 @@ define(["require", "exports", 'JokClientEngine', 'Game'], function(require, expo
             this.layer.removeChildren();
             this.chars = [];
             this.rects = [];
+
             this.drawScreen(Game.Codes.FirstState, this.mState.proverbState, null);
             this.drawAllow = true;
+            this.layer.draw();
         };
 
         GameClient.getPercent = function (dec) {
@@ -168,6 +171,7 @@ define(["require", "exports", 'JokClientEngine', 'Game'], function(require, expo
             this.layer.draw();
             this.updatePage();
             if (this.gameEnd) {
+                this.layer.clear();
                 console.log('4.3');
                 this.sendCommand("msg", { code: Game.Codes.C_RestartRequest });
             } else {

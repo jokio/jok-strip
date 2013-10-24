@@ -45,7 +45,7 @@ export class GameTable {
     //OPTIONS
     private keyBoardOption: KeyBoardOption;
     public static XCHAR = '•';
-    public static TIMEOUTTICK = 3000;
+    public static TIMEOUTTICK = 15000;
     public TableState: GameState = GameState.FirstState;
     public OriginalProverb: string;
     //-------

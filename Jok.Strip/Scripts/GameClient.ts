@@ -140,6 +140,7 @@ class GameClient extends ClientEngine.JokClient {
             el.style['visibility'] = 'initial';
             el.style['position'] = 'initial';
         });
+        this.layer.clear();
     }
 
     synchronizeCanvasObject() {
@@ -149,8 +150,12 @@ class GameClient extends ClientEngine.JokClient {
         this.layer.removeChildren();
         this.chars = [];
         this.rects = [];
+
+
+       
         this.drawScreen(Game.Codes.FirstState, this.mState.proverbState, null);
         this.drawAllow = true;
+        this.layer.draw();
     }
 
     public static getPercent(dec: number):number{
@@ -163,6 +168,7 @@ class GameClient extends ClientEngine.JokClient {
         this.layer.draw();
         this.updatePage();
         if (this.gameEnd) {
+            this.layer.clear();
             console.log('4.3');
             this.sendCommand("msg", { code: Game.Codes.C_RestartRequest });
         } else {
