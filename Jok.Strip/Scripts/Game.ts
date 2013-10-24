@@ -33,11 +33,11 @@ export class UserState {
 export class KeyBoardOption{ from: number; to: number }
 
 export enum GameState {
-    FirstState,
-    Stoped,
-    Ended,
-    Restarted,
-    Running
+    FirstState=0,
+    Stoped=1,
+    Ended=2,
+    Restarted=3,
+    Running=4
 }
 export class GameTable {
 
@@ -45,14 +45,14 @@ export class GameTable {
     //OPTIONS
     private keyBoardOption: KeyBoardOption;
     public static XCHAR = '•';
-    public static TIMEOUTTICK = 15000;
+    public static TIMEOUTTICK = 3000;
     public TableState: GameState = GameState.FirstState;
     public OriginalProverb: string;
     //-------
     users: {
         [key: string]: {
             RestartRequest?: boolean;
-            timeInterval?: { hendler: number; createDate: Date; }; // ასეთ გადაწყვეტილებას სინქრონიზაციის საჭვალება დაჭირდება!
+            timeInterval: { hendler: number; createDate: Date; }; // ასეთ გადაწყვეტილებას სინქრონიზაციის საჭვალება დაჭირდება!
             state: UserState
         }
     } = {};
@@ -108,7 +108,9 @@ export class GameTable {
             if (this.users[uid].timeInterval && this.users[uid].timeInterval.hendler)
                 clearTimeout(this.users[uid].timeInterval.hendler);
             this.createState(uid);
-            this.users[uid].timeInterval = null;
+            this.users[uid].state.isActive = true;
+            this.users[uid].RestartRequest = false;
+
         }
         
         this.TableState = GameState.Restarted;
@@ -116,9 +118,12 @@ export class GameTable {
     }
 
 
-    public sendUsersState(code: Codes, data?:any) {
-        if (GameState.Running != this.TableState && (code == code.State || code == Codes.UserDisconected))
+    public sendUsersState(code: Codes, data?: any) {
+       
+        if (GameState.Running != this.TableState && (code == Codes.State || code == Codes.UserDisconected)) {
             return;
+            //es droebiT dasadgenia ratom igzavneba 2 obieqti!
+        }
         for (var k in this.users)
             this.TableStateChanged(k, { code: code, state: this.getState(k), data: data});
     }
@@ -165,15 +170,17 @@ export class GameTable {
     }
 
     private TimeControl(userid: string, char?: string) {
-    
+        console.log('2.0');
         if (this.TableState== GameState.Ended) {
             this.gameEnd();
             return;
         }
-       
+        console.log('2.1');       
         this.setNewCharforUser(userid, char);
+        console.log('2.2');
         if (this.users[userid].timeInterval && this.users[userid].timeInterval.hendler)
             clearTimeout(this.users[userid].timeInterval.hendler); // todo: (bug ?)
+        console.log('2.4');
         this.users[userid].timeInterval = {
             hendler: setTimeout(() => {
                 //Timeout 'thinking logically'
@@ -185,8 +192,8 @@ export class GameTable {
                 //--
             }, GameTable.TIMEOUTTICK), createDate: new Date()
         };
-     
-        this.sendUsersState(Codes.State,'s-4');
+        console.log('2.5');
+        this.sendUsersState(Codes.State);
     }
 
     private setNewCharforUser(userid: string, char: string) {
@@ -327,24 +334,36 @@ export class GameTable {
 
     ///საიტიდან მოთამაშიდან მოვიდა შეტყობინება
     UserAction(userid: string, data: { code: Codes; data: any; }) {
-
+        console.log('0.1');
         //todo: მონაცემის ტიპი მოსაფიქრებელია
         if (data.code == Codes.C_FirstGameStart) {
             this.users[userid].RestartRequest = false;
-            this.gameStart();
+            
             var tu = 0;
+            console.log('0.1.1')
             for (var u in this.users) {
-                if (this.users[u].RestartRequest == false && this.users[u].state.isActive)
+                if (this.users[u].RestartRequest == false && this.users[u].state.isActive) {
                     tu++;
+                    console.log('0.1.2');
+                }
             }
-            if (tu == 2)
+            console.log('0.1.3');
+
+            if (tu => 2) {
+                console.log('0.1.4');
                 this.TableState = GameState.Running;
+                this.gameStart();
+            }
         }
+        console.log('0.1.4');
+
         if (Object.keys(this.users).length < 2)
             return;
+        console.log('0.1.5');
         if (data.code == Codes.C_UserChar && this.TableState == GameState.Running) {// Received codes should be less than zero.
             var char = <string>data.data; // დასამუშავებელია
             //---------------
+            console.log('0.1.6');
             if (GameTable.IsChar(char, this.keyBoardOption)) {
                 if (this.users[userid].state.helpkeys.indexOf(char) < 0) {
                     this.TimeControl(userid, char);
@@ -357,6 +376,7 @@ export class GameTable {
             }
             return;
         }
+        console.log('0.1.8');
         if (data.code == Codes.C_RestartRequest) {
             this.users[userid].RestartRequest = true;
             var count = 0;
@@ -366,12 +386,16 @@ export class GameTable {
                     //todo:Sesacvlelia Seizleba gaasxas isActiveze
                     count++;
                 } 
+                
             }
+            console.log('------------------------------------');
             if (count >= 2) {
-
+                console.log('0.1.6');
                 this.RestartState();
+                console.log('0.1.7');
+                this.TableState = GameState.Running;
                 this.gameStart();
-          
+                console.log('0.1.8');
             }
         }
     }
@@ -390,13 +414,15 @@ export class GameTable {
             this.users[userid].state.isActive = false;
         if (this.TableState==GameState.Ended)
             this.gameEnd();
-        console.log('Disconect');
+            console.log('Disconect');
             this.sendUsersState(Codes.UserDisconected);
         var tmp = false;
         for (var k in this.users)
             tmp = tmp || this.users[k].state.isActive;
-        if (!tmp)
+        if (!tmp) {
+            //Bthis.TableState = GameState.Ended;
             this.gameEnd();
+        }
         return tmp;
     }
 
