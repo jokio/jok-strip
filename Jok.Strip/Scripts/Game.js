@@ -33,6 +33,7 @@
         GameState[GameState["Ended"] = 2] = "Ended";
         GameState[GameState["Restarted"] = 3] = "Restarted";
         GameState[GameState["Running"] = 4] = "Running";
+        GameState[GameState["Whaiting"] = 5] = "Whaiting";
     })(exports.GameState || (exports.GameState = {}));
     var GameState = exports.GameState;
     var GameTable = (function () {
@@ -43,6 +44,7 @@
             this.users = {};
             // event ჩაჯდეს ნაკადში ! მოგვიანებით.
             this.keyBoardOption = { from: 97, to: 122 };
+            this.TableState = GameState.FirstState;
         }
         GameTable.IsWinner = function (fUser, sUser) {
             if (fUser.proverbState.indexOf(GameTable.XCHAR) < 0)
@@ -301,6 +303,8 @@
         GameTable.prototype.UserAction = function (userid, data) {
             console.log('0.1');
 
+            //todo: მონაცემის ტიპი მოსაფიქრებელია
+            console.log('this.TableState:' + this.TableState);
             if (data.code == Codes.C_FirstGameStart) {
                 this.users[userid].RestartRequest = false;
 
@@ -317,8 +321,12 @@
                 if (function (tu) {
                     return 2;
                 }) {
-                    console.log('0.1.4');
-                    this.TableState = GameState.Running;
+                    console.log('0.1.3.1');
+
+                    if (this.TableState == GameState.FirstState)
+                        this.TableState = GameState.Whaiting;
+else
+                        this.TableState = GameState.Running;
                     this.gameStart();
                 }
             }

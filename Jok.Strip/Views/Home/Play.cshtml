@@ -57,7 +57,7 @@
     function PlayAgain() {
         window["gameClient"].RestartGame();
     }
-
+    
     window.addEventListener("load",
    function (event) {
 
@@ -79,8 +79,14 @@
        if (window['gameClient']['timerHendler'] !=-1) {
            window['gameClient']['timerHendler']['updatePage']();
        }
+       document.getElementById('btnplayAgain').style.visibility = 'hidden';
 
 
+       setTimeout(function () {
+       //todo: gadasatania mtavar kodSi
+           window["gameClient"].RestartGame();
+       }, 1000);
    }, true);
+
 </script>
 

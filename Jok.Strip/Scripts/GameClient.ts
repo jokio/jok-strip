@@ -1,4 +1,5 @@
-﻿/// <reference path="JokClientEngine.ts" />
+﻿
+/// <reference path="JokClientEngine.ts" />
 /// <reference path="Game.ts" />
 /// <reference path="typings/jquery.d.ts"/>
 /// <reference path="typings/kinetic.d.ts"/>
@@ -45,6 +46,8 @@ class GameClient extends ClientEngine.JokClient {
     onMsg(msg: Game.IGameToClient) {
         console.log(msg);
         if (msg.code == Game.Codes.KeyboardOptionSend) {
+            this.gameState = Game.GameState.Whaiting;
+            
             //keyboard option
             this.keyboarOption = <Game.KeyBoardOption>msg.data;
             return;
@@ -68,13 +71,14 @@ class GameClient extends ClientEngine.JokClient {
         }
         if (msg.code == Game.Codes.FirstState) {
             //first run full state
-            this.gameEnd = false;
+            this.gameState = Game.GameState.Running;
             this.drawAllow = false;
             //'გთხოვთ, დაელოდოთ მეორე მოთამაშეს.'
             this.drawScreen(Game.Codes.FirstState, this.mState.proverbState, null);
+            this.RestartGame();
         }
         //დასამატებელია არასწორი არასწორის დამატება.
-        if (!this.gameEnd && (msg.code == Game.Codes.State || msg.code == Game.Codes.GameEnd)) {
+        if (this.gameState==Game.GameState.Running && (msg.code == Game.Codes.State || msg.code == Game.Codes.GameEnd)) {
             if (this.mState.helpkeys)
                 for (var k in this.mState.helpkeys) {
                     //test
@@ -88,7 +92,7 @@ class GameClient extends ClientEngine.JokClient {
          
             if (msg.code == Game.Codes.GameEnd) {
                 this.drawAllow = false;
-                this.gameEnd = true;
+                this.gameState = Game.GameState.Ended;
                 this.drawScreen(Game.Codes.State, <string>this.mState.proverbState, <string> this.fState.proverbState);
                 //ღილაკების დამალვა.
                 $('#divKeyboard button').each(function (i, element: HTMLElement) {
@@ -145,7 +149,7 @@ class GameClient extends ClientEngine.JokClient {
 
     synchronizeCanvasObject() {
         console.log('5.1');
-        this.gameEnd = false;
+        this.gameState = Game.GameState.Running;
         this.updatePage();
         this.layer.removeChildren();
         this.chars = [];
@@ -162,18 +166,26 @@ class GameClient extends ClientEngine.JokClient {
 
       return   Math.round(100 * Math.abs((1 - dec))); // /100 
     }
-    RestartGame()
-    {
-        this.pntext.setText('');
-        this.layer.draw();
-        this.updatePage();
-        if (this.gameEnd) {
-            this.layer.clear();
-            console.log('4.3');
-            this.sendCommand("msg", { code: Game.Codes.C_RestartRequest });
-        } else {
-            console.log('4.5');
-            this.sendCommand('msg', { code: Game.Codes.C_FirstGameStart });}
+    RestartGame() {
+        console.log('4.1');
+        
+        console.log('state:'+this.gameState);
+        if (Game.GameState.Stoped != this.gameState) {
+            console.log('4.2');
+            this.pntext.setText('');
+            this.layer.draw();
+            this.updatePage();
+            if (Game.GameState.Ended== this.gameState) {
+                this.layer.clear();
+                console.log('4.3');
+                this.sendCommand("msg", { code: Game.Codes.C_RestartRequest });
+            } else {
+                console.log('4.5');
+                this.pntext.setText('გთხოვთ დაელოდოთ მეორე მოთამაშეს!');
+                this.layer.draw();
+                this.sendCommand('msg', { code: Game.Codes.C_FirstGameStart });
+            }
+        }
     }
 
     animateWhile() {
@@ -196,7 +208,7 @@ class GameClient extends ClientEngine.JokClient {
             if (!this.drawAllow)
                 return;
              console.log(1.1);
-            if (!(!this.gameEnd && this.mState && this.fState && this.fState.proverbState && this.mState.proverbState)) {
+            if (!(this.gameState==Game.GameState.Running&& this.mState && this.fState && this.fState.proverbState && this.mState.proverbState)) {
                 console.log('test. Ar unda Semovides. 1.1.2');
                 return;
             }
@@ -283,7 +295,7 @@ class GameClient extends ClientEngine.JokClient {
                 fill: 'black'
             });
             this.layer.add(this.pntext);
-            this.layer.draw();
+        //    this.layer.draw(); ar daixatos pirvelad Sesvlisas
             return;
         }
         if (code == Game.Codes.GameEnd) {
@@ -335,7 +347,7 @@ class GameClient extends ClientEngine.JokClient {
     //-------------------- 
  drawAllow = false;
 keyboarOption: Game.KeyBoardOption;
-gameEnd: boolean;
+gameState= Game.GameState.Stoped;
 mState: Game.UserState;
 fState: Game.UserState;
 timerHendler: number = -1;

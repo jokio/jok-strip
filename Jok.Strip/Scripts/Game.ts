@@ -37,7 +37,8 @@ export enum GameState {
     Stoped=1,
     Ended=2,
     Restarted=3,
-    Running=4
+    Running= 4,
+    Whaiting=5
 }
 export class GameTable {
 
@@ -119,7 +120,7 @@ export class GameTable {
 
 
     public sendUsersState(code: Codes, data?: any) {
-       
+
         if (GameState.Running != this.TableState && (code == Codes.State || code == Codes.UserDisconected)) {
             return;
             //es droebiT dasadgenia ratom igzavneba 2 obieqti!
@@ -336,6 +337,7 @@ export class GameTable {
     UserAction(userid: string, data: { code: Codes; data: any; }) {
         console.log('0.1');
         //todo: მონაცემის ტიპი მოსაფიქრებელია
+        console.log('this.TableState:'+ this.TableState);
         if (data.code == Codes.C_FirstGameStart) {
             this.users[userid].RestartRequest = false;
             
@@ -350,8 +352,12 @@ export class GameTable {
             console.log('0.1.3');
 
             if (tu => 2) {
-                console.log('0.1.4');
-                this.TableState = GameState.Running;
+                console.log('0.1.3.1');
+                //todo:gasasworebelia
+                if (this.TableState == GameState.FirstState)
+                    this.TableState = GameState.Whaiting;
+                else
+                    this.TableState = GameState.Running;
                 this.gameStart();
             }
         }
@@ -403,6 +409,7 @@ export class GameTable {
     constructor(public TableStateChanged: (groupid: string,state: IGameToClient) => void) {
         // event ჩაჯდეს ნაკადში ! მოგვიანებით.
         this.keyBoardOption = { from: 97, to: 122 };
+        this.TableState = GameState.FirstState;
        
     }
 
