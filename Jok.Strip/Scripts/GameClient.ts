@@ -164,7 +164,7 @@ class GameClient extends ClientEngine.JokClient {
             el.style['visibility'] = 'initial';
             el.style['position'] = 'initial';
         });
-        this.layer.clear();
+        this.layer.draw();
     }
 
     synchronizeCanvasObject() {
@@ -189,13 +189,20 @@ class GameClient extends ClientEngine.JokClient {
         console.log('state:'+this.gameState);
         if (Game.GameState.Stoped != this.gameState) {
             console.log('4.2');
-            this.pntext.setText('');
+           
             this.layer.draw();
             this.updatePage();
             if (Game.GameState.Ended== this.gameState) {
                 this.layer.clear();
+                for (var i = 0; i < this.chars.length; i++) {
+                    this.chars[i].hide();
+                    this.rects[i].hide();
+                }
+                this.pntext.setText('გთხოვთ დაელოდოთ მეორე მოთამაშეს!');
+                this.layer.draw();
                 console.log('4.3');
-                this.sendCommand(Game.MessageType.C_RestartRequest ,"{RESTART}");
+                this.sendCommand(Game.MessageType.C_RestartRequest, "{RESTART}");
+                //todo -------
             } else {
                 console.log('4.5');
                 this.pntext.setText('გთხოვთ დაელოდოთ მეორე მოთამაშეს!');
@@ -219,7 +226,7 @@ class GameClient extends ClientEngine.JokClient {
         this.drawAllow = false;
     }
     firstDrawScreen(text:string) {
-
+       
         var maxWidth: number = <number>this.layer.getAttr('width');
         ////--clear
         if (this.chars.length < 2) {
