@@ -21,6 +21,9 @@ define(["require", "exports", 'JokServerEngine', 'Game'], function(require, expo
             this.on('authorize', this.onAuthorize);
             this.on('disconnect', this.onDisconnect);
             this.on('msg', this.onMsg);
+            this.on(Game.MessageType.C_RestartRequest, this.onRestartRequest);
+            this.on(Game.MessageType.C_FirstGameStart, this.onFirstGameStart);
+            this.on(Game.MessageType.C_UserChar, this.onUserCharSend);
         }
         GameServer.prototype.onConnect = function (socket) {
             //todo Sesacvlelia!
@@ -55,8 +58,8 @@ define(["require", "exports", 'JokServerEngine', 'Game'], function(require, expo
 
                 if (TabelID < 0) {
                     TabelID = Math.abs(Math.random() * 10000000);
-                    this.Tables[TabelID] = new Game.GameTable(function (groupid, data) {
-                        _this.sendToGroup(groupid == null ? TabelID.toString() : groupid, 'msg', data);
+                    this.Tables[TabelID] = new Game.GameTable(function (groupid, messageType, data) {
+                        _this.sendToGroup(groupid == null ? TabelID.toString() : groupid, messageType, data);
                     });
                 }
             }
@@ -74,11 +77,31 @@ define(["require", "exports", 'JokServerEngine', 'Game'], function(require, expo
                 }
         };
 
+        GameServer.prototype.onUserCharSend = function (socket, data) {
+            console.log('server onUserCharSend' + data);
+            if (this.Tables[socket.tabelid]) {
+                this.Tables[socket.tabelid].UserCharSet(socket.userid, data);
+            }
+        };
+
+        GameServer.prototype.onFirstGameStart = function (socket, data) {
+            if (this.Tables[socket.tabelid]) {
+                this.Tables[socket.tabelid].FirstGameStart(socket.userid);
+            }
+        };
+
+        GameServer.prototype.onRestartRequest = function (socket, data) {
+            if (this.Tables[socket.tabelid]) {
+                this.Tables[socket.tabelid].UserRestartRequest(socket.userid);
+            }
+        };
+
         GameServer.prototype.onMsg = function (socket, text) {
+            //todo: unda waiSalos
+            console.log('aq ar unda Semovides   onMsg(socket: ISocket, text)');
             if (this.Tables[socket.tabelid]) {
                 this.Tables[socket.tabelid].UserAction(socket.userid, text);
             }
-            // this.sendToGroup('test', 'msg', socket.tabelid);
         };
 
         GameServer.Start = function (port) {

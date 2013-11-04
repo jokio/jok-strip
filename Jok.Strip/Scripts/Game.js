@@ -1,18 +1,21 @@
 ﻿define(["require", "exports"], function(require, exports) {
-    (function (Codes) {
-        Codes[Codes["C_RestartRequest"] = -50] = "C_RestartRequest";
-        Codes[Codes["C_FirstGameStart"] = -2] = "C_FirstGameStart";
-        Codes[Codes["C_UserChar"] = -1] = "C_UserChar";
-        Codes[Codes["State"] = 1] = "State";
-        Codes[Codes["FirstState"] = 2] = "FirstState";
-        Codes[Codes["KeyboardOptionSend"] = 3] = "KeyboardOptionSend";
-        Codes[Codes["WinnerText"] = 4] = "WinnerText";
-        Codes[Codes["UserDisconected"] = 6] = "UserDisconected";
-        Codes[Codes["RestartState"] = 50] = "RestartState";
-        Codes[Codes["GameEnd"] = 10] = "GameEnd";
-        Codes[Codes["BadChar"] = 101] = "BadChar";
-    })(exports.Codes || (exports.Codes = {}));
-    var Codes = exports.Codes;
+    var MessageType = (function () {
+        function MessageType() {
+        }
+        MessageType.C_RestartRequest = "C_RestartRequest";
+        MessageType.C_FirstGameStart = "C_FirstGameStart";
+        MessageType.C_UserChar = "C_UserChar";
+        MessageType.State = "State";
+        MessageType.FirstState = "FirstState";
+        MessageType.KeyboardOption = "KeyboardOption";
+        MessageType.WinnerText = "WinnerText";
+        MessageType.UserDisconected = "UserDisconected";
+        MessageType.RestartState = "RestartState";
+        MessageType.GameEnd = "GameEnd";
+        MessageType.BadChar = "BadChar";
+        return MessageType;
+    })();
+    exports.MessageType = MessageType;
 
     var UserState = (function () {
         function UserState() {
@@ -45,6 +48,7 @@
             // event ჩაჯდეს ნაკადში ! მოგვიანებით.
             this.keyBoardOption = { from: 97, to: 122 };
             this.TableState = GameState.FirstState;
+            this.OriginalProverb = this.getProverb();
         }
         GameTable.IsWinner = function (fUser, sUser) {
             if (fUser.proverbState.indexOf(GameTable.XCHAR) < 0)
@@ -58,27 +62,25 @@
         };
 
         GameTable.prototype.join = function (userid) {
-            if (this.OriginalProverb == null || this.OriginalProverb.length > 1) {
-                this.OriginalProverb = this.getProverb();
-            }
             var users = this.users;
-            this.TableStateChanged(null, { code: Codes.KeyboardOptionSend, data: this.keyBoardOption });
+            this.TableStateChanged(null, MessageType.KeyboardOption, this.keyBoardOption);
             if (users[userid] == null) {
                 this.createState(userid);
 
                 //---------
                 users[userid].state.isActive = true;
-                this.sendUsersState(Codes.FirstState);
+                this.sendUsersState(MessageType.FirstState);
                 this.gameStart();
+                this.FirstGameStart(userid);
             } else {
                 users[userid].state.isActive = true;
-                this.sendUsersState(Codes.FirstState);
+                this.sendUsersState(MessageType.FirstState);
                 if (this.TableState == GameState.Ended) {
                     this.gameEnd();
                 } else {
                     if (this.users[userid].timeInterval && this.users[userid].timeInterval.hendler) {
                         console.log('s-3');
-                        this.sendUsersState(Codes.State, 's-3');
+                        this.sendUsersState(MessageType.State, 's-3');
                     }
                 }
             }
@@ -96,16 +98,16 @@
             }
 
             this.TableState = GameState.Restarted;
-            this.sendUsersState(Codes.RestartState);
+            this.sendUsersState(MessageType.RestartState);
         };
 
         GameTable.prototype.sendUsersState = function (code, data) {
-            if (GameState.Running != this.TableState && (code == Codes.State || code == Codes.UserDisconected)) {
+            if (GameState.Running != this.TableState && (code === MessageType.State || code === MessageType.UserDisconected)) {
                 return;
                 //es droebiT dasadgenia ratom igzavneba 2 obieqti!
             }
             for (var k in this.users)
-                this.TableStateChanged(k, { code: code, state: this.getState(k), data: data });
+                this.TableStateChanged(k, code, { state: this.getState(k), data: data });
         };
 
         GameTable.prototype.createState = function (userid) {
@@ -173,7 +175,7 @@
                 createDate: new Date()
             };
             console.log('2.5');
-            this.sendUsersState(Codes.State);
+            this.sendUsersState(MessageType.State);
         };
 
         GameTable.prototype.setNewCharforUser = function (userid, char) {
@@ -221,8 +223,8 @@
 
         GameTable.prototype.gameEnd = function () {
             this.TableState = GameState.Ended;
-            this.sendUsersState(Codes.GameEnd);
-            this.sendUsersState(Codes.WinnerText);
+            this.sendUsersState(MessageType.GameEnd);
+            this.sendUsersState(MessageType.WinnerText);
             for (var k in this.users) {
                 if (this.users[k].timeInterval)
                     clearTimeout(this.users[k].timeInterval.hendler);
@@ -299,78 +301,80 @@
             return "All good things, must come to an end.";
         };
 
-        ///საიტიდან მოთამაშიდან მოვიდა შეტყობინება
-        GameTable.prototype.UserAction = function (userid, data) {
-            console.log('0.1');
+        //---------New Functions
+        GameTable.prototype.FirstGameStart = function (userid) {
+            // MessageType.FirstState
+            this.users[userid].RestartRequest = false;
 
-            //todo: მონაცემის ტიპი მოსაფიქრებელია
-            console.log('this.TableState:' + this.TableState);
-            if (data.code == Codes.C_FirstGameStart) {
-                this.users[userid].RestartRequest = false;
-
-                var tu = 0;
-                console.log('0.1.1');
-                for (var u in this.users) {
-                    if (this.users[u].RestartRequest == false && this.users[u].state.isActive) {
-                        tu++;
-                        console.log('0.1.2');
-                    }
-                }
-                console.log('0.1.3');
-
-                if (function (tu) {
-                    return 2;
-                }) {
-                    console.log('0.1.3.1');
-
-                    if (this.TableState == GameState.FirstState)
-                        this.TableState = GameState.Whaiting;
-else
-                        this.TableState = GameState.Running;
-                    this.gameStart();
+            var tu = 0;
+            console.log('0.1.1');
+            for (var u in this.users) {
+                if (this.users[u].RestartRequest == false && this.users[u].state.isActive) {
+                    tu++;
+                    console.log('0.1.2');
                 }
             }
-            console.log('0.1.4');
+            console.log('0.1.3');
 
+            if (function (tu) {
+                return 2;
+            }) {
+                console.log('0.1.3.1');
+
+                if (this.TableState == GameState.FirstState)
+                    this.TableState = GameState.Whaiting;
+else
+                    this.TableState = GameState.Running;
+                this.gameStart();
+            }
+        };
+        GameTable.prototype.UserCharSet = function (userid, char) {
             if (Object.keys(this.users).length < 2)
                 return;
-            console.log('0.1.5');
-            if (data.code == Codes.C_UserChar && this.TableState == GameState.Running) {
-                var char = data.data;
 
+            if (this.TableState == GameState.Running) {
                 //---------------
                 console.log('0.1.6');
                 if (GameTable.IsChar(char, this.keyBoardOption)) {
                     if (this.users[userid].state.helpkeys.indexOf(char) < 0) {
                         this.TimeControl(userid, char);
                     } else {
-                        this.TableStateChanged(userid, { code: Codes.BadChar, state: null, data: 'ეს ასო უკვე გამოყენებულია' });
+                        //todo es  MessageType.State  Sesacvlelia unda iyows Wron Char
+                        this.TableStateChanged(userid, MessageType.State, { state: null, data: 'ეს ასო უკვე გამოყენებულია' });
                     }
                 } else {
-                    this.TableStateChanged(userid, { code: Codes.BadChar, state: null, data: 'ეს არ არის ასო!' });
+                    this.TableStateChanged(userid, MessageType.BadChar, { state: null, data: 'ეს არ არის ასო!' });
                 }
                 return;
             }
-            console.log('0.1.8');
-            if (data.code == Codes.C_RestartRequest) {
-                this.users[userid].RestartRequest = true;
-                var count = 0;
-                for (var u in this.users) {
-                    if (this.users[u].RestartRequest && this.users[u].state.isActive) {
-                        //todo:Sesacvlelia Seizleba gaasxas isActiveze
-                        count++;
-                    }
-                }
-                console.log('------------------------------------');
-                if (count >= 2) {
-                    console.log('0.1.6');
-                    this.RestartState();
-                    console.log('0.1.7');
-                    this.TableState = GameState.Running;
-                    this.gameStart();
-                    console.log('0.1.8');
+        };
+
+        GameTable.prototype.UserRestartRequest = function (userid) {
+            //MessageType.C_RestartRequest
+            this.users[userid].RestartRequest = true;
+            var count = 0;
+            for (var u in this.users) {
+                if (this.users[u].RestartRequest && this.users[u].state.isActive) {
+                    //todo:Sesacvlelia Seizleba gaasxas isActiveze
+                    count++;
                 }
             }
+            console.log('------------------------------------');
+            if (count >= 2) {
+                console.log('0.1.6');
+                this.RestartState();
+                console.log('0.1.7');
+                this.TableState = GameState.Running;
+                this.gameStart();
+                console.log('0.1.8');
+            }
+        };
+
+        //--------
+        ///საიტიდან მოთამაშიდან მოვიდა შეტყობინება
+        GameTable.prototype.UserAction = function (userid, data) {
+            //todo wasaSlelia.
+            console.log("aq ar unda Semosuliyo");
         };
 
         ///Method return true if other user is active
@@ -381,7 +385,7 @@ else
             if (this.TableState == GameState.Ended)
                 this.gameEnd();
             console.log('Disconect');
-            this.sendUsersState(Codes.UserDisconected);
+            this.sendUsersState(MessageType.UserDisconected);
             var tmp = false;
             for (var k in this.users)
                 tmp = tmp || this.users[k].state.isActive;
