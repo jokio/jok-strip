@@ -135,13 +135,13 @@ namespace Jok.Strip.Common
                     Lang = userInfo.Lang
                 };
 
+                Groups.Add(connectionID, userid.ToString()).Wait();
+
                 // თუ მხოლოდ ერთი კონექშენია დაშვებული, დანარჩენებს ვთიშავთ
                 if (OneConnectionPerUserID)
                 {
                     Clients.Group(conn.UserID.ToString(), connectionID).Close("Another connection is open");
                 }
-
-                Groups.Add(connectionID, userid.ToString()).Wait();
 
                 // ვუგზავნით მომხმარებელს ინფორმაციას თუ რომელი იუზერია
                 Clients.Caller.UserAuthenticated(userid, true);
