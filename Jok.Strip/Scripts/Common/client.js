@@ -13,6 +13,6 @@
     //}
 });
 
-define(['GameClient'], function (client) {
+define(['TS/GameClient'], function (client) {
     // Module Loaded
 });

@@ -1,8 +1,8 @@
 ﻿
 /// <reference path="JokClientEngine.ts" />
 /// <reference path="Game.ts" />
-/// <reference path="typings/jquery.d.ts"/>
-/// <reference path="typings/kinetic.d.ts"/>
+/// <reference path="../typings/jquery.d.ts"/>
+/// <reference path="../typings/kinetic.d.ts"/>
 
 
 import ClientEngine = require('JokClientEngine');
@@ -366,4 +366,4 @@ timerHendler: number = -1;
 //        };
 //})();
 var w: any = window;
-GameClient.Start('ws://localhost:3000/?token=' + w.userid);
+GameClient.Start('ws://jok-strip.herokuapp.com:3000/?token=' + w.userid);

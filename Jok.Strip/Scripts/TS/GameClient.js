@@ -1,7 +1,7 @@
 ﻿/// <reference path="JokClientEngine.ts" />
 /// <reference path="Game.ts" />
-/// <reference path="typings/jquery.d.ts"/>
-/// <reference path="typings/kinetic.d.ts"/>
+/// <reference path="../typings/jquery.d.ts"/>
+/// <reference path="../typings/kinetic.d.ts"/>
 var __extends = this.__extends || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }

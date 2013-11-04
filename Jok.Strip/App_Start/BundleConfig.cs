@@ -10,9 +10,9 @@ namespace Jok.Strip
         {
             bundles.Add(new ScriptBundle("~/bundles/js").Include(
                         "~/Scripts/Common/jquery-{version}.js",
-                        "~/Scripts/Common/EventEmitter.js",
-                        "~/Scripts/Common/engine.io-client.js"
-                       
+                        "~/Scripts/Common/jquery.signalR-2.0.0.js",
+                        "~/Scripts/Jok.GameEngine.js",
+                        "~/Scripts/Jok.Strip.Client.js"
                         ));
 
             bundles.Add(new StyleBundle("~/bundles/css").Include("~/Content/site.css"));
