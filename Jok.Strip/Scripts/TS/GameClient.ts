@@ -1,8 +1,8 @@
 ﻿
 /// <reference path="JokClientEngine.ts" />
 /// <reference path="Game.ts" />
-/// <reference path="typings/jquery.d.ts"/>
-/// <reference path="typings/kinetic.d.ts"/>
+/// <reference path="../typings/jquery.d.ts"/>
+/// <reference path="../typings/kinetic.d.ts"/>
 
 
 import ClientEngine = require('JokClientEngine');
