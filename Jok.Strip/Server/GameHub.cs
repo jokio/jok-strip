@@ -36,6 +36,13 @@ namespace Jok.Strip.Server
             user.Table.IncomingMethod(user.UserID, someParam);
         }
 
+        public void SetChar(string ch)
+        {
+            var user = GetCurrentUser();
+            if (user == null) return;
+            user.Table.SetNewChar(user.UserID,ch);
+        }
+
         public void Ping()
         {
             var user = GetCurrentUser();

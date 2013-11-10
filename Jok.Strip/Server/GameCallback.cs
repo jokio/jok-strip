@@ -1,4 +1,5 @@
 ﻿using Jok.Strip.Common;
+using Jok.Strip.Server.Models;
 using Microsoft.AspNet.SignalR;
 using System;
 using System.Collections.Generic;
@@ -41,6 +42,33 @@ namespace Jok.Strip.Server
         }
         #endregion
 
+        /// <summary>
+        ///  ამ ფუნქციით გაეგზავნება შესაბამისი პარამეტრები 
+        /// </summary>
+        /// <param name="to">მიმღები</param>
+        /// <param name="keyboard">კლავიატურის ღილაკები</param>
+        public static void Options(ICallback to, KeyboardOption keyboard)
+        {
+            var conns = GetUsers(to);
+            if(conns == null)return;
+            Hub.Clients.Clients(conns).Options(keyboard);
+        }
+
+        public static void GameEnd(ICallback to, int winnerId)
+        {
+            var conns = GetUsers(to);
+            if (conns == null) return;
+            Hub.Clients.Clients(conns).GameEnd(winnerId);
+        }
+
+        
+
+        public static void PlayerState(ICallback to, params PlayerState [] pl)
+        {
+            var conns = GetUsers(to);
+            if(conns==null)return;
+            Hub.Clients.Clients(conns).PlayerState(pl);
+        }
 
         public static void SomeCallback(ICallback to, string additionalInfo)
         {
