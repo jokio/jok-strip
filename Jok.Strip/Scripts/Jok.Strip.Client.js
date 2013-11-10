@@ -9,6 +9,11 @@ Object.freeze(GameStates);
 //-----------------
 
 //-Class Template
+
+function KeyboardOption (){
+        this.From=1;
+        this.To = 1;
+    }
 function PlayerState (){
     this.Time = 1;
     this.UserId = 1;
@@ -28,7 +33,7 @@ var This = {
     rects: [],//Kinetic.Rect
     pntext: Kinetic.Text,
     drawAllow: false,
-    keyboardOption: 'TMP',
+    keyboardOption: new KeyboardOption,
     gameState: GameStates.New,
     mState: new PlayerState(),
     fState: new PlayerState(),
