@@ -125,7 +125,7 @@ namespace Jok.Strip.Server
             return "All good things come to an end.";
         }
 
-        public static bool IsWinner(PlayerState fuser, PlayerState suser)
+        public static bool IsWinner(GamePlayer fuser, GamePlayer suser)
         {
             if (fuser.ProverbState.Contains(GameTable.XCHAR))
                 return true;
@@ -203,7 +203,7 @@ namespace Jok.Strip.Server
                     Players[i].TimerHendler = JokTimer<int>.Create();
                     Players[i].TimerHendler.SetTimeout(e =>
                     OnSetNewChar(Players[i],
-                    GetRandomChar(Players[i].State.HelpKeys))
+                    GetRandomChar(Players[i].HelpKeys))
                     , 0, TIME_OUT_TICK);
                 }
             }
@@ -232,8 +232,8 @@ namespace Jok.Strip.Server
         private void SendGameEnd()
         {
             GameCallback.GameEnd(Table,
-                        (IsWinner(Players[0].State,
-                        Players[1].State) ?
+                        (IsWinner(Players[0],
+                        Players[1]) ?
                         Players[0].UserID : Players[1].UserID));
         }
 
@@ -249,9 +249,9 @@ namespace Jok.Strip.Server
             }
         }
 
-        private PlayerState GetPleyerState(GamePlayer pl)
+        private GamePlayer GetPleyerState(GamePlayer pl)
         {
-            var sState = pl.State.Clone<PlayerState>();
+            var sState = pl.Clone<GamePlayer>();
             sState.Time = TIME_OUT_TICK - (pl.TimerHendler != null &&
                           pl.TimerCreateDate != default(DateTime) ?
                           DateTime.Now.Millisecond - pl.TimerCreateDate.Millisecond : 0);
@@ -263,12 +263,12 @@ namespace Jok.Strip.Server
             Proverb = GameTable.GetNewProverb();
             foreach (var player in Players)
             {
-                player.State.Time = TIME_OUT_TICK;
-                player.State.Incorect = 0;
-                player.State.MaxIncorrect = GameTable.
+                player.Time = TIME_OUT_TICK;
+                player.Incorect = 0;
+                player.MaxIncorrect = GameTable.
                                              MaxIncorrectCounter(Proverb, KeysOption);
-                player.State.HelpKeys = new List<char>();
-                player.State.ProverbState = new string(Proverb.ToCharArray().
+                player.HelpKeys = new List<char>();
+                player.ProverbState = new string(Proverb.ToCharArray().
                     Select(c => this.KeysOption.IsChar(c)
                         ? GameTable.XCHAR
                         : c).ToArray());
@@ -299,7 +299,7 @@ namespace Jok.Strip.Server
                     player.TimerHendler.Stop();
                 player.TimerHendler.SetTimeout(e =>
                     OnSetNewChar(player,
-                    GetRandomChar(player.State.HelpKeys))
+                    GetRandomChar(player.HelpKeys))
                     ,0,TIME_OUT_TICK);
 
             };
@@ -309,12 +309,12 @@ namespace Jok.Strip.Server
         private bool SetNewChar(GamePlayer player, string ch)
         {
             ch = ch.ToLower();
-            if(!KeysOption.IsChar(ch) || player.State.
+            if(!KeysOption.IsChar(ch) || player.
                HelpKeys.Contains(ch[0]))
             return false;
-            player.State.HelpKeys.Add(ch[0]);
+            player.HelpKeys.Add(ch[0]);
             var str = this.Proverb.ToLower();
-            var pstate = player.State.ProverbState;
+            var pstate = player.ProverbState;
             StringBuilder bld = new StringBuilder();
             bool isCorrect = false;
             for (var i = 0; i < str.Length; i++)
@@ -330,14 +330,14 @@ namespace Jok.Strip.Server
                 }
             }
 
-            player.State.ProverbState = bld.ToString();
+            player.ProverbState = bld.ToString();
             if (!isCorrect)
             {
-                player.State.Incorect++;
+                player.Incorect++;
             }
 
-            var end = (player.State.MaxIncorrect <=
-                       player.State.Incorect || !player.State.ProverbState.Contains(XCHAR));
+            var end = (player.MaxIncorrect <=
+                       player.Incorect || !player.ProverbState.Contains(XCHAR));
             if (end)
             {
                 SendStates();
@@ -366,22 +366,25 @@ namespace Jok.Strip.Server
         protected void OnPing(GamePlayer player)
         {
             GameCallback.Pong(player);
-
-
         }
-
-
     }
-
-
+  
     [DataContract]
-    public class PlayerState
+    public class GamePlayer : IGamePlayer
     {
+
+        public string IPAddress { get; set; }
+
+        public bool IsVIP { get; set; }
+
+        public bool IsOnline { get; set; }
+        
+        public List<string> ConnectionIDs { get; set; }
+
+        //--Game Options
+
         [DataMember]
         public long Time { set; get; }
-
-        [DataMember]
-        public int UserId { set; get; }
 
         [DataMember]
         public List<char> HelpKeys { set; get; }
@@ -391,25 +394,12 @@ namespace Jok.Strip.Server
         public int Incorect { set; get; }
         [DataMember]
         public int MaxIncorrect { set; get; }
-    }
 
-    public class GamePlayer : IGamePlayer
-    {
-
+        [DataMember]
         public int UserID { get; set; }
-
-        public string IPAddress { get; set; }
-
-        public bool IsVIP { get; set; }
-
-        public bool IsOnline { get; set; }
-
-        public List<string> ConnectionIDs { get; set; }
-
-        //--Game Options
-        public PlayerState State { set; get; }
-
+        [IgnoreDataMember]
         public IJokTimer<int> TimerHendler { set; get; }
+        [IgnoreDataMember]
         public DateTime TimerCreateDate { set; get; }
         //--
         public override bool Equals(object obj)
