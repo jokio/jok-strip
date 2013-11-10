@@ -162,7 +162,7 @@
     <Compile Include="Server\GameCallback.cs" />
     <Compile Include="Server\GameHub.cs" />
     <Compile Include="Server\GameTable.cs" />
-    <Compile Include="Server\Models\KeyboardOption.cs" />
+    <Compile Include="Server\Models\KeyBoardOption.cs" />
     <Compile Include="Server\Models\TableStatus.cs" />
   </ItemGroup>
   <ItemGroup>
