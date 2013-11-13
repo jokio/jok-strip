@@ -12,7 +12,8 @@ namespace Jok.Strip
                         "~/Scripts/Common/jquery-{version}.js",
                         "~/Scripts/Common/jquery.signalR-2.0.0.js",
                         "~/Scripts/Jok.GameEngine.js",
-                        "~/Scripts/Jok.Strip.Client.js"
+                        "~/Scripts/Jok.Strip.Client.js",
+                        "~/Scripts/Common/kinetic-v{version}.js"
                         ));
 
             bundles.Add(new StyleBundle("~/bundles/css").Include("~/Content/site.css"));

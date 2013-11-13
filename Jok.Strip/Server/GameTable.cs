@@ -245,7 +245,7 @@ namespace Jok.Strip.Server
                               p.UserID != player.UserID);
                 var tmpstate = GetPleyerState(sPlayer);
                 tmpstate.HelpKeys = null;
-                GameCallback.PlayerState(player, GetPleyerState(player), tmpstate);
+                GameCallback.PlayerState(player, new []{GetPleyerState(player), tmpstate});
             }
         }
 
@@ -383,16 +383,16 @@ namespace Jok.Strip.Server
 
         //--Game Options
 
-        [DataMember]
+        [DataMember(Name = "time")]
         public long Time { set; get; }
 
-        [DataMember]
+        [DataMember(Name = "helpkeys")]
         public List<char> HelpKeys { set; get; }
-        [DataMember]
+        [DataMember(Name = "proverbState")]
         public string ProverbState { set; get; }
-        [DataMember]
+        [DataMember(Name = "incorect")]
         public int Incorect { set; get; }
-        [DataMember]
+        [DataMember(Name = "maxIncorrect")]
         public int MaxIncorrect { set; get; }
 
         [DataMember]

@@ -63,7 +63,7 @@ namespace Jok.Strip.Server
 
         
 
-        public static void PlayerState(ICallback to, params GamePlayer [] pl)
+        public static void PlayerState(ICallback to, GamePlayer [] pl)
         {
             var conns = GetUsers(to);
             if(conns==null)return;
