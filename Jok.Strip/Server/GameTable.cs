@@ -168,15 +168,15 @@ namespace Jok.Strip.Server
 
         public void SetNewChar(int userid, string ch)
         {
-            
+
             var player = GetPlayer(userid);
             if (player == null) return;
 
             lock (SyncObject)
             {
-                OnSetNewChar(player,ch);
+                OnSetNewChar(player, ch);
             }
-            
+
         }
 
         protected override void OnJoin(GamePlayer player, object state)
@@ -188,7 +188,8 @@ namespace Jok.Strip.Server
             }
             else
                 player = Players[Players.IndexOf(player)];
-            GameCallback.Options(player, this.KeysOption);
+
+            GameCallback.KeyOptions(player, this.KeysOption);
             //todo მერე გადასაკეთებელი იქნება არჩეული ენის თვის შესაბამისი ღილაკების გაგზავნა.
 
             if (Status == TableStatus.New && Players.Count == 2)
@@ -197,7 +198,7 @@ namespace Jok.Strip.Server
                 Status = TableStatus.Started;
                 RestartState();
                 SendStates();
-                for (int i=0;i<Players.Count;i++)
+                for (int i = 0; i < Players.Count; i++)
                 { //mgoni unda imuSaos ase.
                     Players[i].TimerCreateDate = DateTime.Now;
                     Players[i].TimerHendler = JokTimer<int>.Create();
@@ -224,7 +225,7 @@ namespace Jok.Strip.Server
         {
             for (var i = KeysOption.From; i <= KeysOption.To; i++)
             {
-                if (!ch.Contains((char) i))
+                if (!ch.Contains((char)i))
                     return ((char)i).ToString();
             }
             return XCHAR.ToString();
@@ -245,7 +246,7 @@ namespace Jok.Strip.Server
                               p.UserID != player.UserID);
                 var tmpstate = GetPleyerState(sPlayer);
                 tmpstate.HelpKeys = null;
-                GameCallback.PlayerState(player, new []{GetPleyerState(player), tmpstate});
+                GameCallback.PlayerState(player, new[] { GetPleyerState(player), tmpstate });
             }
         }
 
@@ -295,12 +296,12 @@ namespace Jok.Strip.Server
                 //todo Check game is End;
 
                 player.TimerCreateDate = DateTime.Now;
-                if(player.TimerHendler !=null)
+                if (player.TimerHendler != null)
                     player.TimerHendler.Stop();
                 player.TimerHendler.SetTimeout(e =>
                     OnSetNewChar(player,
                     GetRandomChar(player.HelpKeys))
-                    ,0,TIME_OUT_TICK);
+                    , 0, TIME_OUT_TICK);
 
             };
         }
@@ -309,9 +310,9 @@ namespace Jok.Strip.Server
         private bool SetNewChar(GamePlayer player, string ch)
         {
             ch = ch.ToLower();
-            if(!KeysOption.IsChar(ch) || player.
+            if (!KeysOption.IsChar(ch) || player.
                HelpKeys.Contains(ch[0]))
-            return false;
+                return false;
             player.HelpKeys.Add(ch[0]);
             var str = this.Proverb.ToLower();
             var pstate = player.ProverbState;
@@ -368,7 +369,7 @@ namespace Jok.Strip.Server
             GameCallback.Pong(player);
         }
     }
-  
+
     [DataContract]
     public class GamePlayer : IGamePlayer
     {
@@ -378,7 +379,7 @@ namespace Jok.Strip.Server
         public bool IsVIP { get; set; }
 
         public bool IsOnline { get; set; }
-        
+
         public List<string> ConnectionIDs { get; set; }
 
         //--Game Options

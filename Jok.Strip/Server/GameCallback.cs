@@ -47,11 +47,11 @@ namespace Jok.Strip.Server
         /// </summary>
         /// <param name="to">მიმღები</param>
         /// <param name="keyboard">კლავიატურის ღილაკები</param>
-        public static void Options(ICallback to, KeyboardOption keyboard)
+        public static void KeyOptions(ICallback to, KeyboardOption keyboard)
         {
             var conns = GetUsers(to);
             if(conns == null)return;
-            Hub.Clients.Clients(conns).Options(keyboard);
+            Hub.Clients.Clients(conns).KeyOptions(keyboard);
         }
 
         public static void GameEnd(ICallback to, int winnerId)
@@ -61,7 +61,12 @@ namespace Jok.Strip.Server
             Hub.Clients.Clients(conns).GameEnd(winnerId);
         }
 
-        
+        public static void RestartGame(ICallback to)
+        {
+            var conns = GetUsers(to);
+            if(conns==null)return;
+            Hub.Clients.Clients(conns).RestartGame();
+        }
 
         public static void PlayerState(ICallback to, GamePlayer [] pl)
         {

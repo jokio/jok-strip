@@ -43,11 +43,12 @@ var proxy = new GameHub('GameHub', window.userid, '');
 
 //-------Cvladebi
 var This = {
-    stage: {},//new Kinetic.Stage()
-    layer: {},//new Kinetic.Layer()
-    rects: {},//new Kinetic.Rect[0] 
-    chars: {},//new Kinetic.Text[0]
-    pntext: {},//Kinetic.Text
+    userId:0,
+    stage: new Kinetic.Stage(),//new Kinetic.Stage()
+    layer: new Kinetic.Layer(),//new Kinetic.Layer()
+    rects: new Kinetic.Rect[0],//new Kinetic.Rect[0] 
+    chars: new Kinetic.Text[0],//new Kinetic.Text[0]
+    pntext: Kinetic.Text,//Kinetic.Text
     drawAllow: false,
     keyboardOption: new KeyboardOption,
     gameState: Game.States.New,
@@ -262,17 +263,80 @@ This.restartGame = function() {
     
 };
 
+This.changePlayerState = function(arrPl) {
+    this.mState = (arrPl[0].userId == this.userId) ? arrPl[0] : arrPl[1];
+    this.fState = (arrPl[0].userId == this.userId) ? arrPl[1] : arrPl[0];
+    if (this.fState) {
+        this.fState.time = this.fState.time && this.fState>0? 
+             Math.floor(this.fState.time / 1000) :
+            Game.TIMEOUTTICK / 1000;
+    }
+    this.mState.time = this.mState.time && this.mState.time > 0 ?
+        Math.floor(this.mState.time / 1000) : Game.TIMEOUTTICK / 1000;
+};
+
+This.playerState = function(arrPl) {
+    if (this.mState.helpkeys)
+        for (var k in this.mState.helpkeys) {
+            var element = document.getElementById('btn' + this.mState.helpkeys[k]);
+            element.style.visibility = "hidden";
+            element.style.position = "fixed";
+        }
+    this.drawAllow = true;
+    this.animateWhile();
+
+};
+
+This.gameEndCall = function(arrPl) {
+    this.changePlayerState(arrPl);
+    if (this.mState.helpkeys) {
+        for (var k in this.mState.helpkeys) {
+            var element = document.getElementById('btn' + this.mState.helpkeys[k]);
+            element.style.visibility = "hidden";
+            element.style.position = "fixed";
+        }
+        this.drawAllow = false;
+        this.gameState = Game.States.Finished;
+        this.drawScreen(); //todo gasatestia
+        $('#divKeyboard button').each(function (i, el) {
+            el.style["visibility"] = "hidden";
+            el.style['position'] = 'absolute';
+        });
+        var bt = $('#btnplayAgain')[0];
+        bt.style['visibility'] = 'visible';
+        bt.style['position'] = 'initial';
+        this.drawAllow = false;
+        //todo is winner funqcia dasamatebeli
+        var winner = Game.IsWinner(this.mState, this.fState) ? this.mState : this.fState;
+        this.pntext.setText('გამარჯვებულია: ' + winner.userId);
+        this.layer.draw();
+
+
+        
+    }
+};
 //-------
 //game event
-proxy.on('Option',function(keybrOption) {
-    console.log(keybrOption);
+proxy.on('KeyOptions', function (keybrOption) {
+
+    console.log("KeyOptions->", keybrOption);
     This.keyboardOption = keybrOption;
 });
+
+proxy.on('RestartGame', function () {
+    This.restartGame();
+});
+
+proxy.on('PlayerState', function(plArr) {
+    This.playerState(plArr);
+});
+
+
 //---
 
 proxy.on('Online', function () {
     console.log('server is online');
-
+    This.loadCanvas();
 });
 
 proxy.on('Offline', function () {
@@ -283,6 +347,8 @@ proxy.on('UserAuthenticated', function (userid) {
 
     proxy.send('IncomingMethod', 'someParam');
 
+    This.userId = userid;
+
 });
 
 proxy.on('Pong', function (str,strb) {
@@ -290,7 +356,7 @@ proxy.on('Pong', function (str,strb) {
 });
 
 proxy.on('SomeCallback', function (i) {
-
+    
 });
 
 proxy.start();
