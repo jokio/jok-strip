@@ -10,7 +10,7 @@ Game.States = {
 };
 Object.freeze(Game.States);
 
-Game.TIMEOUTTICK = 3000;
+Game.TIMEOUTTICK = 15000;
 //Object.freeze(Game.TIMEOUTTICK);
 
 Game.XCHAR = '•';
@@ -288,11 +288,11 @@ This.changePlayerState = function(arrPl) {
     this.mState = (arrPl[0].UserID == this.UserID) ? arrPl[0] : arrPl[1];
     this.fState = (arrPl[0].UserID == this.UserID) ? arrPl[1] : arrPl[0];
     if (this.fState) {
-        this.fState.time = this.fState.time && this.fState>0? 
+        this.fState.time = this.fState.time>0? 
              Math.floor(this.fState.time / 1000) :
             Game.TIMEOUTTICK / 1000;
     }
-    this.mState.time = this.mState.time && this.mState.time > 0 ?
+    this.mState.time = this.mState.time > 0 ?
         Math.floor(this.mState.time / 1000) : Game.TIMEOUTTICK / 1000;
 };
 
@@ -303,10 +303,9 @@ This.playerState = function (arrPl) {
         //todo aqedan unda gavitano.
         this.gameState = Game.States.Started;
         this.drawAllow = true;
-    } else {
+    } 
       
         this.animateWhile();
-    }
     if(this.mState.helpkeys)
         for (var k in this.mState.helpkeys) {
             var element = document.getElementById('btn' + this.mState.helpkeys[k]);
