@@ -21,6 +21,13 @@ Game.getPercent =function (dec) {
     return Math.round(100 * Math.abs((1 - dec)));
 };
 
+Game.isWinner = function (fUser, sUser) {
+    if (fUser.proverbState.indexOf(Game.XCHAR) < 0)
+        return true;
+    if (sUser.proverbState.indexOf(Game.XCHAR) < 0)
+        return false;
+    return fUser.incorect < sUser.incorect;
+};
 
 //-----------------
 
@@ -123,7 +130,7 @@ This.drawScreen = function() {
 
     var tmpchars = this.mState.proverbState.split('');
     console.log('1.3');
-    for (var i = 0; i < i.length; i++) {
+    for (var i = 0; i < tmpchars.length; i++) {
         if (this.fState.proverbState.charAt(i) != Game.XCHAR &&
             this.mState.proverbState.charAt(i) !=
                 this.fState.proverbState.charAt(i)) {
@@ -251,17 +258,18 @@ This.updatePage = function() {
 
 This.synchronizeCanvasObject = function() {
     console.log('5.1');
-    this.gameState = Game.States.Started;
+    this.gameState = Game.States.New;
     this.updatePage();
     this.layer.removeChildren();
     this.chars = [];
     this.rects = [];
     this.firstDrawScreen(this.mState.proverbState);
-    this.drawAllow = true;
     this.layer.draw();
 };
 
-This.restartGame = function() {
+This.restartGame = function () {
+    if (Game.States.Started == this.gameState)
+        return;
     console.log('4.1');
 
     console.log('state:' + this.gameState);
@@ -319,8 +327,9 @@ This.playerState = function (arrPl) {
         this.firstDrawScreen(this.mState.proverbState);
         //todo aqedan unda gavitano.
         this.gameState = Game.States.Started;
-    } else {
         this.drawAllow = true;
+    } else {
+      
         this.animateWhile();
     }
     if(this.mState.helpkeys)
@@ -333,14 +342,15 @@ This.playerState = function (arrPl) {
 };
 
 This.gameEndCall = function() {
-    if (this.mState.helpkeys) {
+   
         for (var k in this.mState.helpkeys) {
             var element = document.getElementById('btn' + this.mState.helpkeys[k]);
             element.style.visibility = "hidden";
             element.style.position = "fixed";
         }
-        this.drawAllow = false;
+     //   this.drawAllow = false;
         this.gameState = Game.States.Finished;
+    this.drawAllow = true;
         this.drawScreen(); //todo gasatestia
         $('#divKeyboard button').each(function (i, el) {
             el.style["visibility"] = "hidden";
@@ -350,11 +360,11 @@ This.gameEndCall = function() {
         bt.style['visibility'] = 'visible';
         bt.style['position'] = 'initial';
         this.drawAllow = false;
-        //todo is winner funqcia dasamatebeli
-        var winner = Game.IsWinner(this.mState, this.fState) ? this.mState : this.fState;
+        
+        var winner = Game.isWinner(this.mState, this.fState) ? this.mState : this.fState;
         this.pntext.setText('გამარჯვებულია: ' + winner.UserID);
         this.layer.draw();
-    }
+    
 };
 //-------
 
@@ -372,7 +382,7 @@ proxy.on('KeyOptions', function (keybrOption) {
 proxy.on('RestartGame', function () {
 
     This.restartGame();
-    
+    This.synchronizeCanvasObject();
 });
 
 proxy.on('GameEnd', function(winnerid) {

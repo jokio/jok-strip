@@ -209,6 +209,7 @@ namespace Jok.Strip.Server
         }
         private void SendGameEnd()
         {
+            Status = TableStatus.Finished;
             GameCallback.GameEnd(Table,
                         (IsWinner(Players[0],
                         Players[1]) ?
@@ -219,9 +220,9 @@ namespace Jok.Strip.Server
         {
             foreach (var player in Players)
             {
-                var sPlayer = Players.Single(p =>
-                              p.UserID != player.UserID);
-                sPlayer.HelpKeys = null;
+                var sPlayer = GetPleyerState(Players.Single(p =>
+                              p.UserID != player.UserID));
+                sPlayer.HelpKeys.Clear();
                
                 sPlayer.ProverbState= new string(sPlayer.ProverbState.Select(a => this.KeysOption.IsChar(a) ? ' ' : a).ToArray());
                 GameCallback.PlayerState(player, new[] { GetPleyerState(player), sPlayer });
@@ -282,7 +283,7 @@ namespace Jok.Strip.Server
                 default: break;
             }
 
-            if (SetNewChar(player, ch)&&this.Status== TableStatus.Started)
+            if (Status == TableStatus.Started && SetNewChar(player, ch))
             {
                 //todo Check game is End;
 
@@ -322,21 +323,25 @@ namespace Jok.Strip.Server
                     bld.Append(pstate[i]);
                 }
             }
-
-            player.ProverbState = bld.ToString();
+            
+                if (this.Status == TableStatus.Started)
+                    player.ProverbState = bld.ToString();
+            
             if (!isCorrect)
-            {
-                player.Incorect++;
-            }
+                {
+                    player.Incorect++;
+                }
 
+            
             var end = (player.MaxIncorrect <=
-                       player.Incorect || !player.ProverbState.Contains(XCHAR));
-            if (end)
-            {
-                SendStates();
-                SendGameEnd();
-                return false;
-            }
+                           player.Incorect || !player.ProverbState.Contains(XCHAR));
+                if (end)
+                {
+                    SendStates();
+                    SendGameEnd();
+                    return false;
+                }
+            
             return true;
         }
 
