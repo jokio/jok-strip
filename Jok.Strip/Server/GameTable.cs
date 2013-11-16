@@ -25,7 +25,7 @@ namespace Jok.Strip.Server
             if (string.IsNullOrEmpty(key) || key.Length != 1)
                 return false;
             key = key.ToLower();
-            if (option.From <= (int)key[0] || option.To >= (int)key[0])
+            if (option.From <= (int)key[0] && option.To >= (int)key[0])
                 return true;
             return false;
         }
@@ -41,31 +41,6 @@ namespace Jok.Strip.Server
         /// <typeparam name="T">The type of object being copied.</typeparam>
         /// <param name="source">The object instance to copy.</param>
         /// <returns>The copied object.</returns>
-        public static T Clone<T>(this object source)
-        {
-            //todo Sesacvellia :)) 
-            if (!typeof(T).IsSerializable)
-            {
-                throw new ArgumentException("The type must be serializable.", "source");
-            }
-
-            // Don't serialize a null object, simply return the default for that object
-            if (Object.ReferenceEquals(source, null))
-            {
-                return default(T);
-            }
-
-            IFormatter formatter = new BinaryFormatter();
-            Stream stream = new MemoryStream();
-            using (stream)
-            {
-                formatter.Serialize(stream, source);
-                stream.Seek(0, SeekOrigin.Begin);
-                return (T)formatter.Deserialize(stream);
-            }
-        }
-
-
     }
 
     //######## --------
@@ -191,10 +166,10 @@ namespace Jok.Strip.Server
                 player = Players[Players.IndexOf(player)];
 
             GameCallback.KeyOptions(player, this.KeysOption);
+          //  GameCallback.PlayerState(player,new []{player});
             //todo მერე გადასაკეთებელი იქნება არჩეული ენის თვის შესაბამისი ღილაკების გაგზავნა.
 
-            if (Status == TableStatus.New && Players.Count == 2)
-            // სულ ორი მოტამაშეს შეუძლია ამ თამაშის ერთდროული თამაში.
+            if (Status == TableStatus.New && Players.Count == 2)  
             {
                 Status = TableStatus.Started;
                 RestartState();
@@ -246,19 +221,33 @@ namespace Jok.Strip.Server
             {
                 var sPlayer = Players.Single(p =>
                               p.UserID != player.UserID);
-                var tmpstate = GetPleyerState(sPlayer);
-                tmpstate.HelpKeys = null;
-                GameCallback.PlayerState(player, new[] { GetPleyerState(player), tmpstate });
+                sPlayer.HelpKeys = null;
+               
+                sPlayer.ProverbState= new string(sPlayer.ProverbState.Select(a => this.KeysOption.IsChar(a) ? ' ' : a).ToArray());
+                GameCallback.PlayerState(player, new[] { GetPleyerState(player), sPlayer });
             }
         }
 
-        private GamePlayer GetPleyerState(GamePlayer pl)
+        public static GamePlayer GetPleyerState(GamePlayer pl)
         {
-            var sState = pl.Clone<GamePlayer>();
-            sState.Time = TIME_OUT_TICK - (pl.TimerHendler != null &&
-                          pl.TimerCreateDate != default(DateTime) ?
-                          DateTime.Now.Millisecond - pl.TimerCreateDate.Millisecond : 0);
-            return sState;
+            return new GamePlayer()
+            {
+                ConnectionIDs = pl.ConnectionIDs,
+                HelpKeys = pl.HelpKeys.Select(item => item).ToList(), // clone
+                TimerHendler = pl.TimerHendler,
+                ProverbState = pl.ProverbState,
+                Incorect = pl.Incorect,
+                MaxIncorrect = pl.MaxIncorrect,
+                IPAddress = pl.IPAddress,
+                IsVIP = pl.IsVIP,
+                IsOnline = pl.IsOnline,
+                UserID = pl.UserID,
+                Time = TIME_OUT_TICK - (pl.TimerHendler != null &&
+                                        pl.TimerCreateDate != default(DateTime)
+                    ? DateTime.Now.Millisecond - pl.TimerCreateDate.Millisecond
+                    : 0),
+                TimerCreateDate = pl.TimerCreateDate
+            };
         }
 
         private void RestartState()
@@ -293,7 +282,7 @@ namespace Jok.Strip.Server
                 default: break;
             }
 
-            if (!SetNewChar(player, ch))
+            if (SetNewChar(player, ch)&&this.Status== TableStatus.Started)
             {
                 //todo Check game is End;
 
@@ -306,6 +295,7 @@ namespace Jok.Strip.Server
                     , 0, TIME_OUT_TICK);
 
             };
+            SendStates();
         }
 
 
@@ -352,8 +342,13 @@ namespace Jok.Strip.Server
 
         protected override void OnLeave(GamePlayer player)
         {
-            Players.Remove(player);
-
+            if (this.Status != TableStatus.Started)
+                Players.Remove(player);
+            else
+            {
+                if(!Players.Any(p=>p.IsOnline))
+                    this.Status = TableStatus.Finished;
+            }
             // აქ უნდა ჩაიდოს ცოტა ჭკვიანი ლოგიკა, თუ თამაში დაწყებულია, მოთამაშე არ უნდა ამოიშალოს სიიდან.
         }
 

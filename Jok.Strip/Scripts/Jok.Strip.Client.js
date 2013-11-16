@@ -10,7 +10,7 @@ Game.States = {
 };
 Object.freeze(Game.States);
 
-Game.TIMEOUTTICK = 1500;
+Game.TIMEOUTTICK = 3000;
 //Object.freeze(Game.TIMEOUTTICK);
 
 Game.XCHAR = '•';
@@ -32,7 +32,7 @@ function KeyboardOption (){
     }
 function PlayerState (){
     this.time = 1;
-    this.userId = 1;
+    this.UserID = 1;
     this.helpkeys = [];
     this.proverbState = '';
     this.incorect = 0;
@@ -42,12 +42,29 @@ function PlayerState (){
 var proxy = new GameHub('GameHub', window.userid, '');
 
 //-------Cvladebi
+
+//var This = {
+//    UserID:0,
+//    stage: new Kinetic.Stage(),//new Kinetic.Stage()
+//    layer: new Kinetic.Layer(),//new Kinetic.Layer()
+//    rects: new Kinetic.Rect[0],//new Kinetic.Rect[0] 
+//    chars: new Kinetic.Text[0],//new Kinetic.Text[0]
+//    pntext: new Kinetic.Text[0],//Kinetic.Text
+//    drawAllow: false,
+//    keyboardOption: new KeyboardOption,
+//    gameState: Game.States.New,
+//    mState: new PlayerState(),
+//    fState: new PlayerState(),
+//    timerHendler: -1,
+//};
+
+
 var This = {
-    userId:0,
+    UserID:0,
     stage: {},//new Kinetic.Stage()
     layer: {},//new Kinetic.Layer()
-    rects: {},//new Kinetic.Rect[0] 
-    chars: {},//new Kinetic.Text[0]
+    rects: new Array(),//new Kinetic.Rect[0] 
+    chars: new Array(),//new Kinetic.Text[0]
     pntext: {},//Kinetic.Text
     drawAllow: false,
     keyboardOption: new KeyboardOption,
@@ -98,13 +115,13 @@ This.drawScreen = function() {
         return;
     console.log('1.1');
     if (!(this.gameState == Game.States.Started &&
-        this.mState && this.fstat)) {
+        this.mState && this.fState)) {
         console.log('test. Ar unda Semovides. 1.1.2');
         return;
     }
     console.log('1.2');
 
-    var chars = this.mState.proverbState.split('');
+    var tmpchars = this.mState.proverbState.split('');
     console.log('1.3');
     for (var i = 0; i < i.length; i++) {
         if (this.fState.proverbState.charAt(i) != Game.XCHAR &&
@@ -112,7 +129,7 @@ This.drawScreen = function() {
                 this.fState.proverbState.charAt(i)) {
                 this.rects[i].setStroke('#21A527');
         }
-        this.chars[i].setText(chars[i]);
+        this.chars[i].setText(tmpchars[i]);
     }
     this.pntext.setText('თქვენ სიცოცხლე: ' +
         Game.getPercent(this.mState.incorect / this.mState.maxIncorrect) +
@@ -137,7 +154,9 @@ This.animateWhile = function() {
     clearTimeout(this.timerHendler);
     if (this.drawAllow) {
         this.timerTick();
-        this.timerHendler = setTimeout(this.animateWhile(), 1000);
+        this.timerHendler = setTimeout(function() {
+            This.animateWhile();
+        }, 1000);
     }
 };
 
@@ -150,7 +169,14 @@ This.gameEndDrawScreen = function() {
 This.firstDrawScreen = function(text) {
     var maxWidth = this.layer.getAttr('width');
     console.log('2.0' + maxWidth);
-    if (this.chars.length < 2) {
+    //---Clear
+    if (this.layer) {
+        this.layer.removeChildren();
+        this.layer.draw();
+    }
+    
+
+    if (this.gameState== Game.States.New || this.gameState==Game.States.Finished) {
         console.log('2.1');
         var q = 5;
         var x = q;
@@ -159,7 +185,7 @@ This.firstDrawScreen = function(text) {
         var rectheight = 40;
         var chararr = text.split('');
         for (var i = 0; i < chararr.length; i++) {
-            var rect = new Kinetic({
+            var rect = new Kinetic.Rect({
                 x: x + q,
                 y: y,
                 width: rectWidth,
@@ -203,14 +229,15 @@ This.firstDrawScreen = function(text) {
             align: 'center',
             fill: 'black'
         });
-
+        
         this.layer.add(this.pntext);
+        this.layer.draw();
     }
 };
 
 This.updatePage = function() {
     var bt = $('#btnplayAgain')[0];
-    this.drawAllow = true;
+   // this.drawAllow = true;
     bt.style['visibility'] = 'hidden';
     bt.style['position'] = 'absolute';
     console.log('5.2');
@@ -218,7 +245,7 @@ This.updatePage = function() {
         el.style['visibility'] = 'initial';
         el.style['position'] = 'initial';
     });
-    this.layer.draw();
+   // this.layer.draw();
 
 };
 
@@ -238,9 +265,9 @@ This.restartGame = function() {
     console.log('4.1');
 
     console.log('state:' + this.gameState);
-    //if (Game.States.Finished != this.gameState) {
+    
         console.log('4.2');
-        this.layer.draw();
+    
         this.updatePage();
         if (Game.States.Finished == this.gameState) {
             this.layer.clear();
@@ -255,7 +282,18 @@ This.restartGame = function() {
             //todo -------
         } else {
             console.log('4.5');
+            this.pntext = new Kinetic.Text({
+                x: 10,
+                y: 100,
+                text: '',
+                fontSize: 16,
+                fontFamily: 'Calibri',
+                width: this.layer.getAttr('width'),
+                align: 'center',
+                fill: 'black'
+            });
             this.pntext.setText('გთხოვთ დაელოდოთ მეორე მოთამაშეს!');
+            this.layer.add(this.pntext);
             this.layer.draw();
             //"{FirstState}"
             //todo ------
@@ -264,8 +302,8 @@ This.restartGame = function() {
 };
 
 This.changePlayerState = function(arrPl) {
-    this.mState = (arrPl[0].userId == this.userId) ? arrPl[0] : arrPl[1];
-    this.fState = (arrPl[0].userId == this.userId) ? arrPl[1] : arrPl[0];
+    this.mState = (arrPl[0].UserID == this.UserID) ? arrPl[0] : arrPl[1];
+    this.fState = (arrPl[0].UserID == this.UserID) ? arrPl[1] : arrPl[0];
     if (this.fState) {
         this.fState.time = this.fState.time && this.fState>0? 
              Math.floor(this.fState.time / 1000) :
@@ -275,16 +313,23 @@ This.changePlayerState = function(arrPl) {
         Math.floor(this.mState.time / 1000) : Game.TIMEOUTTICK / 1000;
 };
 
-This.playerState = function(arrPl) {
-    if (this.mState.helpkeys)
+This.playerState = function (arrPl) {
+    this.changePlayerState(arrPl);
+    if (this.gameState == Game.States.New) {
+        this.firstDrawScreen(this.mState.proverbState);
+        //todo aqedan unda gavitano.
+        this.gameState = Game.States.Started;
+    } else {
+        this.drawAllow = true;
+        this.animateWhile();
+    }
+    if(this.mState.helpkeys)
         for (var k in this.mState.helpkeys) {
             var element = document.getElementById('btn' + this.mState.helpkeys[k]);
             element.style.visibility = "hidden";
             element.style.position = "fixed";
         }
-    this.drawAllow = true;
-    this.animateWhile();
-
+    
 };
 
 This.gameEndCall = function() {
@@ -307,16 +352,21 @@ This.gameEndCall = function() {
         this.drawAllow = false;
         //todo is winner funqcia dasamatebeli
         var winner = Game.IsWinner(this.mState, this.fState) ? this.mState : this.fState;
-        this.pntext.setText('გამარჯვებულია: ' + winner.userId);
+        this.pntext.setText('გამარჯვებულია: ' + winner.UserID);
         this.layer.draw();
     }
 };
 //-------
+
+This.sendChar = function(kchar) {
+    proxy.send('SetChar', kchar);
+};
 //game event
 proxy.on('KeyOptions', function (keybrOption) {
 
     console.log("KeyOptions->", keybrOption);
     This.keyboardOption = keybrOption;
+  
 });
 
 proxy.on('RestartGame', function () {
@@ -332,7 +382,7 @@ proxy.on('GameEnd', function(winnerid) {
 
 });
 
-proxy.on('PlayerState', function(plArr) {
+proxy.on('PlayerState', function (plArr) {
     This.playerState(plArr);
 });
 
@@ -349,11 +399,11 @@ proxy.on('Offline', function () {
     console.log('server is offline');
 });
 
-proxy.on('UserAuthenticated', function (userid) {
+proxy.on('UserAuthenticated', function (UserID) {
 
     proxy.send('IncomingMethod', 'someParam');
 
-    This.userId = userid;
+    This.UserID = UserID;
 
 });
 

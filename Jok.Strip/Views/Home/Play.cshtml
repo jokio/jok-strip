@@ -51,7 +51,7 @@
 <script type="text/javascript">
     var playAgain = false;
     function PlayAgain() {
-        window["gameClient"].RestartGame();
+        window.This.restartGame();
     }
 
     window.addEventListener("load",
@@ -67,21 +67,18 @@
            btn.value = char;
            btn.addEventListener("click", function (e) {
                //todo: Sesacvlelia
-               window["gameClient"].sendChar(e.target.innerHTML);
+               window.This.sendChar(e.target.innerHTML);
            }, true);
            document.getElementById("divKeyboard").appendChild(btn);
        }
-
-       //if (window['gameClient']['timerHendler'] != -1) {
-       //    window['gameClient']['timerHendler']['updatePage']();
-       //}
+       window.This.updatePage();
        document.getElementById('btnplayAgain').style.visibility = 'hidden';
 
 
        setTimeout(function () {
            //todo: gadasatania mtavar kodSi
-     //    window["gameClient"].RestartGame();
-       }, 1000);
+           window.This.restartGame();
+       }, 2000);
    }, true);
 
 </script>
