@@ -263,7 +263,7 @@ This.synchronizeCanvasObject = function() {
     this.layer.removeChildren();
     this.chars = [];
     this.rects = [];
-    this.firstDrawScreen(this.mState.proverbState);
+   // this.firstDrawScreen(this.mState.proverbState);
     this.layer.draw();
 };
 
@@ -286,8 +286,7 @@ This.restartGame = function () {
             this.pntext.setText('გთხოვთ დაელოდოთ მეორე მოთამაშეს!');
             this.layer.draw();
             console.log('4.3');
-          //  "{RESTART}";
-            //todo -------
+            proxy.send('Restart', 1);
         } else {
             console.log('4.5');
             this.pntext = new Kinetic.Text({
@@ -381,7 +380,7 @@ proxy.on('KeyOptions', function (keybrOption) {
 
 proxy.on('RestartGame', function () {
 
-    This.restartGame();
+   // This.restartGame();
     This.synchronizeCanvasObject();
 });
 

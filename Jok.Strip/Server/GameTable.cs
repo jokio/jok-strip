@@ -142,6 +142,17 @@ namespace Jok.Strip.Server
             }
         }
 
+
+        public void OnRestartCall(int userid)
+        {
+            var player = GetPlayer(userid);
+            if (player == null) return;
+            lock (SyncObject)
+            {
+                this.TryRestartGame(player);
+            }
+        }
+
         public void SetNewChar(int userid, string ch)
         {
 
@@ -229,6 +240,31 @@ namespace Jok.Strip.Server
             }
         }
 
+
+        private void TryRestartGame(GamePlayer pl)
+        {
+            if (Status != TableStatus.Finished)
+             return;
+            pl.RestartRequest = true;
+            if (Players.All(p => p.RestartRequest))
+            {
+                Status = TableStatus.Started;
+                RestartState();
+                GameCallback.RestartGame(Table);
+                SendStates();
+                foreach (GamePlayer t in Players)
+                {
+                    //mgoni unda imuSaos ase.
+                    t.TimerCreateDate = DateTime.Now;
+                    t.TimerHendler = JokTimer<int>.Create();
+                    t.TimerHendler.SetTimeout(e =>
+                        OnSetNewChar(t, // PROBLEMA  AXAL CVLADSI IQNEBA ROMELIC SXVA FUNQCIAS ASINQRONULI MUSAOBISTVIS GADAECEMA. 
+                            GetRandomChar(t.HelpKeys))
+                        , 0, TIME_OUT_TICK);
+                }
+
+            }
+        }
         public static GamePlayer GetPleyerState(GamePlayer pl)
         {
             return new GamePlayer()
@@ -250,6 +286,7 @@ namespace Jok.Strip.Server
                 TimerCreateDate = pl.TimerCreateDate
             };
         }
+        
 
         private void RestartState()
         {
@@ -261,6 +298,7 @@ namespace Jok.Strip.Server
                 player.MaxIncorrect = GameTable.
                                              MaxIncorrectCounter(Proverb, KeysOption);
                 player.HelpKeys = new List<char>();
+                player.RestartRequest = false;
                 player.ProverbState = new string(Proverb.ToCharArray().
                     Select(c => this.KeysOption.IsChar(c)
                         ? GameTable.XCHAR
@@ -282,23 +320,26 @@ namespace Jok.Strip.Server
                     return;
                 default: break;
             }
-
-            if (Status == TableStatus.Started && SetNewChar(player, ch))
+            lock (this)
             {
-                //todo Check game is End;
 
-                player.TimerCreateDate = DateTime.Now;
-                if (player.TimerHendler != null)
-                    player.TimerHendler.Stop();
-                player.TimerHendler.SetTimeout(e =>
-                    OnSetNewChar(player,
-                    GetRandomChar(player.HelpKeys))
-                    , 0, TIME_OUT_TICK);
 
-            };
+                if (Status == TableStatus.Started && SetNewChar(player, ch))
+                {
+
+                    player.TimerCreateDate = DateTime.Now;
+                    if (player.TimerHendler != null)
+                        player.TimerHendler.Stop();
+                    player.TimerHendler.SetTimeout(e =>
+                        OnSetNewChar(player,
+                            GetRandomChar(player.HelpKeys))
+                        , 0, TIME_OUT_TICK);
+
+                }
+                ;
+            }
             SendStates();
         }
-
 
         private bool SetNewChar(GamePlayer player, string ch)
         {
@@ -379,7 +420,6 @@ namespace Jok.Strip.Server
     }
 
     [DataContract]
-    [Serializable]
     public class GamePlayer : IGamePlayer
     {
 
@@ -392,6 +432,8 @@ namespace Jok.Strip.Server
         public List<string> ConnectionIDs { get; set; }
 
         //--Game Options
+        [IgnoreDataMember]
+        public bool RestartRequest = false;
 
         [DataMember(Name = "time")]
         public long Time { set; get; }

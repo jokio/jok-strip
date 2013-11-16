@@ -43,6 +43,13 @@ namespace Jok.Strip.Server
             user.Table.SetNewChar(user.UserID,ch);
         }
 
+        public void Restart(int c)
+        {
+            var user = GetCurrentUser();
+            if(user==null)return;
+            user.Table.OnRestartCall(user.UserID);
+        }
+
         public void Ping()
         {
             var user = GetCurrentUser();
