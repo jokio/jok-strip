@@ -43,6 +43,7 @@ namespace Jok.Strip.Server
         /// <returns>The copied object.</returns>
         public static T Clone<T>(this object source)
         {
+            //todo Sesacvellia :)) 
             if (!typeof(T).IsSerializable)
             {
                 throw new ArgumentException("The type must be serializable.", "source");
@@ -198,14 +199,15 @@ namespace Jok.Strip.Server
                 Status = TableStatus.Started;
                 RestartState();
                 SendStates();
-                for (int i = 0; i < Players.Count; i++)
-                { //mgoni unda imuSaos ase.
-                    Players[i].TimerCreateDate = DateTime.Now;
-                    Players[i].TimerHendler = JokTimer<int>.Create();
-                    Players[i].TimerHendler.SetTimeout(e =>
-                    OnSetNewChar(Players[i],
-                    GetRandomChar(Players[i].HelpKeys))
-                    , 0, TIME_OUT_TICK);
+                foreach (GamePlayer t in Players)
+                {
+//mgoni unda imuSaos ase.
+                    t.TimerCreateDate = DateTime.Now;
+                    t.TimerHendler = JokTimer<int>.Create();
+                    t.TimerHendler.SetTimeout(e =>
+                        OnSetNewChar(t, // PROBLEMA  AXAL CVLADSI IQNEBA ROMELIC SXVA FUNQCIAS ASINQRONULI MUSAOBISTVIS GADAECEMA. 
+                            GetRandomChar(t.HelpKeys))
+                        , 0, TIME_OUT_TICK);
                 }
             }
 
@@ -368,9 +370,16 @@ namespace Jok.Strip.Server
         {
             GameCallback.Pong(player);
         }
+
+
+        public GameTable()
+        {
+            Status = TableStatus.New;
+        }
     }
 
     [DataContract]
+    [Serializable]
     public class GamePlayer : IGamePlayer
     {
 

@@ -65,7 +65,7 @@ namespace Jok.Strip.Server
         {
             var conns = GetUsers(to);
             if(conns==null)return;
-            Hub.Clients.Clients(conns).RestartGame();
+            Hub.Clients.Clients(conns).RestartGame(0);
         }
 
         public static void PlayerState(ICallback to, GamePlayer [] pl)

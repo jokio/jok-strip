@@ -44,11 +44,11 @@ var proxy = new GameHub('GameHub', window.userid, '');
 //-------Cvladebi
 var This = {
     userId:0,
-    stage: new Kinetic.Stage(),//new Kinetic.Stage()
-    layer: new Kinetic.Layer(),//new Kinetic.Layer()
-    rects: new Kinetic.Rect[0],//new Kinetic.Rect[0] 
-    chars: new Kinetic.Text[0],//new Kinetic.Text[0]
-    pntext: Kinetic.Text,//Kinetic.Text
+    stage: {},//new Kinetic.Stage()
+    layer: {},//new Kinetic.Layer()
+    rects: {},//new Kinetic.Rect[0] 
+    chars: {},//new Kinetic.Text[0]
+    pntext: {},//Kinetic.Text
     drawAllow: false,
     keyboardOption: new KeyboardOption,
     gameState: Game.States.New,
@@ -83,9 +83,9 @@ This.loadCanvas = function() {
         height: 300
     });
     this.stage = new Kinetic.Stage({
-        container: 'canvaseOne',
         width: 780,
-        height: 330
+        height: 330,
+        container: 'canvasOne'
     });
     this.stage.add(this.layer);
     
@@ -287,8 +287,7 @@ This.playerState = function(arrPl) {
 
 };
 
-This.gameEndCall = function(arrPl) {
-    this.changePlayerState(arrPl);
+This.gameEndCall = function() {
     if (this.mState.helpkeys) {
         for (var k in this.mState.helpkeys) {
             var element = document.getElementById('btn' + this.mState.helpkeys[k]);
@@ -310,9 +309,6 @@ This.gameEndCall = function(arrPl) {
         var winner = Game.IsWinner(this.mState, this.fState) ? this.mState : this.fState;
         this.pntext.setText('გამარჯვებულია: ' + winner.userId);
         this.layer.draw();
-
-
-        
     }
 };
 //-------
@@ -324,7 +320,16 @@ proxy.on('KeyOptions', function (keybrOption) {
 });
 
 proxy.on('RestartGame', function () {
+
     This.restartGame();
+    
+});
+
+proxy.on('GameEnd', function(winnerid) {
+    //todo Set new state
+    This.gameState = Game.States.Finished;
+    This.gameEndCall();
+
 });
 
 proxy.on('PlayerState', function(plArr) {
@@ -337,6 +342,7 @@ proxy.on('PlayerState', function(plArr) {
 proxy.on('Online', function () {
     console.log('server is online');
     This.loadCanvas();
+    This.gameState = Game.States.New;
 });
 
 proxy.on('Offline', function () {
