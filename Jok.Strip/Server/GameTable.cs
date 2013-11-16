@@ -93,7 +93,7 @@ namespace Jok.Strip.Server
                 if (option.IsChar(str[i]))
                     arr.Add(str[i]);
             }
-            return (int)Math.Round(((option.To - option.From) - arr.Count * 0.7), 0);
+            return (int)Math.Round((((option.To - option.From) - arr.Count) * 0.7), 0);
         }
 
         public static string GetNewProverb()

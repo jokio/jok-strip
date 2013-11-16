@@ -29,8 +29,6 @@ Game.isWinner = function (fUser, sUser) {
     return fUser.incorect < sUser.incorect;
 };
 
-//-----------------
-
 //-Class Template
 
 function KeyboardOption (){
@@ -48,24 +46,6 @@ function PlayerState (){
 
 var proxy = new GameHub('GameHub', window.userid, '');
 
-//-------Cvladebi
-
-//var This = {
-//    UserID:0,
-//    stage: new Kinetic.Stage(),//new Kinetic.Stage()
-//    layer: new Kinetic.Layer(),//new Kinetic.Layer()
-//    rects: new Kinetic.Rect[0],//new Kinetic.Rect[0] 
-//    chars: new Kinetic.Text[0],//new Kinetic.Text[0]
-//    pntext: new Kinetic.Text[0],//Kinetic.Text
-//    drawAllow: false,
-//    keyboardOption: new KeyboardOption,
-//    gameState: Game.States.New,
-//    mState: new PlayerState(),
-//    fState: new PlayerState(),
-//    timerHendler: -1,
-//};
-
-
 var This = {
     UserID:0,
     stage: {},//new Kinetic.Stage()
@@ -80,9 +60,6 @@ var This = {
     fState: new PlayerState(),
     timerHendler: -1,
 };
-
-//-------
-
 // -------- Sida funqciebi
 
 This.IsChar=  function (schar) {
@@ -302,8 +279,7 @@ This.restartGame = function () {
             this.pntext.setText('გთხოვთ დაელოდოთ მეორე მოთამაშეს!');
             this.layer.add(this.pntext);
             this.layer.draw();
-            //"{FirstState}"
-            //todo ------
+         
         }
     
 };
@@ -394,9 +370,6 @@ proxy.on('GameEnd', function(winnerid) {
 proxy.on('PlayerState', function (plArr) {
     This.playerState(plArr);
 });
-
-
-//---
 
 proxy.on('Online', function () {
     console.log('server is online');
