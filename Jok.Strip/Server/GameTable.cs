@@ -1,58 +1,13 @@
-﻿
-using System.Data.Entity;
-using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Xml;
-using Antlr.Runtime;
-using Jok.Strip.Common;
-using Jok.Strip.Server;
+﻿using Jok.Strip.Common;
 using Jok.Strip.Server.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using Microsoft.Ajax.Utilities;
+using System.Runtime.Serialization;
+using System.Text;
 
 namespace Jok.Strip.Server
 {
-    //####### ეს დროებით არის აქ.
-    public static class Extentions
-    {
-        public static bool IsChar(this KeyboardOption option, string key)
-        {
-            if (string.IsNullOrEmpty(key) || key.Length != 1)
-                return false;
-            key = key.ToLower();
-            if (option.From <= (int)key[0] && option.To >= (int)key[0])
-                return true;
-            return false;
-        }
-
-        public static bool IsChar(this KeyboardOption option, char key)
-        {
-            return option.IsChar(key.ToString());
-        }
-
-        /// <summary>
-        /// Perform a deep Copy of the object.
-        /// </summary>
-        /// <typeparam name="T">The type of object being copied.</typeparam>
-        /// <param name="source">The object instance to copy.</param>
-        /// <returns>The copied object.</returns>
-    }
-
-    //######## --------
-
-
-    /// <summary>
-    /// თანმიმდევრობა:
-    /// 1. პროპერთიები
-    /// 2. public მეთოდები
-    /// 3. protected მეთოდები
-    /// 4. private მეთოდები
-    /// </summary>
     public class GameTable : GameTableBase<GamePlayer>
     {
         #region Const
@@ -112,36 +67,6 @@ namespace Jok.Strip.Server
         }
         #endregion
 
-        /// <summary>
-        /// გარედან გამოძახებადი მეთოდები შემოგვაქ public მეთოდებით ასეთი სახით, რომელშიც ვაკეთებთ მაგიდზე Player-ს განსაზღვრას userid-თი და შემდეგ ვიძახებთ შესაბამის protected მეთოდს
-        /// ამ მეთოდის საქმე არის 2 რამე:
-        /// 1. გაიგოს რომელი userid რომელიც გადმოვაწოდეთ ამ მაგიდაზე თამაშობდა თუ არა
-        /// 2. lock-ში ჩასვას შესასრულებელი ლოგიკა
-        /// </summary>
-        /// <param name="userid"></param>
-        /// <param name="someParam"></param>
-        public void IncomingMethod(int userid, string someParam)
-        {
-            var player = GetPlayer(userid);
-            if (player == null) return;
-
-            lock (SyncObject)
-            {
-                OnIncomingMethod(player, someParam);
-            }
-        }
-
-        public void Ping(int userid)
-        {
-            var player = GetPlayer(userid);
-            if (player == null) return;
-
-            lock (SyncObject)
-            {
-                OnPing(player);
-            }
-        }
-
 
         public void OnRestartCall(int userid)
         {
@@ -166,6 +91,14 @@ namespace Jok.Strip.Server
 
         }
 
+
+
+        public GameTable()
+        {
+            Status = TableStatus.New;
+        }
+
+
         protected override void OnJoin(GamePlayer player, object state)
         {
 
@@ -177,10 +110,10 @@ namespace Jok.Strip.Server
                 player = Players[Players.IndexOf(player)];
 
             GameCallback.KeyOptions(player, this.KeysOption);
-          //  GameCallback.PlayerState(player,new []{player});
+            //  GameCallback.PlayerState(player,new []{player});
             //todo მერე გადასაკეთებელი იქნება არჩეული ენის თვის შესაბამისი ღილაკების გაგზავნა.
 
-            if (Status == TableStatus.New && Players.Count == 2)  
+            if (Status == TableStatus.New && Players.Count == 2)
             {
                 Status = TableStatus.Started;
                 RestartState();
@@ -190,7 +123,7 @@ namespace Jok.Strip.Server
                     t.TimerCreateDate = DateTime.Now;
                     t.TimerHendler = JokTimer<GamePlayer>.Create();
                     t.TimerHendler.SetTimeout(e =>
-                        OnSetNewChar(e,GetRandomChar(e.HelpKeys))
+                        OnSetNewChar(e, GetRandomChar(e.HelpKeys))
                         , t, TIME_OUT_TICK);
                 }
             }
@@ -207,6 +140,48 @@ namespace Jok.Strip.Server
             }
         }
 
+        protected override void OnLeave(GamePlayer player)
+        {
+            if (this.Status != TableStatus.Started)
+                Players.Remove(player);
+            else
+            {
+                if (!Players.Any(p => p.IsOnline))
+                    this.Status = TableStatus.Finished;
+            }
+            // აქ უნდა ჩაიდოს ცოტა ჭკვიანი ლოგიკა, თუ თამაში დაწყებულია, მოთამაშე არ უნდა ამოიშალოს სიიდან.
+        }
+
+        protected void OnSetNewChar(GamePlayer player, string ch)
+        {
+            switch (Status)
+            {
+                case TableStatus.Finished:
+                    this.SendGameEnd();
+                    return;
+                case TableStatus.New:
+                case TableStatus.StartedWaiting:
+                    return;
+                default: break;
+            }
+
+
+            if (Status == TableStatus.Started && SetNewChar(player, ch))
+            {
+                player.TimerCreateDate = DateTime.Now;
+                player.TimerHendler.Stop();
+                player.TimerHendler.SetTimeout(e =>
+                    OnSetNewChar(e,
+                        GetRandomChar(e.HelpKeys))
+                    , player, TIME_OUT_TICK);
+
+            }
+
+            SendStates();
+        }
+
+
+
         private string GetRandomChar(List<char> ch)
         {
             for (var i = KeysOption.From; i <= KeysOption.To; i++)
@@ -216,6 +191,7 @@ namespace Jok.Strip.Server
             }
             return XCHAR.ToString();
         }
+
         private void SendGameEnd()
         {
             Status = TableStatus.Finished;
@@ -233,18 +209,17 @@ namespace Jok.Strip.Server
                 var sPlayer = GetPleyerState(Players.Single(p =>
                               p.UserID != uid));
                 sPlayer.HelpKeys.Clear();
-               
-                sPlayer.ProverbState= new string(sPlayer.
+
+                sPlayer.ProverbState = new string(sPlayer.
                         ProverbState.Select(a => this.KeysOption.IsChar(a) ? ' ' : a).ToArray());
                 GameCallback.PlayerState(player, new[] { GetPleyerState(player), sPlayer });
             }
         }
 
-
         private void TryRestartGame(GamePlayer pl)
         {
             if (Status != TableStatus.Finished)
-             return;
+                return;
             pl.RestartRequest = true;
             if (Players.All(p => p.RestartRequest))
             {
@@ -259,31 +234,12 @@ namespace Jok.Strip.Server
                     t.TimerHendler.Stop();
                     t.TimerHendler = JokTimer<GamePlayer>.Create();
                     t.TimerHendler.SetTimeout(e =>
-                        OnSetNewChar(e,GetRandomChar(e.HelpKeys))
+                        OnSetNewChar(e, GetRandomChar(e.HelpKeys))
                         , t, TIME_OUT_TICK);
                 }
 
             }
         }
-        public static GamePlayer GetPleyerState(GamePlayer pl)
-        {
-            return new GamePlayer()
-            {
-                ConnectionIDs = pl.ConnectionIDs,
-                HelpKeys = pl.HelpKeys.Select(item => item).ToList(), // clone
-                TimerHendler = pl.TimerHendler,
-                ProverbState = pl.ProverbState,
-                Incorect = pl.Incorect,
-                MaxIncorrect = pl.MaxIncorrect,
-                IPAddress = pl.IPAddress,
-                IsVIP = pl.IsVIP,
-                IsOnline = pl.IsOnline,
-                UserID = pl.UserID,
-                Time = TIME_OUT_TICK - (DateTime.Now.Ticks - pl.TimerCreateDate.Ticks) / 10000,
-                TimerCreateDate = pl.TimerCreateDate
-            };
-        }
-        
 
         private void RestartState()
         {
@@ -302,35 +258,6 @@ namespace Jok.Strip.Server
                         : c).ToArray());
             }
 
-        }
-
-
-        protected void OnSetNewChar(GamePlayer player, string ch)
-        {
-            switch (Status)
-            {
-                case TableStatus.Finished:
-                    this.SendGameEnd();
-                    return;
-                case TableStatus.New:
-                case TableStatus.StartedWaiting:
-                    return;
-                default: break;
-            }
-
-
-                if (Status == TableStatus.Started && SetNewChar(player, ch))
-                {
-                    player.TimerCreateDate = DateTime.Now;
-                    player.TimerHendler.Stop();
-                    player.TimerHendler.SetTimeout(e =>
-                        OnSetNewChar(e,
-                            GetRandomChar(e.HelpKeys))
-                        , player, TIME_OUT_TICK);
-
-                }
-             
-            SendStates();
         }
 
         private bool SetNewChar(GamePlayer player, string ch)
@@ -356,68 +283,58 @@ namespace Jok.Strip.Server
                     bld.Append(pstate[i]);
                 }
             }
-            
-                if (this.Status == TableStatus.Started)
-                    player.ProverbState = bld.ToString();
-            
+
+            if (this.Status == TableStatus.Started)
+                player.ProverbState = bld.ToString();
+
             if (!isCorrect)
-                {
-                    player.Incorect++;
-                }
+            {
+                player.Incorect++;
+            }
 
             if (!(player.MaxIncorrect <=
-                  player.Incorect || !player.ProverbState.Contains(XCHAR))) 
-            return true;
+                  player.Incorect || !player.ProverbState.Contains(XCHAR)))
+                return true;
 
             SendStates();
             SendGameEnd();
             return false;
         }
 
-        protected override void OnLeave(GamePlayer player)
+
+        public static GamePlayer GetPleyerState(GamePlayer pl)
         {
-            if (this.Status != TableStatus.Started)
-                Players.Remove(player);
-            else
+            return new GamePlayer()
             {
-                if(!Players.Any(p=>p.IsOnline))
-                    this.Status = TableStatus.Finished;
-            }
-            // აქ უნდა ჩაიდოს ცოტა ჭკვიანი ლოგიკა, თუ თამაში დაწყებულია, მოთამაშე არ უნდა ამოიშალოს სიიდან.
+                ConnectionIDs = pl.ConnectionIDs,
+                HelpKeys = pl.HelpKeys.Select(item => item).ToList(), // clone
+                TimerHendler = pl.TimerHendler,
+                ProverbState = pl.ProverbState,
+                Incorect = pl.Incorect,
+                MaxIncorrect = pl.MaxIncorrect,
+                IPAddress = pl.IPAddress,
+                IsVIP = pl.IsVIP,
+                IsOnline = pl.IsOnline,
+                UserID = pl.UserID,
+                Time = TIME_OUT_TICK - (DateTime.Now.Ticks - pl.TimerCreateDate.Ticks) / 10000,
+                TimerCreateDate = pl.TimerCreateDate
+            };
         }
 
-        protected void OnIncomingMethod(GamePlayer player, string someParam)
-        {
-            //მაგიდის ყველა წევრისთვის გაგზავნა
-            GameCallback.SomeCallback(Table, "Sent to table (all players)");
-
-            //მაგიდის კონკრეტული წევრისთვის გაგზავნა
-            GameCallback.SomeCallback(ActivePlayer, "Sent to ActivePlayer");
-        }
-
-        protected void OnPing(GamePlayer player)
-        {
-            GameCallback.Pong(player);
-        }
-
-
-        public GameTable()
-        {
-            Status = TableStatus.New;
-        }
     }
 
     [DataContract]
     public class GamePlayer : IGamePlayer
     {
-
+        [DataMember]
         public string IPAddress { get; set; }
-
+        [DataMember]
         public bool IsVIP { get; set; }
-
+        [DataMember]
         public bool IsOnline { get; set; }
-
+        [IgnoreDataMember]
         public List<string> ConnectionIDs { get; set; }
+
 
         //--Game Options
         [IgnoreDataMember]
@@ -434,14 +351,14 @@ namespace Jok.Strip.Server
         public int Incorect { set; get; }
         [DataMember(Name = "maxIncorrect")]
         public int MaxIncorrect { set; get; }
-
         [DataMember]
         public int UserID { get; set; }
+
         [IgnoreDataMember]
         public IJokTimer<GamePlayer> TimerHendler { set; get; }
         [IgnoreDataMember]
         public DateTime TimerCreateDate { set; get; }
-        //--
+
         public override bool Equals(object obj)
         {
             return (obj is GamePlayer) &&

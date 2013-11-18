@@ -25,17 +25,6 @@ namespace Jok.Strip.Server
         #endregion
 
 
-        public void IncomingMethod(string someParam)
-        {
-            var user = GetCurrentUser();
-            if (user == null) return;
-
-            // ყველა იუზერს გააჩნია მაგიდა, როგორც კი შემოდის სერვერზე ავტომატურად რაღაც მაგიდაზე ჯდება,
-            // ასე რომ აქ მაგიდის შემოწმება აღარ არის საჭირო
-
-            user.Table.IncomingMethod(user.UserID, someParam);
-        }
-
         public void SetChar(string ch)
         {
             var user = GetCurrentUser();
@@ -48,14 +37,6 @@ namespace Jok.Strip.Server
             var user = GetCurrentUser();
             if(user==null)return;
             user.Table.OnRestartCall(user.UserID);
-        }
-
-        public void Ping()
-        {
-            var user = GetCurrentUser();
-            if (user == null) return;
-
-            user.Table.Ping(user.UserID);
         }
     }
 }
