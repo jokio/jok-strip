@@ -10,14 +10,10 @@ namespace Jok.Strip.Server
 {
     public class GameTable : GameTableBase<GamePlayer>
     {
-        #region Const
+        #region Properties
 
         public const char XCHAR = '•';
         public const int TIME_OUT_TICK = 15000;
-
-        #endregion
-
-        #region Properties
 
         public override bool IsStarted
         {
@@ -37,46 +33,7 @@ namespace Jok.Strip.Server
 
         #endregion
 
-        #region static functions
 
-        public static int MaxIncorrectCounter(string str, KeyboardOption option)
-        {
-            str = str.ToLower();
-            var arr = new HashSet<char>();
-            for (var i = 0; i < str.Length; i++)
-            {
-                if (option.IsChar(str[i]))
-                    arr.Add(str[i]);
-            }
-            return (int)Math.Round((((option.To - option.From) - arr.Count) * 0.7), 0);
-        }
-
-        public static string GetNewProverb()
-        {
-            return "All good things come to an end.";
-        }
-
-        public static bool IsWinner(GamePlayer fuser, GamePlayer suser)
-        {
-            if (fuser.ProverbState.Contains(GameTable.XCHAR))
-                return true;
-            if (suser.ProverbState.Contains(GameTable.XCHAR))
-                return false;
-            return fuser.Incorect < suser.Incorect;
-
-        }
-        #endregion
-
-
-        public void OnRestartCall(int userid)
-        {
-            var player = GetPlayer(userid);
-            if (player == null) return;
-            lock (SyncObject)
-            {
-                this.TryRestartGame(player);
-            }
-        }
 
         public void SetNewChar(int userid, string ch)
         {
@@ -91,6 +48,16 @@ namespace Jok.Strip.Server
 
         }
 
+        public void OnRestartCall(int userid)
+        {
+            var player = GetPlayer(userid);
+            if (player == null) return;
+
+            lock (SyncObject)
+            {
+                this.TryRestartGame(player);
+            }
+        }
 
 
         public GameTable()
@@ -243,13 +210,12 @@ namespace Jok.Strip.Server
 
         private void RestartState()
         {
-            Proverb = GameTable.GetNewProverb();
+            Proverb = GetNewProverb();
             foreach (var player in Players)
             {
                 player.Time = TIME_OUT_TICK;
                 player.Incorect = 0;
-                player.MaxIncorrect = GameTable.
-                                             MaxIncorrectCounter(Proverb, KeysOption);
+                player.MaxIncorrect = MaxIncorrectCounter(Proverb, KeysOption);
                 player.HelpKeys = new List<char>();
                 player.RestartRequest = false;
                 player.ProverbState = new string(Proverb.ToCharArray().
@@ -301,8 +267,7 @@ namespace Jok.Strip.Server
             return false;
         }
 
-
-        public static GamePlayer GetPleyerState(GamePlayer pl)
+        private GamePlayer GetPleyerState(GamePlayer pl)
         {
             return new GamePlayer()
             {
@@ -319,6 +284,33 @@ namespace Jok.Strip.Server
                 Time = TIME_OUT_TICK - (DateTime.Now.Ticks - pl.TimerCreateDate.Ticks) / 10000,
                 TimerCreateDate = pl.TimerCreateDate
             };
+        }
+
+        private int MaxIncorrectCounter(string str, KeyboardOption option)
+        {
+            str = str.ToLower();
+            var arr = new HashSet<char>();
+            for (var i = 0; i < str.Length; i++)
+            {
+                if (option.IsChar(str[i]))
+                    arr.Add(str[i]);
+            }
+            return (int)Math.Round((((option.To - option.From) - arr.Count) * 0.7), 0);
+        }
+
+        private string GetNewProverb()
+        {
+            return "All good things come to an end.";
+        }
+
+        private bool IsWinner(GamePlayer fuser, GamePlayer suser)
+        {
+            if (fuser.ProverbState.Contains(GameTable.XCHAR))
+                return true;
+            if (suser.ProverbState.Contains(GameTable.XCHAR))
+                return false;
+            return fuser.Incorect < suser.Incorect;
+
         }
 
     }

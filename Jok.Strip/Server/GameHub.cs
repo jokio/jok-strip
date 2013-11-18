@@ -29,13 +29,15 @@ namespace Jok.Strip.Server
         {
             var user = GetCurrentUser();
             if (user == null) return;
-            user.Table.SetNewChar(user.UserID,ch);
+
+            user.Table.SetNewChar(user.UserID, ch);
         }
 
         public void Restart(int c)
         {
             var user = GetCurrentUser();
-            if(user==null)return;
+            if (user == null) return;
+
             user.Table.OnRestartCall(user.UserID);
         }
     }

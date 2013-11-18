@@ -50,7 +50,8 @@ namespace Jok.Strip.Server
         public static void KeyOptions(ICallback to, KeyboardOption keyboard)
         {
             var conns = GetUsers(to);
-            if(conns == null)return;
+            if (conns == null) return;
+
             Hub.Clients.Clients(conns).KeyOptions(keyboard);
         }
 
@@ -58,37 +59,24 @@ namespace Jok.Strip.Server
         {
             var conns = GetUsers(to);
             if (conns == null) return;
+
             Hub.Clients.Clients(conns).GameEnd(winnerId);
         }
 
         public static void RestartGame(ICallback to)
         {
             var conns = GetUsers(to);
-            if(conns==null)return;
+            if (conns == null) return;
+
             Hub.Clients.Clients(conns).RestartGame(0);
         }
 
-        public static void PlayerState(ICallback to, GamePlayer [] pl)
+        public static void PlayerState(ICallback to, GamePlayer[] pl)
         {
             var conns = GetUsers(to);
-            if(conns==null)return;
+            if (conns == null) return;
+
             Hub.Clients.Clients(conns).PlayerState(pl);
-        }
-
-        public static void SomeCallback(ICallback to, string additionalInfo)
-        {
-            var conns = GetUsers(to);
-            if (conns == null) return;
-
-            Hub.Clients.Clients(conns).SomeCallback(additionalInfo);
-        }
-
-        public static void Pong(ICallback to)
-        {
-            var conns = GetUsers(to);
-            if (conns == null) return;
-
-            Hub.Clients.Clients(conns).Pong();
         }
     }
 }
