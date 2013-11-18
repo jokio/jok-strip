@@ -17,7 +17,7 @@ Game.XCHAR = '•';
 //Object.freeze(Game.XCHAR);
 
 
-Game.getPercent =function (dec) {
+Game.getPercent = function (dec) {
     return Math.round(100 * Math.abs((1 - dec)));
 };
 
@@ -31,11 +31,11 @@ Game.isWinner = function (fUser, sUser) {
 
 //-Class Template
 
-function KeyboardOption (){
-        this.From=1;
-        this.To = 1;
-    }
-function PlayerState (){
+function KeyboardOption() {
+    this.From = 1;
+    this.To = 1;
+}
+function PlayerState() {
     this.time = 1;
     this.UserID = 1;
     this.helpkeys = [];
@@ -47,7 +47,7 @@ function PlayerState (){
 var proxy = new GameHub('GameHub', window.userid, '');
 
 var This = {
-    UserID:0,
+    UserID: 0,
     stage: {},//new Kinetic.Stage()
     layer: {},//new Kinetic.Layer()
     rects: new Array(),//new Kinetic.Rect[0] 
@@ -62,17 +62,17 @@ var This = {
 };
 // -------- Sida funqciebi
 
-This.IsChar=  function (schar) {
+This.IsChar = function (schar) {
     return schar ? (schar.length == 1 && schar.toLowerCase().charCodeAt(0)
         >= this.keyboardOption.From && this.keyboardOption.To
         >= schar.toLowerCase().charCodeAt(0)) : false;
 };
 
-This.isCanvasSupported = function() {
+This.isCanvasSupported = function () {
     return true;
 };
 
-This.loadCanvas = function() {
+This.loadCanvas = function () {
     if (!this.isCanvasSupported())
         return false;
     if (!(this.layout == null || this.stage == null))
@@ -89,11 +89,11 @@ This.loadCanvas = function() {
         container: 'canvasOne'
     });
     this.stage.add(this.layer);
-    
+
     return true;
 };
 
-This.drawScreen = function() {
+This.drawScreen = function () {
     console.log('1.0');
     if (!this.drawAllow)
         return;
@@ -111,7 +111,7 @@ This.drawScreen = function() {
         if (this.fState.proverbState.charAt(i) != Game.XCHAR &&
             this.mState.proverbState.charAt(i) !=
                 this.fState.proverbState.charAt(i)) {
-                this.rects[i].setStroke('#21A527');
+            this.rects[i].setStroke('#21A527');
         }
         this.chars[i].setText(tmpchars[i]);
     }
@@ -125,32 +125,33 @@ This.drawScreen = function() {
     console.log('1.4.5');
 };
 
-This.timerTick = function() {
+This.timerTick = function () {
     if (this.mState.time <= 0)
         this.mState.time = Game.TIMEOUTTICK / 1000;
     if (this.fState.time <= 0)
         this.fState.time = Game.TIMEOUTTICK / 1000;
     this.drawScreen();
     this.mState.time--;
-    this.fState.time--;};
+    this.fState.time--;
+};
 
-This.animateWhile = function() {
+This.animateWhile = function () {
     clearTimeout(this.timerHendler);
     if (this.drawAllow) {
         this.timerTick();
-        this.timerHendler = setTimeout(function() {
+        this.timerHendler = setTimeout(function () {
             This.animateWhile();
         }, 1000);
     }
 };
 
-This.gameEndDrawScreen = function() {
+This.gameEndDrawScreen = function () {
     this.drawAllow = true;
     this.drawScreen();
     this.drawAllow = false;
 };
 
-This.firstDrawScreen = function(text) {
+This.firstDrawScreen = function (text) {
     var maxWidth = this.layer.getAttr('width');
     console.log('2.0' + maxWidth);
     //---Clear
@@ -158,9 +159,9 @@ This.firstDrawScreen = function(text) {
         this.layer.removeChildren();
         this.layer.draw();
     }
-    
 
-    if (this.gameState== Game.States.New || this.gameState==Game.States.Finished) {
+
+    if (this.gameState == Game.States.New || this.gameState == Game.States.Finished) {
         console.log('2.1');
         var q = 5;
         var x = q;
@@ -213,34 +214,34 @@ This.firstDrawScreen = function(text) {
             align: 'center',
             fill: 'black'
         });
-        
+
         this.layer.add(this.pntext);
         this.layer.draw();
     }
 };
 
-This.updatePage = function() {
+This.updatePage = function () {
     var bt = $('#btnplayAgain')[0];
-   // this.drawAllow = true;
+    // this.drawAllow = true;
     bt.style['visibility'] = 'hidden';
     bt.style['position'] = 'absolute';
     console.log('5.2');
-    $('#divKeyboard button').each(function(i, el) {
+    $('#divKeyboard button').each(function (i, el) {
         el.style['visibility'] = 'initial';
         el.style['position'] = 'initial';
     });
-   // this.layer.draw();
+    // this.layer.draw();
 
 };
 
-This.synchronizeCanvasObject = function() {
+This.synchronizeCanvasObject = function () {
     console.log('5.1');
     this.gameState = Game.States.New;
     this.updatePage();
     this.layer.removeChildren();
     this.chars = [];
     this.rects = [];
-   // this.firstDrawScreen(this.mState.proverbState);
+    // this.firstDrawScreen(this.mState.proverbState);
     this.layer.draw();
 };
 
@@ -250,45 +251,45 @@ This.restartGame = function () {
     console.log('4.1');
 
     console.log('state:' + this.gameState);
-    
-        console.log('4.2');
-    
-        this.updatePage();
-        if (Game.States.Finished == this.gameState) {
-            this.layer.clear();
-            for (var i = 0; i < this.chars.length; i++) {
-                this.chars[i].hide();
-                this.rects[i].hide();
-            }
-            this.pntext.setText('გთხოვთ დაელოდოთ მეორე მოთამაშეს!');
-            this.layer.draw();
-            console.log('4.3');
-            proxy.send('Restart', 1);
-        } else {
-            console.log('4.5');
-            this.pntext = new Kinetic.Text({
-                x: 10,
-                y: 100,
-                text: '',
-                fontSize: 16,
-                fontFamily: 'Calibri',
-                width: this.layer.getAttr('width'),
-                align: 'center',
-                fill: 'black'
-            });
-            this.pntext.setText('გთხოვთ დაელოდოთ მეორე მოთამაშეს!');
-            this.layer.add(this.pntext);
-            this.layer.draw();
-         
+
+    console.log('4.2');
+
+    this.updatePage();
+    if (Game.States.Finished == this.gameState) {
+        this.layer.clear();
+        for (var i = 0; i < this.chars.length; i++) {
+            this.chars[i].hide();
+            this.rects[i].hide();
         }
-    
+        this.pntext.setText('გთხოვთ დაელოდოთ მეორე მოთამაშეს!');
+        this.layer.draw();
+        console.log('4.3');
+        proxy.send('PlayAgain', 1);
+    } else {
+        console.log('4.5');
+        this.pntext = new Kinetic.Text({
+            x: 10,
+            y: 100,
+            text: '',
+            fontSize: 16,
+            fontFamily: 'Calibri',
+            width: this.layer.getAttr('width'),
+            align: 'center',
+            fill: 'black'
+        });
+        this.pntext.setText('გთხოვთ დაელოდოთ მეორე მოთამაშეს!');
+        this.layer.add(this.pntext);
+        this.layer.draw();
+
+    }
+
 };
 
-This.changePlayerState = function(arrPl) {
+This.changePlayerState = function (arrPl) {
     this.mState = (arrPl[0].UserID == this.UserID) ? arrPl[0] : arrPl[1];
     this.fState = (arrPl[0].UserID == this.UserID) ? arrPl[1] : arrPl[0];
     if (this.fState) {
-        this.fState.time = this.fState.time>0? 
+        this.fState.time = this.fState.time > 0 ?
              Math.floor(this.fState.time / 1000) :
             Game.TIMEOUTTICK / 1000;
     }
@@ -303,46 +304,46 @@ This.playerState = function (arrPl) {
         //todo aqedan unda gavitano.
         this.gameState = Game.States.Started;
         this.drawAllow = true;
-    } 
-      
-        this.animateWhile();
-    if(this.mState.helpkeys)
+    }
+
+    this.animateWhile();
+    if (this.mState.helpkeys)
         for (var k in this.mState.helpkeys) {
             var element = document.getElementById('btn' + this.mState.helpkeys[k]);
             element.style.visibility = "hidden";
             element.style.position = "fixed";
         }
-    
+
 };
 
-This.gameEndCall = function() {
-   
-        for (var k in this.mState.helpkeys) {
-            var element = document.getElementById('btn' + this.mState.helpkeys[k]);
-            element.style.visibility = "hidden";
-            element.style.position = "fixed";
-        }
-     //   this.drawAllow = false;
-        this.gameState = Game.States.Finished;
+This.gameEndCall = function () {
+
+    for (var k in this.mState.helpkeys) {
+        var element = document.getElementById('btn' + this.mState.helpkeys[k]);
+        element.style.visibility = "hidden";
+        element.style.position = "fixed";
+    }
+    //   this.drawAllow = false;
+    this.gameState = Game.States.Finished;
     this.drawAllow = true;
-        this.drawScreen(); //todo gasatestia
-        $('#divKeyboard button').each(function (i, el) {
-            el.style["visibility"] = "hidden";
-            el.style['position'] = 'absolute';
-        });
-        var bt = $('#btnplayAgain')[0];
-        bt.style['visibility'] = 'visible';
-        bt.style['position'] = 'initial';
-        this.drawAllow = false;
-        
-        var winner = Game.isWinner(this.mState, this.fState) ? this.mState : this.fState;
-        this.pntext.setText('გამარჯვებულია: ' + winner.UserID);
-        this.layer.draw();
-    
+    this.drawScreen(); //todo gasatestia
+    $('#divKeyboard button').each(function (i, el) {
+        el.style["visibility"] = "hidden";
+        el.style['position'] = 'absolute';
+    });
+    var bt = $('#btnplayAgain')[0];
+    bt.style['visibility'] = 'visible';
+    bt.style['position'] = 'initial';
+    this.drawAllow = false;
+
+    var winner = Game.isWinner(this.mState, this.fState) ? this.mState : this.fState;
+    this.pntext.setText('გამარჯვებულია: ' + winner.UserID);
+    this.layer.draw();
+
 };
 //-------
 
-This.sendChar = function(kchar) {
+This.sendChar = function (kchar) {
     proxy.send('SetChar', kchar);
 };
 //game event
@@ -350,16 +351,16 @@ proxy.on('KeyOptions', function (keybrOption) {
 
     console.log("KeyOptions->", keybrOption);
     This.keyboardOption = keybrOption;
-  
+
 });
 
 proxy.on('RestartGame', function () {
 
-   // This.restartGame();
+    // This.restartGame();
     This.synchronizeCanvasObject();
 });
 
-proxy.on('GameEnd', function(winnerid) {
+proxy.on('GameEnd', function (winnerid) {
     //todo Set new state
     This.gameState = Game.States.Finished;
     This.gameEndCall();
@@ -388,12 +389,12 @@ proxy.on('UserAuthenticated', function (UserID) {
 
 });
 
-proxy.on('Pong', function (str,strb) {
-    console.log('aqamdec movida:' + str+strb);
+proxy.on('Pong', function (str, strb) {
+    console.log('aqamdec movida:' + str + strb);
 });
 
 proxy.on('SomeCallback', function (i) {
-    
+
 });
 
 proxy.start();

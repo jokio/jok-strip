@@ -33,12 +33,12 @@ namespace Jok.Strip.Server
             user.Table.SetNewChar(user.UserID, ch);
         }
 
-        public void Restart(int c)
+        public void PlayAgain(int c)
         {
             var user = GetCurrentUser();
             if (user == null) return;
 
-            user.Table.OnRestartCall(user.UserID);
+            user.Table.PlayAgain(user.UserID);
         }
     }
 }

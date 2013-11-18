@@ -34,7 +34,6 @@ namespace Jok.Strip.Server
         #endregion
 
 
-
         public void SetNewChar(int userid, string ch)
         {
 
@@ -48,14 +47,14 @@ namespace Jok.Strip.Server
 
         }
 
-        public void OnRestartCall(int userid)
+        public void PlayAgain(int userid)
         {
             var player = GetPlayer(userid);
             if (player == null) return;
 
             lock (SyncObject)
             {
-                this.TryRestartGame(player);
+                this.OnPlayAgain(player);
             }
         }
 
@@ -147,6 +146,31 @@ namespace Jok.Strip.Server
             SendStates();
         }
 
+        protected void OnPlayAgain(GamePlayer pl)
+        {
+            if (Status != TableStatus.Finished)
+                return;
+            pl.RestartRequest = true;
+            if (Players.All(p => p.RestartRequest))
+            {
+                Status = TableStatus.Started;
+                RestartState();
+                GameCallback.RestartGame(Table);
+                SendStates();
+                foreach (GamePlayer t in Players)
+                {
+                    //mgoni unda imuSaos ase.
+                    t.TimerCreateDate = DateTime.Now;
+                    t.TimerHendler.Stop();
+                    t.TimerHendler = JokTimer<GamePlayer>.Create();
+                    t.TimerHendler.SetTimeout(e =>
+                        OnSetNewChar(e, GetRandomChar(e.HelpKeys))
+                        , t, TIME_OUT_TICK);
+                }
+
+            }
+        }
+
 
 
         private string GetRandomChar(List<char> ch)
@@ -180,31 +204,6 @@ namespace Jok.Strip.Server
                 sPlayer.ProverbState = new string(sPlayer.
                         ProverbState.Select(a => this.KeysOption.IsChar(a) ? ' ' : a).ToArray());
                 GameCallback.PlayerState(player, new[] { GetPleyerState(player), sPlayer });
-            }
-        }
-
-        private void TryRestartGame(GamePlayer pl)
-        {
-            if (Status != TableStatus.Finished)
-                return;
-            pl.RestartRequest = true;
-            if (Players.All(p => p.RestartRequest))
-            {
-                Status = TableStatus.Started;
-                RestartState();
-                GameCallback.RestartGame(Table);
-                SendStates();
-                foreach (GamePlayer t in Players)
-                {
-                    //mgoni unda imuSaos ase.
-                    t.TimerCreateDate = DateTime.Now;
-                    t.TimerHendler.Stop();
-                    t.TimerHendler = JokTimer<GamePlayer>.Create();
-                    t.TimerHendler.SetTimeout(e =>
-                        OnSetNewChar(e, GetRandomChar(e.HelpKeys))
-                        , t, TIME_OUT_TICK);
-                }
-
             }
         }
 
