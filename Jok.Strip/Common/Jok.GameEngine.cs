@@ -23,7 +23,6 @@ namespace Jok.Strip.Common
     {
         public static ConcurrentDictionary<string, TConnection> Connections { get; set; }
         public static List<TTable> Tables { get; set; }
-        static List<IPAddressesLog> IPsLog = new List<IPAddressesLog>();
         public static object TablesSyncObject = new object();
 
         static GameHubBase()
@@ -205,7 +204,7 @@ namespace Jok.Strip.Common
             var table = default(TTable);
 
             // in started_waiting tables
-            table = Tables.FirstOrDefault(t => t.UserIDs.Contains(userid) && !t.IsFinished);
+            table = Tables.FirstOrDefault(t => t.UserIDs.Contains(userid) && t.IsStarted && !t.IsFinished);
 
             if (table != default(TTable)) return table;
 
@@ -235,7 +234,7 @@ namespace Jok.Strip.Common
 
             var now = DateTime.Now;
 
-            return IPsLog.Count(l => (now - l.CreateDate < TimeSpan.FromHours(2)) && (
+            return JokSharedInfo.IPsLog.Count(l => (now - l.CreateDate < TimeSpan.FromHours(2)) && (
                 (l.IP1 == table.IPAddresses[0] && l.IP2 == ipaddress) ||
                 (l.IP2 == table.IPAddresses[0] && l.IP1 == ipaddress))) == 0;
         }
@@ -540,6 +539,23 @@ namespace Jok.Strip.Common
 
             return Players[index < Players.Count - 1 ? ++index : 0];
         }
+
+        protected void SaveIPAddressesLog()
+        {
+            lock (SyncObject)
+            {
+                if (Players.Count != 2) return;
+
+                JokSharedInfo.IPsLog.Add(new IPAddressesLog
+                {
+                    IP1 = Players[0].IPAddress,
+                    IP2 = Players[1].IPAddress,
+                    CreateDate = DateTime.Now
+                });
+
+                JokSharedInfo.IPsLog.RemoveAll(p => p.CreateDate < DateTime.Now.AddHours(-5));
+            }
+        }
     }
 
 
@@ -606,6 +622,11 @@ namespace Jok.Strip.Common
             }
             catch { }
         }
+    }
+
+    class JokSharedInfo
+    {
+        public static List<IPAddressesLog> IPsLog = new List<IPAddressesLog>();
     }
 
     public static class JokTimer<T>
