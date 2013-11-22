@@ -1,4 +1,6 @@
-﻿using Jok.Strip.Common;
+﻿using Jok.GameEngine;
+using Jok.GameEngine.Models;
+using Jok.Strip.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
