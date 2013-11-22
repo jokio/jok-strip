@@ -44,6 +44,9 @@
     <Reference Include="Antlr3.Runtime">
       <HintPath>..\packages\Antlr.3.4.1.9004\lib\Antlr3.Runtime.dll</HintPath>
     </Reference>
+    <Reference Include="Jok.GameEngine">
+      <HintPath>..\packages\Jok.GameEngine.1.0.2\lib\Jok.GameEngine.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core">
       <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.0.0\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
     </Reference>
@@ -154,7 +157,6 @@
     <Compile Include="App_Start\Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Common\Extensions.cs" />
-    <Compile Include="Common\Jok.GameEngine.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -180,6 +182,7 @@
     <Content Include="Scripts\Common\server.js" />
     <Content Include="Scripts\Common\kinetic-v4.4.3.js" />
     <Content Include="Scripts\Common\kinetic-v4.4.3.min.js" />
+    <Content Include="Scripts\Jok.GameEngine.js" />
     <Content Include="Scripts\Jok.Strip.Client.js" />
     <Content Include="Scripts\Common\jquery.signalR-2.0.0.js" />
     <Content Include="Scripts\Common\jquery.signalR-2.0.0.min.js" />
@@ -197,7 +200,6 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Home\Play.cshtml" />
     <Content Include="Scripts\Common\jquery-2.0.3.min.map" />
-    <Content Include="Scripts\Jok.GameEngine.js" />
     <Content Include="Views\Home\PlayTS.cshtml" />
   </ItemGroup>
   <ItemGroup />
