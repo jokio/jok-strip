@@ -29,7 +29,7 @@ Object.freeze(Table.States);
 
 
 var Game = {
-    proxy: new GameHub('GameHub', window.userid, ''),
+    proxy: new GameHub('GameHub', jok.config.sid, jok.config.channel),
 
     XCHAR: '•',
 
