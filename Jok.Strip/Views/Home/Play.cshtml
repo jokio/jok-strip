@@ -3,7 +3,7 @@
 }
 
 <style type="text/css">
-    .btnstyle, #divKeyboard button {
+    .btnstyle, #divKeyboard div {
         outline: none;
         -webkit-box-shadow: rgba(0,0,0,0.2) 0 1px 0 0;
         -moz-box-shadow: rgba(0,0,0,0.2) 0 1px 0 0;
@@ -18,22 +18,30 @@
         font-family: 'Verdana',Arial,sans-serif;
         font-size: 24px;
         text-shadow: #b2e2f5 0 1px 0;
+        /*Un selectleble */
+        -moz-user-select: -moz-none;
+        -khtml-user-select: none;
+        -webkit-user-select: none;
+        -o-user-select: none;
+        user-select: none;
     }
 
-    #divKeyboard button {
-        visibility: hidden;
+    #divKeyboard div {
+        /*visibility: hidden;
         position: absolute;
-        padding: 5px;
+       */ padding: 5px;
         width: 65px;
-        height: 65px;
+        height: 60px;
         margin: 3px;
+        display: inline-block;
+       
     }
 
-        #divKeyboard button:hover {
+        #divKeyboard div:hover {
             background-color: #60c9f1;
         }
 
-        #divKeyboard button:active {
+        #divKeyboard div:active {
             background-color: #55c3ed;
         }
 </style>
@@ -58,21 +66,22 @@
    function (event) {
 
        for (var i = 97; i <= 122; i++) {
-           var char = String.fromCharCode(i);
-           var btn = document.createElement("button");
-           var t = document.createTextNode(char);
+           var chart = String.fromCharCode(i);
+           var btn = document.createElement("div");
+           var t = document.createTextNode(chart);
            btn.appendChild(t);
-           btn.id = 'btn' + char;
-           btn.innerText = char;
-           btn.value = char;
+           btn.id = 'btn' + chart;
+           btn.innerText = chart;
+           btn.value = chart;
            btn.addEventListener("click", function (e) {
                //todo: Sesacvlelia
                window.This.sendChar(e.target.innerHTML);
            }, true);
            document.getElementById("divKeyboard").appendChild(btn);
+           $(btn).hide();
        }
        window.This.updatePage();
-       document.getElementById('btnplayAgain').style.visibility = 'hidden';
+       $('#btnplayAgain').hide();
 
 
        setTimeout(function () {

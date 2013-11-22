@@ -21,12 +21,12 @@ Game.getPercent = function (dec) {
     return Math.round(100 * Math.abs((1 - dec)));
 };
 
-Game.isWinner = function (fUser, sUser) {
-    if (fUser.proverbState.indexOf(Game.XCHAR) < 0)
+Game.isWinner = function (currentPlayer, opponentPlayer) {
+    if (currentPlayer.proverbState.indexOf(Game.XCHAR) < 0)
         return true;
-    if (sUser.proverbState.indexOf(Game.XCHAR) < 0)
+    if (opponentPlayer.proverbState.indexOf(Game.XCHAR) < 0)
         return false;
-    return fUser.incorect < sUser.incorect;
+    return currentPlayer.incorect < opponentPlayer.incorect;
 };
 
 //-Class Template
@@ -56,8 +56,8 @@ var This = {
     drawAllow: false,
     keyboardOption: new KeyboardOption,
     gameState: Game.States.New,
-    mState: new PlayerState(),
-    fState: new PlayerState(),
+    currentState: new PlayerState(),
+    opponentState: new PlayerState(),
     timerHendler: -1,
 };
 // -------- Sida funqciebi
@@ -99,40 +99,40 @@ This.drawScreen = function () {
         return;
     console.log('1.1');
     if (!(this.gameState == Game.States.Started &&
-        this.mState && this.fState)) {
+        this.currentState && this.opponentState)) {
         console.log('test. Ar unda Semovides. 1.1.2');
         return;
     }
     console.log('1.2');
 
-    var tmpchars = this.mState.proverbState.split('');
+    var tmpchars = this.currentState.proverbState.split('');
     console.log('1.3');
     for (var i = 0; i < tmpchars.length; i++) {
-        if (this.fState.proverbState.charAt(i) != Game.XCHAR &&
-            this.mState.proverbState.charAt(i) !=
-                this.fState.proverbState.charAt(i)) {
+        if (this.opponentState.proverbState.charAt(i) != Game.XCHAR &&
+            this.currentState.proverbState.charAt(i) !=
+                this.opponentState.proverbState.charAt(i)) {
             this.rects[i].setStroke('#21A527');
         }
         this.chars[i].setText(tmpchars[i]);
     }
     this.pntext.setText('თქვენ სიცოცხლე: ' +
-        Game.getPercent(this.mState.incorect / this.mState.maxIncorrect) +
-        '%    დარჩენილი დრო: ' + this.mState.time + '\r\n' +
-        ' მოწინააღმდეგე სიცოცხლე: ' + Game.getPercent(this.fState.incorect /
-        this.fState.maxIncorrect) + ' %    დარჩენილი დრო: ' + this.fState.time);
+        Game.getPercent(this.currentState.incorect / this.currentState.maxIncorrect) +
+        '%    დარჩენილი დრო: ' + this.currentState.time + '\r\n' +
+        ' მოწინააღმდეგე სიცოცხლე: ' + Game.getPercent(this.opponentState.incorect /
+        this.opponentState.maxIncorrect) + ' %    დარჩენილი დრო: ' + this.opponentState.time);
     console.log('1.4.4');
     this.layer.draw();
     console.log('1.4.5');
 };
 
 This.timerTick = function () {
-    if (this.mState.time <= 0)
-        this.mState.time = Game.TIMEOUTTICK / 1000;
-    if (this.fState.time <= 0)
-        this.fState.time = Game.TIMEOUTTICK / 1000;
+    if (this.currentState.time <= 0)
+        this.currentState.time = Game.TIMEOUTTICK / 1000;
+    if (this.opponentState.time <= 0)
+        this.opponentState.time = Game.TIMEOUTTICK / 1000;
     this.drawScreen();
-    this.mState.time--;
-    this.fState.time--;
+    this.currentState.time--;
+    this.opponentState.time--;
 };
 
 This.animateWhile = function () {
@@ -221,15 +221,18 @@ This.firstDrawScreen = function (text) {
 };
 
 This.updatePage = function () {
-    var bt = $('#btnplayAgain')[0];
+    $('#btnplayAgain').hide();
+    //var bt = $('#btnplayAgain')[0];
     // this.drawAllow = true;
-    bt.style['visibility'] = 'hidden';
-    bt.style['position'] = 'absolute';
+    // bt.style['visibility'] = 'hidden';
+  //  bt.style['position'] = 'absolute';
     console.log('5.2');
-    $('#divKeyboard button').each(function (i, el) {
-        el.style['visibility'] = 'initial';
-        el.style['position'] = 'initial';
-    });
+    $('#divKeyboard div').show();
+    //$('#divKeyboard button').each(function (i, el) {
+
+    //    //    el.style['visibility'] = 'initial';
+    //    //el.style['position']='initial';
+    //});
     // this.layer.draw();
 
 };
@@ -241,7 +244,7 @@ This.synchronizeCanvasObject = function () {
     this.layer.removeChildren();
     this.chars = [];
     this.rects = [];
-    // this.firstDrawScreen(this.mState.proverbState);
+    // this.firstDrawScreen(this.currentState.proverbState);
     this.layer.draw();
 };
 
@@ -286,57 +289,61 @@ This.restartGame = function () {
 };
 
 This.changePlayerState = function (arrPl) {
-    this.mState = (arrPl[0].UserID == this.UserID) ? arrPl[0] : arrPl[1];
-    this.fState = (arrPl[0].UserID == this.UserID) ? arrPl[1] : arrPl[0];
-    if (this.fState) {
-        this.fState.time = this.fState.time > 0 ?
-             Math.floor(this.fState.time / 1000) :
+    this.currentState = (arrPl[0].UserID == this.UserID) ? arrPl[0] : arrPl[1];
+    this.opponentState = (arrPl[0].UserID == this.UserID) ? arrPl[1] : arrPl[0];
+    if (this.opponentState) {
+        this.opponentState.time = this.opponentState.time > 0 ?
+             Math.floor(this.opponentState.time / 1000) :
             Game.TIMEOUTTICK / 1000;
     }
-    this.mState.time = this.mState.time > 0 ?
-        Math.floor(this.mState.time / 1000) : Game.TIMEOUTTICK / 1000;
+    this.currentState.time = this.currentState.time > 0 ?
+        Math.floor(this.currentState.time / 1000) : Game.TIMEOUTTICK / 1000;
 };
 
 This.playerState = function (arrPl) {
     this.changePlayerState(arrPl);
     if (this.gameState == Game.States.New) {
-        this.firstDrawScreen(this.mState.proverbState);
+        this.firstDrawScreen(this.currentState.proverbState);
         //todo aqedan unda gavitano.
         this.gameState = Game.States.Started;
         this.drawAllow = true;
     }
 
     this.animateWhile();
-    if (this.mState.helpkeys)
-        for (var k in this.mState.helpkeys) {
-            var element = document.getElementById('btn' + this.mState.helpkeys[k]);
-            element.style.visibility = "hidden";
-            element.style.position = "fixed";
+    if (this.currentState.helpkeys)
+        for (var k in this.currentState.helpkeys) {
+            $('#btn' + this.currentState.helpkeys[k]).hide();
+            //var element = document.getElementById('btn' + this.currentState.helpkeys[k]);
+            //element.style.visibility = "hidden";
+            //element.style.position = "fixed";
         }
 
 };
 
 This.gameEndCall = function () {
 
-    for (var k in this.mState.helpkeys) {
-        var element = document.getElementById('btn' + this.mState.helpkeys[k]);
-        element.style.visibility = "hidden";
-        element.style.position = "fixed";
+    for (var k in this.currentState.helpkeys) {
+        $('#btn' + this.currentState.helpkeys[k]);
+        //var element = document.getElementById('btn' + this.currentState.helpkeys[k]);
+        //element.style.visibility = "hidden";
+        //element.style.position = "fixed";
     }
     //   this.drawAllow = false;
     this.gameState = Game.States.Finished;
     this.drawAllow = true;
     this.drawScreen(); //todo gasatestia
-    $('#divKeyboard button').each(function (i, el) {
-        el.style["visibility"] = "hidden";
-        el.style['position'] = 'absolute';
-    });
-    var bt = $('#btnplayAgain')[0];
-    bt.style['visibility'] = 'visible';
-    bt.style['position'] = 'initial';
+    $('#divKeyboard div').hide();
+    //$('#divKeyboard button').each(function (i, el) {
+    //    //      el.style["visibility"] = "hidden";
+    //    // el.style['position']='absolute';
+    //});
+    $('#btnplayAgain').show();
+    //var bt = $('#btnplayAgain')[0];
+    // bt.style['visibility'] = 'visible';
+    //bt.style['position']='initial';
     this.drawAllow = false;
 
-    var winner = Game.isWinner(this.mState, this.fState) ? this.mState : this.fState;
+    var winner = Game.isWinner(this.currentState, this.opponentState) ? this.currentState : this.opponentState;
     this.pntext.setText('გამარჯვებულია: ' + winner.UserID);
     this.layer.draw();
 

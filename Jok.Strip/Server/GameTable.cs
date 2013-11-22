@@ -12,9 +12,9 @@ namespace Jok.Strip.Server
     {
         #region Properties
 
+
         public const char XCHAR = '•';
         public const int TIME_OUT_TICK = 15000;
-
         public override bool IsStarted
         {
             get { return Status == TableStatus.Started; }
@@ -30,7 +30,6 @@ namespace Jok.Strip.Server
         //თამაშისთვსი საჭირო პარამეტრები
         private KeyboardOption KeysOption = new KeyboardOption() { From = 97, To = 122 };
         private string Proverb { set; get; }
-
         #endregion
 
 
@@ -302,13 +301,13 @@ namespace Jok.Strip.Server
             return "All good things come to an end.";
         }
 
-        private bool IsWinner(GamePlayer fuser, GamePlayer suser)
+        private bool IsWinner(GamePlayer currentPlayer, GamePlayer opponentPlayer)
         {
-            if (fuser.ProverbState.Contains(GameTable.XCHAR))
+            if (currentPlayer.ProverbState.Contains(GameTable.XCHAR))
                 return true;
-            if (suser.ProverbState.Contains(GameTable.XCHAR))
+            if (opponentPlayer.ProverbState.Contains(GameTable.XCHAR))
                 return false;
-            return fuser.Incorect < suser.Incorect;
+            return currentPlayer.Incorect < opponentPlayer.Incorect;
 
         }
 
