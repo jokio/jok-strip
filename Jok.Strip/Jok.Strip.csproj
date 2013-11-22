@@ -162,11 +162,11 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Server\GameCallback.cs" />
-    <Compile Include="Server\GameHub.cs" />
-    <Compile Include="Server\GameTable.cs" />
-    <Compile Include="Server\Models\KeyBoardOption.cs" />
-    <Compile Include="Server\Models\TableStatus.cs" />
+    <Compile Include="GameServer\GameCallback.cs" />
+    <Compile Include="GameServer\GameHub.cs" />
+    <Compile Include="GameServer\GameTable.cs" />
+    <Compile Include="GameServer\Models\KeyBoardOption.cs" />
+    <Compile Include="GameServer\Models\TableStatus.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Global.asax" />
