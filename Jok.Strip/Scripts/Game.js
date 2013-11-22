@@ -42,45 +42,30 @@ var Game = {
             console.log("KeyOptions->", keybrOption);
             Game.This.keyboardOption = keybrOption;
          });
-
-
         this.proxy.on('RestartGame', function () {
             Game.This.synchronizeCanvasObject();
         });
-
         this.proxy.on('GameEnd', function (winnerid) {
             //todo Set new state
             Game.This.gameState = Table.States.Finished;
             Game.This.gameEndCall();
 
         });
-
         this.proxy.on('PlayerState', function (plArr) {
             Game.This.playerState(plArr);
         });
-
         this.proxy.on('Online', function () {
             console.log('server is online');
             Game.This.loadCanvas();
             Game.This.gameState = Table.States.New;
         });
-
         this.proxy.on('Offline', function () {
             console.log('server is offline');
         });
-
         this.proxy.on('UserAuthenticated', function (UserID) {
             Game.proxy.send('IncomingMethod', 'someParam');
             Game.This.UserID = UserID;
          });
-
-        this.proxy.on('Pong', function (str, strb) {
-            console.log('aqamdec movida:' + str + strb);
-        });
-
-
-        this.proxy.on('SomeCallback', function (i) {
-        });
 
         this.proxy.start();
     },
