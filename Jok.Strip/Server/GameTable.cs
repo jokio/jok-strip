@@ -107,14 +107,13 @@ namespace Jok.Strip.Server
 
         protected override void OnLeave(GamePlayer player)
         {
-            if (this.Status != TableStatus.Started)
+            if (this.Status != TableStatus.Started&& !Players.Any(p=>p.IsOnline))
                 Players.Remove(player);
             else
             {
                 if (!Players.Any(p => p.IsOnline))
                     this.Status = TableStatus.Finished;
             }
-            // აქ უნდა ჩაიდოს ცოტა ჭკვიანი ლოგიკა, თუ თამაში დაწყებულია, მოთამაშე არ უნდა ამოიშალოს სიიდან.
         }
 
         protected void OnSetNewChar(GamePlayer player, string ch)

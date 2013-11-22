@@ -18,6 +18,7 @@ function PlayerState() {
 
 //Enum
 var Table = {};
+
 Table.States = {
     Started: "Started",
     New: "New",
@@ -28,26 +29,22 @@ Object.freeze(Table.States);
 
 
 var Game = {
-    
     proxy: new GameHub('GameHub', window.userid, ''),
 
-    XCHAR :'•',
-    TIMEOUTTICK : 15000,
+    XCHAR: '•',
 
-    Init:function() {
+    TIMEOUTTICK: 15000,
+
+    Init: function () {
 
         //game event
-       
         this.proxy.on('KeyOptions', function (keybrOption) {
-
             console.log("KeyOptions->", keybrOption);
             Game.This.keyboardOption = keybrOption;
+         });
 
-        });
 
         this.proxy.on('RestartGame', function () {
-
-            // This.restartGame();
             Game.This.synchronizeCanvasObject();
         });
 
@@ -73,34 +70,39 @@ var Game = {
         });
 
         this.proxy.on('UserAuthenticated', function (UserID) {
-
             Game.proxy.send('IncomingMethod', 'someParam');
-
             Game.This.UserID = UserID;
-
-        });
+         });
 
         this.proxy.on('Pong', function (str, strb) {
             console.log('aqamdec movida:' + str + strb);
         });
 
-        this.proxy.on('SomeCallback', function (i) {
 
+        this.proxy.on('SomeCallback', function (i) {
         });
 
         this.proxy.start();
     },
-    getPercent:function (dec) {
-    return Math.round(100 * Math.abs((1 - dec)));
-},
 
-    isWinner : function (currentPlayer, opponentPlayer) {
+
+    getPercent: function (dec) {
+        return Math.round(100 * Math.abs((1 - dec)));
+    },
+
+
+
+    isWinner: function (currentPlayer, opponentPlayer) {
         if (currentPlayer.proverbState.indexOf(Game.XCHAR) < 0)
             return true;
+
         if (opponentPlayer.proverbState.indexOf(Game.XCHAR) < 0)
             return false;
+
         return currentPlayer.incorect < opponentPlayer.incorect;
     },
+
+
     This: {
         UserID: 0,
         stage: {},//new Kinetic.Stage()
@@ -114,48 +116,60 @@ var Game = {
         currentState: new PlayerState(),
         opponentState: new PlayerState(),
         timerHendler: -1,
-        IsChar: function(schar) {
+        IsChar: function (schar) {
             return schar ? (schar.length == 1 && schar.toLowerCase().charCodeAt(0)
                 >= this.keyboardOption.From && this.keyboardOption.To
                     >= schar.toLowerCase().charCodeAt(0)) : false;
         },
-        isCanvasSupported: function() {
+
+
+        isCanvasSupported: function () {
             return true;
         },
-        loadCanvas: function() {
+
+
+        loadCanvas: function () {
             if (!this.isCanvasSupported())
                 return false;
+
             if (!(this.layout == null || this.stage == null))
                 return false;
+
             this.layer = new Kinetic.Layer({
                 x: 0,
                 y: 0,
                 width: 780,
                 height: 300
             });
+
             this.stage = new Kinetic.Stage({
                 width: 780,
                 height: 330,
                 container: 'canvasOne'
             });
-            this.stage.add(this.layer);
 
+            this.stage.add(this.layer);
             return true;
         },
-        drawScreen: function() {
+
+
+        drawScreen: function () {
             console.log('1.0');
+
             if (!this.drawAllow)
                 return;
+
             console.log('1.1');
             if (!(this.gameState == Table.States.Started &&
                 this.currentState && this.opponentState)) {
                 console.log('test. Ar unda Semovides. 1.1.2');
                 return;
             }
-            console.log('1.2');
 
+            console.log('1.2');
             var tmpchars = this.currentState.proverbState.split('');
             console.log('1.3');
+
             for (var i = 0; i < tmpchars.length; i++) {
                 if (this.opponentState.proverbState.charAt(i) != Game.XCHAR &&
                     this.currentState.proverbState.charAt(i) !=
@@ -164,16 +178,20 @@ var Game = {
                 }
                 this.chars[i].setText(tmpchars[i]);
             }
+
             this.pntext.setText('თქვენ სიცოცხლე: ' +
                 Game.getPercent(this.currentState.incorect / this.currentState.maxIncorrect) +
                 '%    დარჩენილი დრო: ' + this.currentState.time + '\r\n' +
                 ' მოწინააღმდეგე სიცოცხლე: ' + Game.getPercent(this.opponentState.incorect /
-                    this.opponentState.maxIncorrect) + ' %    დარჩენილი დრო: ' + this.opponentState.time);
+                    this.opponentState.maxIncorrect) +
+                ' %    დარჩენილი დრო: ' + this.opponentState.time);
             console.log('1.4.4');
             this.layer.draw();
             console.log('1.4.5');
         },
-        timerTick: function() {
+
+
+        timerTick: function () {
             if (this.currentState.time <= 0)
                 this.currentState.time = Game.TIMEOUTTICK / 1000;
             if (this.opponentState.time <= 0)
@@ -182,31 +200,40 @@ var Game = {
             this.currentState.time--;
             this.opponentState.time--;
         },
-        animateWhile: function() {
+
+
+        animateWhile: function () {
+
             clearTimeout(this.timerHendler);
+
             if (this.drawAllow) {
                 this.timerTick();
-                this.timerHendler = setTimeout(function() {
+                this.timerHendler = setTimeout(function () {
                     Game.This.animateWhile();
                 }, 1000);
             }
         },
-        gameEndDrawScreen: function() {
+
+
+        gameEndDrawScreen: function () {
             this.drawAllow = true;
             this.drawScreen();
             this.drawAllow = false;
         },
-        firstDrawScreen: function(text) {
+
+
+        firstDrawScreen: function (text) {
             var maxWidth = this.layer.getAttr('width');
             console.log('2.0' + maxWidth);
+
             //---Clear
             if (this.layer) {
                 this.layer.removeChildren();
                 this.layer.draw();
             }
 
-
-            if (this.gameState == Table.States.New || this.gameState == Table.States.Finished) {
+            if (this.gameState == Table.States.New ||
+                this.gameState == Table.States.Finished) {
                 console.log('2.1');
                 var q = 5;
                 var x = q;
@@ -224,7 +251,7 @@ var Game = {
                         strokeWidth: 2
                     });
                     console.log('2.1{i}-' + i);
-                    var char = new Kinetic.Text({
+                    var chart = new Kinetic.Text({
                         x: x + q,
                         y: y + q * 2,
                         text: chararr[i],
@@ -234,10 +261,10 @@ var Game = {
                         align: 'center',
                         fill: 'black'
                     });
-                    this.chars.push(char);
+                    this.chars.push(chart);
                     this.rects.push(rect);
                     this.layer.add(rect);
-                    this.layer.add(char);
+                    this.layer.add(chart);
                     if (!this.IsChar(chararr[i]) && Game.XCHAR != chararr[i]) {
                         rect.setOpacity(0);
                     }
@@ -264,30 +291,31 @@ var Game = {
                 this.layer.draw();
             }
         },
-        updatePage: function() {
+
+
+        updatePage: function () {
             $('#btnplayAgain').hide();
             console.log('5.2');
             $('#divKeyboard div').show();
 
         },
-        synchronizeCanvasObject: function() {
+
+
+        synchronizeCanvasObject: function () {
             console.log('5.1');
             this.gameState = Table.States.New;
             this.updatePage();
             this.layer.removeChildren();
             this.chars = [];
             this.rects = [];
-            // this.firstDrawScreen(this.currentState.proverbState);
             this.layer.draw();
         },
-        restartGame: function() {
+
+
+        restartGame: function () {
             if (Table.States.Started == this.gameState)
                 return;
-            console.log('4.1');
-
             console.log('state:' + this.gameState);
-
-            console.log('4.2');
 
             this.updatePage();
             if (Table.States.Finished == this.gameState) {
@@ -317,6 +345,8 @@ var Game = {
                 this.layer.draw();
             }
         },
+
+
         changePlayerState: function (arrPl) {
             this.currentState = (arrPl[0].UserID == this.UserID) ? arrPl[0] : arrPl[1];
             this.opponentState = (arrPl[0].UserID == this.UserID) ? arrPl[1] : arrPl[0];
@@ -328,7 +358,9 @@ var Game = {
             this.currentState.time = this.currentState.time > 0 ?
                 Math.floor(this.currentState.time / 1000) : Game.TIMEOUTTICK / 1000;
         },
-        playerState:function (arrPl) {
+
+
+        playerState: function (arrPl) {
             this.changePlayerState(arrPl);
             if (this.gameState == Table.States.New) {
                 this.firstDrawScreen(this.currentState.proverbState);
@@ -336,48 +368,37 @@ var Game = {
                 this.gameState = Table.States.Started;
                 this.drawAllow = true;
             }
-
             this.animateWhile();
             if (this.currentState.helpkeys)
                 for (var k in this.currentState.helpkeys) {
                     $('#btn' + this.currentState.helpkeys[k]).hide();
-                    //var element = document.getElementById('btn' + this.currentState.helpkeys[k]);
-                    //element.style.visibility = "hidden";
-                    //element.style.position = "fixed";
                 }
 
         },
-        gameEndCall:function () {
+
+
+        gameEndCall: function () {
 
             for (var k in this.currentState.helpkeys) {
                 $('#btn' + this.currentState.helpkeys[k]);
-                //var element = document.getElementById('btn' + this.currentState.helpkeys[k]);
-                //element.style.visibility = "hidden";
-                //element.style.position = "fixed";
             }
-            //   this.drawAllow = false;
+
             this.gameState = Table.States.Finished;
             this.drawAllow = true;
             this.drawScreen(); //todo gasatestia
             $('#divKeyboard div').hide();
-            //$('#divKeyboard button').each(function (i, el) {
-            //    //      el.style["visibility"] = "hidden";
-            //    // el.style['position']='absolute';
-            //});
             $('#btnplayAgain').show();
-            //var bt = $('#btnplayAgain')[0];
-            // bt.style['visibility'] = 'visible';
-            //bt.style['position']='initial';
             this.drawAllow = false;
 
-            var winner = Game.isWinner(this.currentState, this.opponentState) ? this.currentState : this.opponentState;
+            var winner = Game.isWinner(this.currentState, this.opponentState) ?
+                this.currentState : this.opponentState;
             this.pntext.setText('გამარჯვებულია: ' + winner.UserID);
             this.layer.draw();
 
         },
-        sendChar : function (kchar) {
+        sendChar: function (kchar) {
             Game.proxy.send('SetChar', kchar);
-        }      
+        }
     }
 };
 
