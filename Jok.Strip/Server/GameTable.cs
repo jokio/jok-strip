@@ -185,6 +185,8 @@ namespace Jok.Strip.Server
         private void SendGameEnd()
         {
             Status = TableStatus.Finished;
+            //todo. rogorRac aq erTxel SemoaRwia. mgoni bug aris sadRac da rom ar gaasxas
+            if (Players.Count > 1) 
             GameCallback.GameEnd(Table,
                         (IsWinner(Players[0],
                         Players[1]) ?

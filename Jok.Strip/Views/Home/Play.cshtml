@@ -59,7 +59,7 @@
 <script type="text/javascript">
     var playAgain = false;
     function PlayAgain() {
-        window.This.restartGame();
+        window.Game.This.restartGame();
     }
 
     window.addEventListener("load",
@@ -75,18 +75,18 @@
            btn.value = chart;
            btn.addEventListener("click", function (e) {
                //todo: Sesacvlelia
-               window.This.sendChar(e.target.innerHTML);
+               window.Game.This.sendChar(e.target.innerHTML);
            }, true);
            document.getElementById("divKeyboard").appendChild(btn);
            $(btn).hide();
        }
-       window.This.updatePage();
+       window.Game.This.updatePage();
        $('#btnplayAgain').hide();
 
 
        setTimeout(function () {
            //todo: gadasatania mtavar kodSi
-           window.This.restartGame();
+           window.Game.This.restartGame();
        }, 2000);
    }, true);
 
