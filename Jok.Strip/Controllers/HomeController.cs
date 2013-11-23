@@ -18,7 +18,7 @@ namespace Jok.Strip.Controllers
         public ActionResult Play(string id, string sid)
         {
             var loginUrl = ConfigurationManager.AppSettings["jok:SiteUrl"] + "/joinus?returnUrl=" + Request.Url;
-            var exitUrl = ConfigurationManager.AppSettings["jok:SiteUrl"] + "/lobby/japmatrix";
+            var exitUrl = ConfigurationManager.AppSettings["jok:SiteUrl"] + "/lobby/strip";
 
             if (!String.IsNullOrEmpty(sid))
             {
