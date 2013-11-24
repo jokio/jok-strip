@@ -324,7 +324,9 @@ var Game = {
     },
     
     sendChar: function (kchar) {
-        Game.proxy.send('SetChar', kchar);
+        var chart = kchar.toLowerCase();
+        if(this.currentState.helpkeys.indexOf(chart)<=-1)
+        this.proxy.send('SetChar', chart);
     },
     
     onLoad: function () {
@@ -348,6 +350,7 @@ var Game = {
     },
     
     onKeyBoardClick: function (e) {
+        console.log(e);
         window.Game.sendChar(e.target.innerHTML);
     }
 };

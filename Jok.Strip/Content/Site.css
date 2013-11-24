@@ -199,6 +199,7 @@
     margin: 3px;
     display: inline-block;
     cursor: pointer;
+    line-height: 55px;
 }
 
 #divKeyboard div:hover {
