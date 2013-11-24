@@ -29,10 +29,13 @@ var Game = {
     proxy: new GameHub('GameHub', jok.config.sid, jok.config.channel),
 
     XCHAR: '•',
-    MaxIncorrect:10,
+    MaxIncorrect: 10,
     TIMEOUTTICK: 15000,
 
     Init: function () {
+
+        $(document).on('ready', this.onLoad.bind(this));
+        $('.play_again').on('click', this.onPlayAgain.bind(this));
 
         this.proxy.on('Online', this.Online.bind(this));
         this.proxy.on('Offline', this.Offline.bind(this));
@@ -40,36 +43,45 @@ var Game = {
         this.proxy.on('TableState', this.TableState.bind(this));
         this.proxy.on('SetCharResult', this.SetCharResult.bind(this));
         this.proxy.start();
-        $(document).on('ready', this.onLoad.bind(this));
-        $('.play_again').on('click', this.onPlayAgain.bind(this));
-    },
-    //todo
-    SetCharResult:function(helpkeys, proverb, time, incorrect, oponentProverb, oponentIncorrect) {
-   
-        if (!this.initCanvasFirst) {
-            this.drawAllow = true;
-            this.firstDrawScreen(proverb);
-            this.initCanvasFirst = true;
-        }
-        this.currentState.time = time > 0 ?
-            Math.floor(time / 1000) : Game.TIMEOUTTICK / 1000;
-        this.currentState.helpkeys = helpkeys;
-        this.currentState.incorect = incorrect;
-        this.opponentState.incorect = oponentIncorrect;
-        this.currentState.proverbState = proverb;
-        this.opponentState.proverbState = oponentProverb;
-        //----
-        this.animateWhile();
-        if (this.currentState.helpkeys)
-            for (var k in this.currentState.helpkeys) {
-                $('#btn' + this.currentState.helpkeys[k].toUpperCase()).addClass('keyClicked');
-            }
     },
 
- 
+
+    // UI Events ----------------------------------------------------------
+    onLoad: function () {
+        for (var i = 65; i <= 90; i++) {
+            var chart = String.fromCharCode(i);
+            var btn = document.createElement("div");
+            var t = document.createTextNode(chart);
+            btn.appendChild(t);
+            btn.id = 'btn' + chart;
+            btn.innerText = chart;
+            btn.value = chart;
+            btn.addEventListener("click", this.onKeyBoardClick, true);
+            document.getElementById("divKeyboard").appendChild(btn);
+            $(btn).hide();
+        }
+        $('#divKeyboard div').show();
+    },
+
+    onPlayAgain: function () {
+        this.proxy.send('PlayAgain', 1);
+    },
+
+    onKeyBoardClick: function (e) {
+        console.log(e);
+        window.Game.sendChar(e.target.innerHTML);
+    },
+
+
+
+    // Server Callbacks ---------------------------------------------------
     Online: function () {
         console.log('server is online');
         Game.loadCanvas();
+    },
+
+    Offline: function () {
+        console.log('server is offline');
     },
 
     UserAuthenticated: function (userID) {
@@ -80,17 +92,13 @@ var Game = {
 
     },
 
-    Offline: function () {
-        console.log('server is offline');
-    },
-
     TableState: function (table) {
         switch (table.Status) {
             case Table.States.New:
                 $('#Notification > .item').hide();
                 $('#Notification > .item.waiting_opponent').show();
                 jok.setPlayer(1, jok.currentUserID);
-            
+
                 break;
             case Table.States.Finished:
                 //todo
@@ -116,6 +124,31 @@ var Game = {
         }
     },
 
+    SetCharResult: function (helpkeys, proverb, time, incorrect, oponentProverb, oponentIncorrect) {
+
+        if (!this.initCanvasFirst) {
+            this.drawAllow = true;
+            this.firstDrawScreen(proverb);
+            this.initCanvasFirst = true;
+        }
+        this.currentState.time = time > 0 ?
+            Math.floor(time / 1000) : Game.TIMEOUTTICK / 1000;
+        this.currentState.helpkeys = helpkeys;
+        this.currentState.incorect = incorrect;
+        this.opponentState.incorect = oponentIncorrect;
+        this.currentState.proverbState = proverb;
+        this.opponentState.proverbState = oponentProverb;
+        //----
+        this.animateWhile();
+        if (this.currentState.helpkeys)
+            for (var k in this.currentState.helpkeys) {
+                $('#btn' + this.currentState.helpkeys[k].toUpperCase()).addClass('keyClicked');
+            }
+    },
+
+
+
+    // Helper functions ---------------------------------------------------
     getPercent: function (dec) {
         return Math.round(100 * Math.abs((1 - dec)));
     },
@@ -197,7 +230,7 @@ var Game = {
             Game.getPercent(this.currentState.incorect / this.MaxIncorrect) +
             '%    დარჩენილი დრო: ' + this.currentState.time + '\r\n' +
             ' მოწინააღმდეგე სიცოცხლე: ' + Game.getPercent(this.opponentState.incorect /
-                this.MaxIncorrect));      
+                this.MaxIncorrect));
         this.layer.draw();
     },
 
@@ -311,7 +344,7 @@ var Game = {
             $('#btn' + this.currentState.helpkeys[k]);
         }
         this.drawAllow = true;
-        this.drawScreen(); 
+        this.drawScreen();
         $('#divKeyboard div').hide();
         this.drawAllow = false;
         this.layer.clear();
@@ -322,37 +355,13 @@ var Game = {
         this.layer.draw();
 
     },
-    
+
     sendChar: function (kchar) {
         var chart = kchar.toLowerCase();
-        if(this.currentState.helpkeys.indexOf(chart)<=-1)
-        this.proxy.send('SetChar', chart);
+        if (this.currentState.helpkeys.indexOf(chart) <= -1)
+            this.proxy.send('SetChar', chart);
     },
-    
-    onLoad: function () {
-         for (var i = 65; i <= 90; i++) {
-            var chart = String.fromCharCode(i);
-            var btn = document.createElement("div");
-            var t = document.createTextNode(chart);
-            btn.appendChild(t);
-            btn.id = 'btn' + chart;
-            btn.innerText = chart;
-            btn.value = chart;
-            btn.addEventListener("click", this.onKeyBoardClick, true);
-            document.getElementById("divKeyboard").appendChild(btn);
-            $(btn).hide();
-        }
-        $('#divKeyboard div').show();
-    },
-    
-    onPlayAgain: function () {
-       this.proxy.send('PlayAgain', 1);
-    },
-    
-    onKeyBoardClick: function (e) {
-        console.log(e);
-        window.Game.sendChar(e.target.innerHTML);
-    }
+
 };
 
 Game.Init();
