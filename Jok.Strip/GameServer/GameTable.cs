@@ -44,6 +44,8 @@ namespace Jok.Strip.Server
         private string Proverb { set; get; }
         #endregion
 
+
+
         public void SetNewChar(int userid, string ch)
         {
 
@@ -67,6 +69,8 @@ namespace Jok.Strip.Server
                 this.OnPlayAgain(player);
             }
         }
+
+
 
         protected override void OnJoin(GamePlayer player, object state)
         {
@@ -149,21 +153,7 @@ namespace Jok.Strip.Server
             SendPlayerState();
         }
 
-        void SendPlayerState()
-        {
-            if (Players.Count != 2)
-            {//todo tavi ver davadgi aq rogor Semodis jer !
-                return;
-            }
-            var player = Players[0];
-            var oponent = GetNextPlayer(player);
-            var oponentProverb = new string(oponent.ProverbState.Select(a => this.KeysOption.IsChar(a) ? ' ' : a).ToArray());
-            var playerProverb = new string(player.ProverbState.Select(a => this.KeysOption.IsChar(a) ? ' ' : a).ToArray());
-            var currentTime = TIME_OUT_TICK - (DateTime.Now.Ticks - player.TimerCreateDate.Ticks) / 10000;
-            var oponentTime = TIME_OUT_TICK - (DateTime.Now.Ticks - oponent.TimerCreateDate.Ticks) / 10000;
-            GameCallback.SetCharResult(player, player.HelpKeys, player.ProverbState, currentTime, player.Incorect, oponentProverb, oponent.Incorect);
-            GameCallback.SetCharResult(oponent, oponent.HelpKeys, oponent.ProverbState, oponentTime, oponent.Incorect, playerProverb, player.Incorect);
-        }
+
 
         void Init()
         {
@@ -193,11 +183,6 @@ namespace Jok.Strip.Server
             
         }
 
-        void OnPlayerTime(GamePlayer player)
-        {
-            OnSetNewChar(player, GetRandomChar(player.HelpKeys));
-        }
-
         void Finish()
         {
 
@@ -211,6 +196,8 @@ namespace Jok.Strip.Server
 
         }
 
+
+
         string GetRandomChar(List<char> ch)
         {
             for (var i = KeysOption.From; i <= KeysOption.To; i++)
@@ -221,6 +208,26 @@ namespace Jok.Strip.Server
             return XCHAR.ToString();
         }
 
+        void OnPlayerTime(GamePlayer player)
+        {
+            OnSetNewChar(player, GetRandomChar(player.HelpKeys));
+        }
+
+        void SendPlayerState()
+        {
+            if (Players.Count != 2)
+            {//todo tavi ver davadgi aq rogor Semodis jer !
+                return;
+            }
+            var player = Players[0];
+            var oponent = GetNextPlayer(player);
+            var oponentProverb = new string(oponent.ProverbState.Select(a => this.KeysOption.IsChar(a) ? ' ' : a).ToArray());
+            var playerProverb = new string(player.ProverbState.Select(a => this.KeysOption.IsChar(a) ? ' ' : a).ToArray());
+            var currentTime = TIME_OUT_TICK - (DateTime.Now.Ticks - player.TimerCreateDate.Ticks) / 10000;
+            var oponentTime = TIME_OUT_TICK - (DateTime.Now.Ticks - oponent.TimerCreateDate.Ticks) / 10000;
+            GameCallback.SetCharResult(player, player.HelpKeys, player.ProverbState, currentTime, player.Incorect, oponentProverb, oponent.Incorect);
+            GameCallback.SetCharResult(oponent, oponent.HelpKeys, oponent.ProverbState, oponentTime, oponent.Incorect, playerProverb, player.Incorect);
+        }
 
         bool SetNewChar(GamePlayer player, string ch)
         {
@@ -290,9 +297,6 @@ namespace Jok.Strip.Server
             };
             return arr[DateTime.Now.Second%8];//random
         }
-
-
-
     }
 
     [DataContract]
@@ -331,15 +335,12 @@ namespace Jok.Strip.Server
         [IgnoreDataMember]
         public DateTime TimerCreateDate { set; get; }
 
+
         public GamePlayer()
         {
             TimerHendler = JokTimer<GamePlayer>.Create();
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is GamePlayer && ((GamePlayer)obj).UserID == UserID;
-        }
 
         public void Init()
         {
