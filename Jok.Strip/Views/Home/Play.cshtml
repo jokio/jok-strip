@@ -32,45 +32,12 @@
             <div id="canvasOne" style="color: lightblue">
             </div>
             <div style="width: 100%; margin: auto; text-align: center">
-                <button id="btnplayAgain" class="btnstyle" onclick="PlayAgain()">თამაშის დაწყება</button>
+              
             </div>
             <div id="divKeyboard">
             </div>
         </div>
-        <script type="text/javascript">
-            var playAgain = false;
-            function PlayAgain() {
-                window.Game.This.restartGame();
-            }
-
-            window.addEventListener("load", function (event) {
-
-                for (var i = 97; i <= 122; i++) {
-                    var chart = String.fromCharCode(i);
-                    var btn = document.createElement("div");
-                    var t = document.createTextNode(chart);
-                    btn.appendChild(t);
-                    btn.id = 'btn' + chart;
-                    btn.innerText = chart;
-                    btn.value = chart;
-                    btn.addEventListener("click", function (e) {
-                        //todo: Sesacvlelia
-                        window.Game.This.sendChar(e.target.innerHTML);
-                    }, true);
-                    document.getElementById("divKeyboard").appendChild(btn);
-                    $(btn).hide();
-                }
-                window.Game.This.updatePage();
-                $('#btnplayAgain').hide();
-
-
-                setTimeout(function () {
-                    //todo: gadasatania mtavar kodSi
-                    window.Game.This.restartGame();
-                }, 2000);
-            }, true);
-
-        </script>
+      
     </div>
     <script src="http://play.jok.io/js?ignore=3"></script>
     @Scripts.Render("~/play/js")

@@ -7,7 +7,7 @@ namespace Jok.Strip.Server.Models
 {
     public enum TableStatus
     {
-        New,
+        New, 
         Started,
         StartedWaiting,
         Finished

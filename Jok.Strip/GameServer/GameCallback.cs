@@ -43,41 +43,21 @@ namespace Jok.Strip.Server
         }
         #endregion
 
-        /// <summary>
-        ///  ამ ფუნქციით გაეგზავნება შესაბამისი პარამეტრები 
-        /// </summary>
-        /// <param name="to">მიმღები</param>
-        /// <param name="keyboard">კლავიატურის ღილაკები</param>
-        public static void KeyOptions(ICallback to, KeyboardOption keyboard)
+        public static void TableState(ICallback to, GameTable table)
         {
             var conns = GetUsers(to);
             if (conns == null) return;
 
-            Hub.Clients.Clients(conns).KeyOptions(keyboard);
+            Hub.Clients.Clients(conns).TableState(table);
+            
         }
-
-        public static void GameEnd(ICallback to, int winnerId)
+        public static void SetCharResult(ICallback to, List<char> helpkeys, string proverb, long time, int incorrect, string oponentProverb, int oponentIncorrect)
         {
             var conns = GetUsers(to);
             if (conns == null) return;
-
-            Hub.Clients.Clients(conns).GameEnd(winnerId);
-        }
-
-        public static void RestartGame(ICallback to)
-        {
-            var conns = GetUsers(to);
-            if (conns == null) return;
-
-            Hub.Clients.Clients(conns).RestartGame(0);
-        }
-
-        public static void PlayerState(ICallback to, GamePlayer[] pl)
-        {
-            var conns = GetUsers(to);
-            if (conns == null) return;
-
-            Hub.Clients.Clients(conns).PlayerState(pl);
+            Hub.Clients.Clients(conns).SetCharResult(helpkeys, proverb, time,incorrect, oponentProverb, oponentIncorrect);
+            
+            
         }
     }
 }

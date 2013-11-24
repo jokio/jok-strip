@@ -192,11 +192,13 @@
 #divKeyboard div {
     /*visibility: hidden;
         position: absolute;
-       */ padding: 5px;
+       */ 
+    padding: 5px;
     width: 65px;
     height: 60px;
     margin: 3px;
     display: inline-block;
+    cursor: pointer;
 }
 
 #divKeyboard div:hover {
@@ -205,4 +207,10 @@
 
 #divKeyboard div:active {
     background-color: #55c3ed;
+}
+
+.keyClicked {
+ border: #92B0BB !important;
+background-color: #9FC3D1 !important;
+    cursor: auto !important;
 }
