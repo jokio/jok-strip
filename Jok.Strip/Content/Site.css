@@ -209,3 +209,31 @@
         background-color: #9FC3D1;
         cursor: auto;
     }
+
+.gameStyle {
+    width: 800px;
+    height: 600px;
+    margin: auto;
+}
+/*----------------*/
+.game_point {
+    display: inline-block;
+    width: 150px;
+    height: 50px;
+    max-width: 150px;
+    /*border-style: solid;
+    border-color: red;*/
+}
+
+
+#currentDiv.game_point {
+     text-align: left;
+    float: left;
+    margin-top: -65px;
+}
+
+#oponentDiv.game_point {
+     text-align: right;
+    float: right;
+    margin-top: -65px;
+}

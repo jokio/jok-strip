@@ -48,6 +48,10 @@ var Game = {
 
     // UI Events ----------------------------------------------------------
     onLoad: function () {
+        console.log("---LOAD---");
+        this.currentDiv = $('#currentDiv')[0];
+        this.oponentDiv = $('#oponentDiv')[0];
+
         for (var i = 65; i <= 90; i++) {
             var chart = String.fromCharCode(i);
             var btn = document.createElement("div");
@@ -174,6 +178,8 @@ var Game = {
     chars: new Array(),//new Kinetic.Text[0]
     pntext: {},//Kinetic.Text
     drawAllow: false,
+    currentDiv: {},
+    oponentDiv:{},
     keyboardOption: new KeyboardOption(),
 
     currentState: new PlayerState(),
@@ -227,11 +233,8 @@ var Game = {
             }
             this.chars[i].setText(tmpchars[i]);
         }
-        this.pntext.setText('თქვენ სიცოცხლე: ' +
-            Game.getPercent(this.currentState.incorect / this.MaxIncorrect) +
-            '%    დარჩენილი დრო: ' + this.currentState.time + '\r\n' +
-            ' მოწინააღმდეგე სიცოცხლე: ' + Game.getPercent(this.opponentState.incorect /
-                this.MaxIncorrect));
+        this.currentDiv.innerHTML = ('Your Life: ' +Game.getPercent(this.currentState.incorect / this.MaxIncorrect) +'% <br/> Time Left: ' + this.currentState.time);
+        this.oponentDiv.innerHTML=('Oponent Life:' + Game.getPercent(this.opponentState.incorect /this.MaxIncorrect) +'%');
         this.layer.draw();
     },
 
