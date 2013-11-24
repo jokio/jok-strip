@@ -56,11 +56,12 @@ var Game = {
             btn.id = 'btn' + chart;
             btn.innerText = chart;
             btn.value = chart;
+            btn.className = 'keyboard_item';
             btn.addEventListener("click", this.onKeyBoardClick, true);
             document.getElementById("divKeyboard").appendChild(btn);
             $(btn).hide();
         }
-        $('#divKeyboard div').show();
+        $('.keyboard_item').show();
     },
 
     onPlayAgain: function () {
@@ -68,7 +69,7 @@ var Game = {
     },
 
     onKeyBoardClick: function (e) {
-        console.log(e);
+       
         window.Game.sendChar(e.target.innerHTML);
     },
 
@@ -142,7 +143,7 @@ var Game = {
         this.animateWhile();
         if (this.currentState.helpkeys)
             for (var k in this.currentState.helpkeys) {
-                $('#btn' + this.currentState.helpkeys[k].toUpperCase()).addClass('keyClicked');
+                $('#btn' + this.currentState.helpkeys[k].toUpperCase()).addClass('disabled');
             }
     },
 
@@ -264,14 +265,12 @@ var Game = {
 
     firstDrawScreen: function (text) {
         var maxWidth = this.layer.getAttr('width');
-        console.log('2.0' + maxWidth);
-
+       
         //---Clear
         if (this.layer) {
             this.layer.removeChildren();
             this.layer.draw();
         }
-        console.log('2.1');
         var q = 5;
         var x = q;
         var y = q;
@@ -310,7 +309,7 @@ var Game = {
                 y = q + y + rectheight;
             }
         }
-        console.log('2.3');
+        
         y = q + y + rectheight;
         this.pntext = new Kinetic.Text({
             x: q,
@@ -329,8 +328,8 @@ var Game = {
 
 
     synchronizeCanvasObject: function () {
-        $('#divKeyboard div').show();
-        $('#divKeyboard div').removeClass("keyClicked");
+        $('.keyboard_item').show();
+        $('.keyboard_item').removeClass('disabled');
         this.layer.removeChildren();
         this.chars = [];
         this.rects = [];
