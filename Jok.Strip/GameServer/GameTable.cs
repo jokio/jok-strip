@@ -19,7 +19,7 @@ namespace Jok.Strip.Server
         public int TIME_OUT_TICK = 15000;
         public override bool IsStarted
         {
-            get { return Status == TableStatus.Started; }
+            get { return Status == TableStatus.Started || Status == TableStatus.StartedWaiting; }
         }
 
         public override bool IsFinished
