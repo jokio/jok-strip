@@ -202,7 +202,9 @@
     <Content Include="Scripts\Common\jquery-2.0.3.min.map" />
     <Content Include="Views\Home\PlayTS.cshtml" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Content\Images\" />
+  </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
