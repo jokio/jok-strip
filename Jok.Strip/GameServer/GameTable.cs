@@ -81,12 +81,17 @@ namespace Jok.Strip.Server
                     if (!Players.Contains(player))
                     {
                         AddPlayer(player);
+                   
                     }
                     if (Players.Count == 2)
                     {
                         Init();
                         Start();
                         SendPlayerState();
+                    }
+                    else
+                    {
+                        GameCallback.TableState(player, this);
                     }
                     
                     break;
