@@ -305,12 +305,32 @@ var Game = {
             this.layer.add(chart);
             if (!this.IsChar(chararr[i]) && Game.XCHAR != chararr[i]) {
                 rect.setOpacity(0);
+                //tu sityva kide mosdevs.
+                var charCounter = 0;
+                for (var c = i+1; c < chararr.length; c++) {
+                    if (chararr[c] === ' ')
+                        break;
+                    charCounter++;
+                }
+                if (charCounter != 0) {
+                    charCounter = charCounter * (rectWidth + q);
+                    if (x+charCounter + rectWidth > maxWidth) {
+                        x = q;
+                        y = q + y + rectheight;
+                        continue;
+                    }
+
+                }
             }
             x = x + (rectWidth + q);
             if (x + rectWidth > maxWidth) {
                 x = q;
                 y = q + y + rectheight;
+                //tu gadasvlis mere pirveli simbolo carieli adgilia
+                if (i + 1 < chararr.length && chararr[i + 1] == ' ')
+                    i++;
             }
+          
         }
         
         y = q + y + rectheight;
