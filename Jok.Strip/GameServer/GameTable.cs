@@ -77,12 +77,9 @@ namespace Jok.Strip.Server
             switch (Status)
             {
                 case TableStatus.New:
-
                     if (!Players.Contains(player))
-                    {
                         AddPlayer(player);
-                   
-                    }
+
                     if (Players.Count == 2)
                     {
                         Init();
@@ -93,21 +90,21 @@ namespace Jok.Strip.Server
                     {
                         GameCallback.TableState(player, this);
                     }
-                    
+
                     break;
+
                 case TableStatus.Started:
                     GameCallback.TableState(this, this);
                     SendPlayerState();
                     break;
+
+
                 case TableStatus.StartedWaiting:
                     if (!Players.Contains(player))
                         return;
                     Status = TableStatus.Started;
                     GameCallback.TableState(this, this);
                     SendPlayerState();
-                    break;
-                default:
-
                     break;
             }
         }
@@ -120,11 +117,18 @@ namespace Jok.Strip.Server
                 case TableStatus.New:
                     RemovePlayer(player);
                     break;
+
+
                 case TableStatus.Started:
                     Status = TableStatus.StartedWaiting;
+                    GameCallback.TableState(this, this);
                     break;
+
+
                 case TableStatus.StartedWaiting:
                     break;
+
+
                 case TableStatus.Finished:
                     RemovePlayer(player);
                     break;
@@ -138,14 +142,14 @@ namespace Jok.Strip.Server
                 return;
             player.TimerCreateDate = DateTime.Now;
             player.TimerHendler.SetTimeout(OnPlayerTime, player, TIME_OUT_TICK);
-        //    var oponent = GetNextPlayer(player);
-        //    var oponentProverb = new string(oponent.ProverbState.Select(a => this.KeysOption.IsChar(a) ? ' ' : a).ToArray());
-        //    var playerProverb = new string(player.ProverbState.Select(a => this.KeysOption.IsChar(a) ? ' ' : a).ToArray());
-        //    var currentTime = TIME_OUT_TICK - (DateTime.Now.Ticks - player.TimerCreateDate.Ticks)/10000;
-        //    var oponentTime = TIME_OUT_TICK - (DateTime.Now.Ticks - oponent.TimerCreateDate.Ticks)/10000;
-        //    GameCallback.SetCharResult(player, player.HelpKeys, player.ProverbState, currentTime, player.Incorect, oponentProverb, oponent.Incorect);
-        //    GameCallback.SetCharResult(oponent, oponent.HelpKeys, oponent.ProverbState, oponentTime, oponent.Incorect, playerProverb, player.Incorect);
-        //
+            //    var oponent = GetNextPlayer(player);
+            //    var oponentProverb = new string(oponent.ProverbState.Select(a => this.KeysOption.IsChar(a) ? ' ' : a).ToArray());
+            //    var playerProverb = new string(player.ProverbState.Select(a => this.KeysOption.IsChar(a) ? ' ' : a).ToArray());
+            //    var currentTime = TIME_OUT_TICK - (DateTime.Now.Ticks - player.TimerCreateDate.Ticks)/10000;
+            //    var oponentTime = TIME_OUT_TICK - (DateTime.Now.Ticks - oponent.TimerCreateDate.Ticks)/10000;
+            //    GameCallback.SetCharResult(player, player.HelpKeys, player.ProverbState, currentTime, player.Incorect, oponentProverb, oponent.Incorect);
+            //    GameCallback.SetCharResult(oponent, oponent.HelpKeys, oponent.ProverbState, oponentTime, oponent.Incorect, playerProverb, player.Incorect);
+            //
             SendPlayerState();
         }
 
@@ -185,20 +189,20 @@ namespace Jok.Strip.Server
                 player.TimerHendler.SetTimeout(OnPlayerTime, player, TIME_OUT_TICK);
             }
             GameCallback.TableState(this, this);
-            
+
         }
 
         void Finish()
         {
 
             Status = TableStatus.Finished;
-            
+
             LastWinnerPlayer = Players.FirstOrDefault(p => !p.ProverbState.Contains(XCHAR));
-                if (LastWinnerPlayer == null) //აქ ასხამს თუ მხოლოდ ერთი მოთამაშეა! ჯერ არ ვივი ერთი მოთამაშე როგორ აიჩითა.
-                    LastWinnerPlayer = Players[0].Incorect < Players[1].Incorect ? Players[0] : Players[1];
-                Players.ForEach(p => p.TimerHendler.Stop());
-                GameCallback.TableState(Table, this);
-            
+            if (LastWinnerPlayer == null) //აქ ასხამს თუ მხოლოდ ერთი მოთამაშეა! ჯერ არ ვივი ერთი მოთამაშე როგორ აიჩითა.
+                LastWinnerPlayer = Players[0].Incorect < Players[1].Incorect ? Players[0] : Players[1];
+            Players.ForEach(p => p.TimerHendler.Stop());
+            GameCallback.TableState(Table, this);
+
         }
 
 
@@ -295,12 +299,18 @@ namespace Jok.Strip.Server
         {
             var arr = new[]
             {
-                "All good things come to an end.", "Two wrongs don't make a right",
-                "Hope for the best, but prepare for the worst.","Keep your friends close and your enemies closer.",
-                "A picture is worth a thousand words.","Easy come, easy go.","Don't put all your eggs in one basket.",
-                "A chain is only as strong as its weakest link.","You can lead a horse to water, but you can't make him drink."
+                "All good things come to an end.", 
+                "Two wrongs don't make a right",
+                "Hope for the best, but prepare for the worst.",
+                "Keep your friends close and your enemies closer.",
+                "A picture is worth a thousand words.",
+                "Easy come, easy go.",
+                "Don't put all your eggs in one basket.",
+                "A chain is only as strong as its weakest link.",
+                "You can lead a horse to water, but you can't make him drink."
             };
-            return arr[DateTime.Now.Second%8];//random
+
+            return arr[DateTime.Now.Second % 8];//random
         }
     }
 

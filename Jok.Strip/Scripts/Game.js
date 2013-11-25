@@ -103,15 +103,9 @@ var Game = {
                 $('#Notification > .item').hide();
                 $('#Notification > .item.waiting_opponent').show();
                 jok.setPlayer(1, jok.currentUserID);
+                break;
 
-                break;
-            case Table.States.Finished:
-                //todo
-                $('#Notification > .item').hide();
-                $('#Notification > .item.table_finish_winner > span').html(jok.players[table.LastWinnerPlayer.UserID].nick);
-                $('#Notification > .item.table_finish_winner').show();
-                this.gameEndCall();
-                break;
+
             case Table.States.Started:
                 var opponent = (table.players[0].UserID == jok.currentUserID) ? table.players[1].UserID : table.players[0].UserID;
                 jok.setPlayer(1, jok.currentUserID);
@@ -122,9 +116,27 @@ var Game = {
                 this.TIMEOUTTICK = table.TIME_OUT_TICK;
                 this.MaxIncorrect = table.MaxIncorrect;
                 this.synchronizeCanvasObject();
+
+                $('#Player2 .offline').hide();
+
                 //todo
                 break;
+
+
             case Table.States.StartedWaiting:
+                $('#Notification > .item').hide();
+                $('#Notification > .item.opponent_offline').show();
+
+                $('#Player2 .offline').show();
+                break;
+
+
+            case Table.States.Finished:
+                //todo
+                $('#Notification > .item').hide();
+                $('#Notification > .item.table_finish_winner > span').html(jok.players[table.LastWinnerPlayer.UserID].nick);
+                $('#Notification > .item.table_finish_winner').show();
+                this.gameEndCall();
                 break;
         }
     },
@@ -387,3 +399,11 @@ var Game = {
 };
 
 Game.Init();
+
+game.init = function () {
+
+    //$('#Notification').append('<div class="item waiting_opponent_tournament"><br />Welcome<br/>Waiting for opponent...<br /><br /></div>');
+    $('#Notification').append('<div class="item opponent_offline"><br />Opponent is offline, Keep playing<br /><br /></div>');
+
+    $('#Player2').append('<div class="offline">Offline</div>');
+}
