@@ -169,6 +169,8 @@
     <Compile Include="GameServer\Models\TableStatus.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\Images\strippable_girl1.png" />
+    <Content Include="Content\Images\strippable_man1.png" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
     <None Include="Scripts\Common\jquery-2.0.3.intellisense.js" />
@@ -202,9 +204,7 @@
     <Content Include="Scripts\Common\jquery-2.0.3.min.map" />
     <Content Include="Views\Home\PlayTS.cshtml" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Content\Images\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>

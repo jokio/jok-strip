@@ -25,20 +25,26 @@
 </head>
 <body>
     <div id="Game">
+        <div id="PlayerModel">
+            <img src="~/Content/Images/strippable_man1.png" />
+        </div>
+        <div id="OpponentModel">
+            <img src="~/Content/Images/strippable_girl1.png" />
+        </div>
         <div class="gameStyle">
             <div id="currentDiv" class="game_point">
-               
+
             </div>
             <div id="oponentDiv" class="game_point">
-                
+
             </div>
             <div id="canvasOne">
             </div>
-            
+
             <div id="divKeyboard">
             </div>
         </div>
-      
+
     </div>
     <script src="http://play.jok.io/js?ignore=3"></script>
     @Scripts.Render("~/play/js")
