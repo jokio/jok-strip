@@ -94,10 +94,10 @@
     display: none;
 }
 
-#Player1 .cue img,
-#Player2 .cue img {
-    height: 120px;
-}
+    #Player1 .cue img,
+    #Player2 .cue img {
+        height: 120px;
+    }
 
 #Player2 .offline {
     display: none;
@@ -166,7 +166,7 @@
     background-color: rgba(0, 0, 0, 0.2);
 }
 
-.btnstyle, #divKeyboard div {
+.keyboard_item {
     outline: none;
     -webkit-box-shadow: rgba(0,0,0,0.2) 0 1px 0 0;
     -moz-box-shadow: rgba(0,0,0,0.2) 0 1px 0 0;
@@ -187,12 +187,6 @@
     -webkit-user-select: none;
     -o-user-select: none;
     user-select: none;
-}
-
-#divKeyboard div {
-    /*visibility: hidden;
-        position: absolute;
-       */ 
     padding: 5px;
     width: 65px;
     height: 60px;
@@ -202,16 +196,44 @@
     line-height: 55px;
 }
 
-#divKeyboard div:hover {
-    background-color: #60c9f1;
+    .keyboard_item:hover {
+        background-color: #60c9f1;
+    }
+
+    .keyboard_item:active {
+        background-color: #55c3ed;
+    }
+
+    .keyboard_item.disabled {
+        border: #92B0BB;
+        background-color: #9FC3D1;
+        cursor: auto;
+    }
+
+.gameStyle {
+    width: 800px;
+    height: 600px;
+    margin: auto;
+}
+/*----------------*/
+.game_point {
+    display: inline-block;
+    width: 150px;
+    height: 50px;
+    max-width: 150px;
+    /*border-style: solid;
+    border-color: red;*/
 }
 
-#divKeyboard div:active {
-    background-color: #55c3ed;
+
+#currentDiv.game_point {
+     text-align: left;
+    float: left;
+    margin-top: -65px;
 }
 
-.keyClicked {
- border: #92B0BB !important;
-background-color: #9FC3D1 !important;
-    cursor: auto !important;
+#oponentDiv.game_point {
+     text-align: right;
+    float: right;
+    margin-top: -65px;
 }

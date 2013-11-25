@@ -81,12 +81,17 @@ namespace Jok.Strip.Server
                     if (!Players.Contains(player))
                     {
                         AddPlayer(player);
+                   
                     }
                     if (Players.Count == 2)
                     {
                         Init();
                         Start();
                         SendPlayerState();
+                    }
+                    else
+                    {
+                        GameCallback.TableState(player, this);
                     }
                     
                     break;
@@ -187,13 +192,13 @@ namespace Jok.Strip.Server
         {
 
             Status = TableStatus.Finished;
-
+            
             LastWinnerPlayer = Players.FirstOrDefault(p => !p.ProverbState.Contains(XCHAR));
-            if (LastWinnerPlayer == null)
-                LastWinnerPlayer = Players[0].Incorect < Players[1].Incorect ? Players[0] : Players[1];
-            Players.ForEach(p => p.TimerHendler.Stop());
-            GameCallback.TableState(Table, this);
-
+                if (LastWinnerPlayer == null) //აქ ასხამს თუ მხოლოდ ერთი მოთამაშეა! ჯერ არ ვივი ერთი მოთამაშე როგორ აიჩითა.
+                    LastWinnerPlayer = Players[0].Incorect < Players[1].Incorect ? Players[0] : Players[1];
+                Players.ForEach(p => p.TimerHendler.Stop());
+                GameCallback.TableState(Table, this);
+            
         }
 
 

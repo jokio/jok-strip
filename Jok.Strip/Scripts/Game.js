@@ -48,6 +48,10 @@ var Game = {
 
     // UI Events ----------------------------------------------------------
     onLoad: function () {
+        console.log("---LOAD---");
+        this.currentDiv = $('#currentDiv')[0];
+        this.oponentDiv = $('#oponentDiv')[0];
+
         for (var i = 65; i <= 90; i++) {
             var chart = String.fromCharCode(i);
             var btn = document.createElement("div");
@@ -56,11 +60,12 @@ var Game = {
             btn.id = 'btn' + chart;
             btn.innerText = chart;
             btn.value = chart;
+            btn.className = 'keyboard_item';
             btn.addEventListener("click", this.onKeyBoardClick, true);
             document.getElementById("divKeyboard").appendChild(btn);
             $(btn).hide();
         }
-        $('#divKeyboard div').show();
+        $('.keyboard_item').show();
     },
 
     onPlayAgain: function () {
@@ -68,7 +73,7 @@ var Game = {
     },
 
     onKeyBoardClick: function (e) {
-        console.log(e);
+       
         window.Game.sendChar(e.target.innerHTML);
     },
 
@@ -142,7 +147,7 @@ var Game = {
         this.animateWhile();
         if (this.currentState.helpkeys)
             for (var k in this.currentState.helpkeys) {
-                $('#btn' + this.currentState.helpkeys[k].toUpperCase()).addClass('keyClicked');
+                $('#btn' + this.currentState.helpkeys[k].toUpperCase()).addClass('disabled');
             }
     },
 
@@ -173,6 +178,8 @@ var Game = {
     chars: new Array(),//new Kinetic.Text[0]
     pntext: {},//Kinetic.Text
     drawAllow: false,
+    currentDiv: {},
+    oponentDiv:{},
     keyboardOption: new KeyboardOption(),
 
     currentState: new PlayerState(),
@@ -226,11 +233,8 @@ var Game = {
             }
             this.chars[i].setText(tmpchars[i]);
         }
-        this.pntext.setText('თქვენ სიცოცხლე: ' +
-            Game.getPercent(this.currentState.incorect / this.MaxIncorrect) +
-            '%    დარჩენილი დრო: ' + this.currentState.time + '\r\n' +
-            ' მოწინააღმდეგე სიცოცხლე: ' + Game.getPercent(this.opponentState.incorect /
-                this.MaxIncorrect));
+        this.currentDiv.innerHTML = ('Your Life: ' +Game.getPercent(this.currentState.incorect / this.MaxIncorrect) +'% <br/> Time Left: ' + this.currentState.time);
+        this.oponentDiv.innerHTML=('Oponent Life:' + Game.getPercent(this.opponentState.incorect /this.MaxIncorrect) +'%');
         this.layer.draw();
     },
 
@@ -264,14 +268,12 @@ var Game = {
 
     firstDrawScreen: function (text) {
         var maxWidth = this.layer.getAttr('width');
-        console.log('2.0' + maxWidth);
-
+       
         //---Clear
         if (this.layer) {
             this.layer.removeChildren();
             this.layer.draw();
         }
-        console.log('2.1');
         var q = 5;
         var x = q;
         var y = q;
@@ -303,14 +305,34 @@ var Game = {
             this.layer.add(chart);
             if (!this.IsChar(chararr[i]) && Game.XCHAR != chararr[i]) {
                 rect.setOpacity(0);
+                //tu sityva kide mosdevs.
+                var charCounter = 0;
+                for (var c = i+1; c < chararr.length; c++) {
+                    if (chararr[c] === ' ')
+                        break;
+                    charCounter++;
+                }
+                if (charCounter != 0) {
+                    charCounter = charCounter * (rectWidth + q);
+                    if (x+charCounter + rectWidth > maxWidth) {
+                        x = q;
+                        y = q + y + rectheight;
+                        continue;
+                    }
+
+                }
             }
             x = x + (rectWidth + q);
             if (x + rectWidth > maxWidth) {
                 x = q;
                 y = q + y + rectheight;
+                //tu gadasvlis mere pirveli simbolo carieli adgilia
+                if (i + 1 < chararr.length && chararr[i + 1] == ' ')
+                    i++;
             }
+          
         }
-        console.log('2.3');
+        
         y = q + y + rectheight;
         this.pntext = new Kinetic.Text({
             x: q,
@@ -329,8 +351,8 @@ var Game = {
 
 
     synchronizeCanvasObject: function () {
-        $('#divKeyboard div').show();
-        $('#divKeyboard div').removeClass("keyClicked");
+        $('.keyboard_item').show();
+        $('.keyboard_item').removeClass('disabled');
         this.layer.removeChildren();
         this.chars = [];
         this.rects = [];
