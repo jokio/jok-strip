@@ -32,9 +32,9 @@ var Game = {
     MaxIncorrect: 10,
     TIMEOUTTICK: 15000,
 
-    Init: function () {
+    Init: function() {
 
-        $(document).on('ready', this.onLoad.bind(this));
+        //$(document).on('ready', this.onLoad.bind(this));
         $('.play_again').on('click', this.onPlayAgain.bind(this));
 
         this.proxy.on('Online', this.Online.bind(this));
@@ -48,17 +48,19 @@ var Game = {
 
     // UI Events ----------------------------------------------------------
     onLoad: function () {
+        if (this.keyboardIsCreated)
+            return;
         console.log("---LOAD---");
         this.currentDiv = $('#currentDiv')[0];
         this.oponentDiv = $('#oponentDiv')[0];
 
-        for (var i = 65; i <= 90; i++) {
+        for (var i = this.keyboardOption.From; i <= this.keyboardOption.To; i++) {
             var chart = String.fromCharCode(i);
             var btn = document.createElement("div");
             var t = document.createTextNode(chart);
             btn.appendChild(t);
             btn.id = 'btn' + chart;
-            btn.innerText = chart;
+            btn.innerText = chart.toUpperCase();
             btn.value = chart;
             btn.className = 'keyboard_item';
             btn.addEventListener("click", this.onKeyBoardClick, true);
@@ -66,30 +68,31 @@ var Game = {
             $(btn).hide();
         }
         $('.keyboard_item').show();
+        this.keyboardIsCreated = true;
     },
 
-    onPlayAgain: function () {
+    onPlayAgain: function() {
         this.proxy.send('PlayAgain', 1);
     },
 
-    onKeyBoardClick: function (e) {
-       
+    onKeyBoardClick: function(e) {
+
         window.Game.sendChar(e.target.innerHTML);
     },
 
 
 
     // Server Callbacks ---------------------------------------------------
-    Online: function () {
+    Online: function() {
         console.log('server is online');
         Game.loadCanvas();
     },
 
-    Offline: function () {
+    Offline: function() {
         console.log('server is offline');
     },
 
-    UserAuthenticated: function (userID) {
+    UserAuthenticated: function(userID) {
 
         Game.proxy.send('IncomingMethod', 'someParam');
         Game.UserID = userID;
@@ -97,12 +100,18 @@ var Game = {
 
     },
 
+    keyboardIsCreated: false,
+
     TableState: function (table) {
         switch (table.Status) {
             case Table.States.New:
                 $('#Notification > .item').hide();
                 $('#Notification > .item.waiting_opponent').show();
                 jok.setPlayer(1, jok.currentUserID);
+                if (!this.keyboardIsCreated) {
+                    this.keyboardOption = table.KeysOption;
+                    this.onLoad();//      this.loadCanvas();
+                }
                 break;
 
 
@@ -111,7 +120,11 @@ var Game = {
                 jok.setPlayer(1, jok.currentUserID);
                 jok.setPlayer(2, opponent);
                 $('#Notification > .item').hide();
-                this.keyboardOption = table.KeysOption;
+              
+                if (!this.keyboardIsCreated) {
+                    this.keyboardOption = table.KeysOption;
+                    this.onLoad();//      this.loadCanvas();
+                }
                 this.XCHAR = table.XCHAR;
                 this.TIMEOUTTICK = table.TIME_OUT_TICK;
                 this.MaxIncorrect = table.MaxIncorrect;
@@ -126,7 +139,10 @@ var Game = {
             case Table.States.StartedWaiting:
                 $('#Notification > .item').hide();
                 $('#Notification > .item.opponent_offline').show();
-
+                if (!this.keyboardIsCreated) {
+                    this.keyboardOption = table.KeysOption;
+                    this.onLoad();//      this.loadCanvas();
+                }
                 $('#Player2 .offline').show();
                 break;
 
@@ -159,7 +175,7 @@ var Game = {
         this.animateWhile();
         if (this.currentState.helpkeys)
             for (var k in this.currentState.helpkeys) {
-                $('#btn' + this.currentState.helpkeys[k].toUpperCase()).addClass('disabled');
+                $('#btn' + this.currentState.helpkeys[k]).addClass('disabled');
             }
     },
 
@@ -211,8 +227,10 @@ var Game = {
         if (!this.isCanvasSupported())
             return false;
 
-        if (!(this.layout == null || this.stage == null))
+        if (!(this.layout  === undefined || this.layout == null || this.stage === undefined  || this.stage == null))
             return false;
+
+        $('#canvasOne').empty();
 
         this.layer = new Kinetic.Layer({
             x: 0,
@@ -366,8 +384,8 @@ var Game = {
         $('.keyboard_item').show();
         $('.keyboard_item').removeClass('disabled');
         this.layer.removeChildren();
-        this.chars = [];
-        this.rects = [];
+        this.chars = new Array();
+        this.rects = new Array();
         this.initCanvasFirst = false;
         this.layer.draw();
     },
