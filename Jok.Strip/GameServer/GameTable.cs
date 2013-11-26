@@ -38,8 +38,8 @@ namespace Jok.Strip.Server
             set;
             get;
         }
-        [DataMember]
-        public KeyboardOption KeysOption = new KeyboardOption() { From = 97, To = 122 };
+
+        [DataMember] public KeyboardOption KeysOption = default(KeyboardOption);
 
         private string Proverb { set; get; }
         #endregion
@@ -74,6 +74,12 @@ namespace Jok.Strip.Server
 
         protected override void OnJoin(GamePlayer player, object state)
         {
+            if (this.KeysOption.Equals(default(KeyboardOption)))
+            {
+                //todo; aq daemateba ena
+              this.KeysOption = KeyboardOption.GetKeyboardOptionFromString("RU");
+
+            }
             switch (Status)
             {
                 case TableStatus.New:
@@ -297,19 +303,54 @@ namespace Jok.Strip.Server
 
         string GetNewProverb()
         {
-            var arr = new[]
+            var arr = new string[1];
+            switch (this.KeysOption.LN)
             {
-                "All good things come to an end.", 
-                "Two wrongs don't make a right",
-                "Hope for the best, but prepare for the worst.",
-                "Keep your friends close and your enemies closer.",
-                "A picture is worth a thousand words.",
-                "Easy come, easy go.",
-                "Don't put all your eggs in one basket.",
-                "A chain is only as strong as its weakest link.",
-                "You can lead a horse to water, but you can't make him drink."
-            };
+                case "RU":
+                    arr = new[]
+                    {
+                        "Без муки нет науки.",
+                        "Без отдыха и конь не скачет.",
+                        "Безопасность прежде всего.",
+                        "Бережёного Бог бережёт.",
+                        "Бог дал, Бог и взял.",
+                        "В гостях хорошо, а дома лучше.",
+                        "Насильно мил не будешь.",
+                        "Где любовь и совет, там и горя нет.",
+                        "Дареному коню в зубы не смотрят."
+                    };
+                    break;
+                case "GE":
+                    arr = new[]
+                    {
+                        "რასაც დასთეს, იმას მოიმკი.",
+                        "რკინა სანამ ცხელია, მანამ გაჭედეო.",
+                        "სიტყვა უსაქმოდ მკვდარია.",
+                        "უსწავლელი ქვაზე დაჯდა, ქვა-ქვაზე დაემატა.",
+                        "ქორი ქორსა სჩეკს, ძერა ძერუკასაო",
+                        "ღარიბის ლუკმა ტკბილია.",
+                        "ყველაზე უბედური ის არის, ვინც უბედურებას ვერ აიტანს",
+                        "შავი ცხვარი ბანვით მოჰკლეს, თეთრი - დაუბანლობითო.",
+                        "ცა ქუდად არ მიაჩნია, დედამიწა ქალამნადო"
+                    };
+                    break;
+                default:
+                    arr = new[]
+                    {
+                        "All good things come to an end.",
+                        "Two wrongs don't make a right",
+                        "Hope for the best, but prepare for the worst.",
+                        "Keep your friends close and your enemies closer.",
+                        "A picture is worth a thousand words.",
+                        "Easy come, easy go.",
+                        "Don't put all your eggs in one basket.",
+                        "A chain is only as strong as its weakest link.",
+                        "You can lead a horse to water, but you can't make him drink."
+                    }; break;
+                    
+            }
 
+       
             return arr[DateTime.Now.Second % 8];//random
         }
     }
