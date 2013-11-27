@@ -131,8 +131,6 @@ var Game = {
                 this.synchronizeCanvasObject();
 
                 $('#Player2 .offline').hide();
-
-                //todo
                 break;
 
 
@@ -252,20 +250,23 @@ var Game = {
     drawScreen: function () {
         if (!this.drawAllow)
             return;
-
+       
         var tmpchars = this.currentState.proverbState.split('');
-
+       
         for (var i = 0; i < tmpchars.length; i++) {
             if (this.opponentState.proverbState.charAt(i) != Game.XCHAR &&
                 this.currentState.proverbState.charAt(i) !=
                     this.opponentState.proverbState.charAt(i)) {
                 this.rects[i].setStroke('#21A527');
             }
-            this.chars[i].setText(tmpchars[i]);
+            if (this.chars[i] != null && this.chars[i] !== undefined && this.chars[i].setText)
+                this.chars[i].setText(tmpchars[i]);
+       
         }
+        this.layer.draw();
         this.currentDiv.innerHTML = ('Your Life: ' +Game.getPercent(this.currentState.incorect / this.MaxIncorrect) +'% <br/> Time Left: ' + this.currentState.time);
         this.oponentDiv.innerHTML=('Oponent Life:' + Game.getPercent(this.opponentState.incorect /this.MaxIncorrect) +'%');
-        this.layer.draw();
+       
     },
 
     timerTick: function () {
@@ -391,7 +392,7 @@ var Game = {
     },
 
     gameEndCall: function () {
-
+        this.initCanvasFirst = false;
         for (var k in this.currentState.helpkeys) {
             $('#btn' + this.currentState.helpkeys[k]);
         }
@@ -400,11 +401,11 @@ var Game = {
         $('#divKeyboard div').hide();
         this.drawAllow = false;
         this.layer.clear();
-        this.initCanvasFirst = false;
+       
         //var winner = Game.isWinner(this.currentState, this.opponentState) ?
         //    this.currentState : this.opponentState;
         //this.pntext.setText('გამარჯვებულია: ' + winner.UserID);
-        this.layer.draw();
+      //  this.layer.draw();
 
     },
 

@@ -213,19 +213,30 @@ namespace Jok.Strip.Server
 
 
 
-        string GetRandomChar(List<char> ch)
-        {
-            for (var i = KeysOption.From; i <= KeysOption.To; i++)
-            {
-                if (!ch.Contains((char)i))
-                    return ((char)i).ToString();
-            }
-            return XCHAR.ToString();
-        }
+        //string GetRandomChar(List<char> ch)
+        //{
+        //    for (var i = KeysOption.From; i <= KeysOption.To; i++)
+        //    {
+        //        if (!ch.Contains((char)i))
+        //            return ((char)i).ToString();
+        //    }
+        //    return XCHAR.ToString();
+        //}
 
         void OnPlayerTime(GamePlayer player)
         {
-            OnSetNewChar(player, GetRandomChar(player.HelpKeys));
+            player.Incorect++;
+            if (!CheckFinish())
+            {
+                player.TimerCreateDate = DateTime.Now;
+                player.TimerHendler.SetTimeout(OnPlayerTime, player, TIME_OUT_TICK);
+                SendPlayerState();
+                return;
+            }
+            Finish();
+      
+            
+            //   OnSetNewChar(player, GetRandomChar(player.HelpKeys));
         }
 
         void SendPlayerState()
