@@ -67,7 +67,7 @@ var Game = {
             document.getElementById("divKeyboard").appendChild(btn);
             $(btn).hide();
         }
-        $('.keyboard_item').show();
+        //$('.keyboard_item').show();
         this.keyboardIsCreated = true;
     },
 
@@ -299,7 +299,7 @@ var Game = {
 
     firstDrawScreen: function (text) {
         var maxWidth = this.layer.getAttr('width');
-       
+        $('.keyboard_item').show();
         //---Clear
         if (this.layer) {
             this.layer.removeChildren();
@@ -382,7 +382,7 @@ var Game = {
 
 
     synchronizeCanvasObject: function () {
-        $('.keyboard_item').show();
+      //  $('.keyboard_item').show();
         $('.keyboard_item').removeClass('disabled');
         this.layer.removeChildren();
         this.chars = new Array();
