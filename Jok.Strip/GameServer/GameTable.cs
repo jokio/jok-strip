@@ -77,7 +77,7 @@ namespace Jok.Strip.Server
             if (this.KeysOption.Equals(default(KeyboardOption)))
             {
                 //todo; aq daemateba ena
-              this.KeysOption = KeyboardOption.GetKeyboardOptionFromString("RU");
+              this.KeysOption = KeyboardOption.GetKeyboardOptionFromString("EN");
 
             }
             switch (Status)
