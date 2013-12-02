@@ -299,6 +299,7 @@ var Game = {
 
     firstDrawScreen: function (text) {
         var maxWidth = this.layer.getAttr('width');
+        $('#divKeyboard').show();
         $('.keyboard_item').show();
         //---Clear
         if (this.layer) {
@@ -398,7 +399,7 @@ var Game = {
         }
         this.drawAllow = true;
         this.drawScreen();
-        $('#divKeyboard div').hide();
+        $('#divKeyboard').hide();
         this.drawAllow = false;
         this.layer.clear();
        
