@@ -141,6 +141,7 @@
 #Notification .share_friends .info_msg {
     margin-top: 5px;
     height: 10px;
+    -ms-opacity: 0;
     opacity: 0;
     font-size: 12px;
 }
@@ -162,6 +163,7 @@
     text-align: center;
     border: 1px solid lightblue;
     padding: 20px 0px;
+    -ms-border-radius: 5px;
     border-radius: 5px;
     display: none;
     background-color: rgba(0, 0, 0, 0.2);
@@ -171,22 +173,26 @@
     outline: none;
     -webkit-box-shadow: rgba(0,0,0,0.2) 0 1px 0 0;
     -moz-box-shadow: rgba(0,0,0,0.2) 0 1px 0 0;
+    -ms-box-shadow: rgba(0,0,0,0.2) 0 1px 0 0;
     box-shadow: rgba(0,0,0,0.2) 0 1px 0 0;
     border-bottom-color: #333;
     border: 1px solid #61c4ea;
     background-color: #7cceee;
+    -ms-border-radius: 5px;
     border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     color: #333;
     font-family: 'Verdana',Arial,sans-serif;
     font-size: 24px;
+    -ms-text-shadow: #b2e2f5 0 1px 0;
     text-shadow: #b2e2f5 0 1px 0;
     /*Un selectleble */
     -moz-user-select: -moz-none;
     -khtml-user-select: none;
     -webkit-user-select: none;
     -o-user-select: none;
+    -ms-user-select: none;
     user-select: none;
     padding: 5px;
     width: 65px;
@@ -247,6 +253,7 @@
     position: absolute;
     padding: 1px 4px;
     background: rgba(0, 0, 0, 0.5);
+    -ms-border-radius: 3px;
     border-radius: 3px;
     border: 1px solid #B4B4B4;
     top: 60px;
@@ -259,7 +266,9 @@
     left: 50%;
     margin-left: -270px;
     top: -180px;
+    -ms-opacity: 0.5;
     opacity: 0.5;
+    display: none;
 }
 
 #OpponentModel {
@@ -267,8 +276,9 @@
     left: 50%;
     margin-left: 180px;
     top: -180px;
-    opacity: 0.5;
-     
+    -ms-opacity: 0.5;
+    opacity: 0.5;     
+    display: none;
 }
 
 #PlayerModel img,

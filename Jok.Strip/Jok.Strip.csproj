@@ -172,6 +172,7 @@
     <Content Include="Content\Images\strippable_girl1.png" />
     <Content Include="Content\Images\strippable_girl2.png" />
     <Content Include="Content\Images\strippable_man1.png" />
+    <Content Include="Content\Images\strippable_man2.png" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
     <None Include="Scripts\Common\jquery-2.0.3.intellisense.js" />

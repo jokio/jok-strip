@@ -47,13 +47,14 @@ var Game = {
 
 
     // UI Events ----------------------------------------------------------
-    onLoad: function () {
+    onLoad: function() {
         if (this.keyboardIsCreated)
             return;
         console.log("---LOAD---");
         this.currentDiv = $('#currentDiv')[0];
         this.oponentDiv = $('#oponentDiv')[0];
-
+        this.oponentLife = $('#oponentLife')[0];
+        this.currentLife = $('#playerLife')[0];
         for (var i = this.keyboardOption.From; i <= this.keyboardOption.To; i++) {
             var chart = String.fromCharCode(i);
             var btn = document.createElement("div");
@@ -102,60 +103,54 @@ var Game = {
 
     keyboardIsCreated: false,
 
-    TableState: function (table) {
+    TableState: function(table) {
         switch (table.Status) {
-            case Table.States.New:
-                $('#Notification > .item').hide();
-                $('#Notification > .item.waiting_opponent').show();
-                jok.setPlayer(1, jok.currentUserID);
-                if (!this.keyboardIsCreated) {
-                    this.keyboardOption = table.KeysOption;
-                    this.onLoad();//      this.loadCanvas();
-                }
-                break;
+        case Table.States.New:
+            $('#Notification > .item').hide();
+            $('#Notification > .item.waiting_opponent').show();
+            jok.setPlayer(1, jok.currentUserID);
+            if (!this.keyboardIsCreated) {
+                this.keyboardOption = table.KeysOption;
+                this.onLoad(); //      this.loadCanvas();
+            }
+            break;
+        case Table.States.Started:
+            var opponent = (table.players[0].UserID == jok.currentUserID) ? table.players[1].UserID : table.players[0].UserID;
+            jok.setPlayer(1, jok.currentUserID);
+            jok.setPlayer(2, opponent);
+            $('#Notification > .item').hide();
 
+            if (!this.keyboardIsCreated) {
+                this.keyboardOption = table.KeysOption;
+                this.onLoad(); //      this.loadCanvas();
+            }
+            this.XCHAR = table.XCHAR;
+            this.TIMEOUTTICK = table.TIME_OUT_TICK;
+            this.MaxIncorrect = table.MaxIncorrect;
+            this.synchronizeCanvasObject();
 
-            case Table.States.Started:
-                var opponent = (table.players[0].UserID == jok.currentUserID) ? table.players[1].UserID : table.players[0].UserID;
-                jok.setPlayer(1, jok.currentUserID);
-                jok.setPlayer(2, opponent);
-                $('#Notification > .item').hide();
-              
-                if (!this.keyboardIsCreated) {
-                    this.keyboardOption = table.KeysOption;
-                    this.onLoad();//      this.loadCanvas();
-                }
-                this.XCHAR = table.XCHAR;
-                this.TIMEOUTTICK = table.TIME_OUT_TICK;
-                this.MaxIncorrect = table.MaxIncorrect;
-                this.synchronizeCanvasObject();
-
-                $('#Player2 .offline').hide();
-                break;
-
-
-            case Table.States.StartedWaiting:
-                $('#Notification > .item').hide();
-                $('#Notification > .item.opponent_offline').show();
-                if (!this.keyboardIsCreated) {
-                    this.keyboardOption = table.KeysOption;
-                    this.onLoad();//      this.loadCanvas();
-                }
-                $('#Player2 .offline').show();
-                break;
-
-
-            case Table.States.Finished:
-                //todo
-                $('#Notification > .item').hide();
-                $('#Notification > .item.table_finish_winner > span').html(jok.players[table.LastWinnerPlayer.UserID].nick);
-                $('#Notification > .item.table_finish_winner').show();
-                this.gameEndCall();
-                break;
+            $('#Player2 .offline').hide();
+            break;
+        case Table.States.StartedWaiting:
+            $('#Notification > .item').hide();
+            $('#Notification > .item.opponent_offline').show();
+            if (!this.keyboardIsCreated) {
+                this.keyboardOption = table.KeysOption;
+                this.onLoad(); //      this.loadCanvas();
+            }
+            $('#Player2 .offline').show();
+            break;
+        case Table.States.Finished:
+            //todo
+            $('#Notification > .item').hide();
+            $('#Notification > .item.table_finish_winner > span').html(jok.players[table.LastWinnerPlayer.UserID].nick);
+            $('#Notification > .item.table_finish_winner').show();
+            this.gameEndCall();
+            break;
         }
     },
 
-    SetCharResult: function (helpkeys, proverb, time, incorrect, oponentProverb, oponentIncorrect) {
+    SetCharResult: function(helpkeys, proverb, time, incorrect, oponentProverb, oponentIncorrect) {
 
         if (!this.initCanvasFirst) {
             this.drawAllow = true;
@@ -177,14 +172,11 @@ var Game = {
             }
     },
 
-
-
-    // Helper functions ---------------------------------------------------
-    getPercent: function (dec) {
-        return Math.round(100 * Math.abs((1 - dec)));
+    getPercent: function(dec) {
+        return Math.abs((1 - dec));
     },
 
-    isWinner: function (currentPlayer, opponentPlayer) {
+    isWinner: function(currentPlayer, opponentPlayer) {
         if (currentPlayer.proverbState.indexOf(Game.XCHAR) < 0)
             return true;
 
@@ -195,8 +187,6 @@ var Game = {
     },
 
     initCanvasFirst: false,
-
-
     UserID: 0,
     stage: {},//new Kinetic.Stage()
     layer: {},//new Kinetic.Layer()
@@ -205,12 +195,18 @@ var Game = {
     pntext: {},//Kinetic.Text
     drawAllow: false,
     currentDiv: {},
-    oponentDiv:{},
+    oponentDiv: {},
+    currentLife: {},
+    oponentLife: {},
+    IMAGESIZE: 300,
     keyboardOption: new KeyboardOption(),
 
     currentState: new PlayerState(),
+
     opponentState: new PlayerState(),
+
     timerHendler: -1,
+
     IsChar: function (schar) {
         return schar ? (schar.length == 1 && schar.toLowerCase().charCodeAt(0)
             >= this.keyboardOption.From && this.keyboardOption.To
@@ -264,9 +260,12 @@ var Game = {
        
         }
         this.layer.draw();
-        this.currentDiv.innerHTML = ('Your Life: ' +Game.getPercent(this.currentState.incorect / this.MaxIncorrect) +'% <br/> Time Left: ' + this.currentState.time);
-        this.oponentDiv.innerHTML=('Oponent Life:' + Game.getPercent(this.opponentState.incorect /this.MaxIncorrect) +'%');
        
+        this.currentLife.style.paddingTop = (this.IMAGESIZE - (this.IMAGESIZE * Game.getPercent(this.currentState.incorect / this.MaxIncorrect))).toString() + 'px';
+        this.oponentLife.style.paddingTop = (this.IMAGESIZE - (this.IMAGESIZE * Game.getPercent(this.opponentState.incorect / this.MaxIncorrect))).toString() + 'px';
+        this.currentDiv.innerHTML = ('Time Left: ' + this.currentState.time);
+        
+
     },
 
     timerTick: function () {
@@ -301,6 +300,10 @@ var Game = {
         var maxWidth = this.layer.getAttr('width');
         $('#divKeyboard').show();
         $('.keyboard_item').show();
+        this.currentLife.paddingTop = (this.IMAGESIZE.toString() + 'px');
+        this.oponentLife.paddingTop = (this.IMAGESIZE.toString() + 'px');
+        $('#PlayerModel').show();
+        $('#OpponentModel').show();
         //---Clear
         if (this.layer) {
             this.layer.removeChildren();
@@ -381,7 +384,6 @@ var Game = {
         this.layer.draw();
     },
 
-
     synchronizeCanvasObject: function () {
       //  $('.keyboard_item').show();
         $('.keyboard_item').removeClass('disabled');
@@ -402,12 +404,8 @@ var Game = {
         $('#divKeyboard').hide();
         this.drawAllow = false;
         this.layer.clear();
-       
-        //var winner = Game.isWinner(this.currentState, this.opponentState) ?
-        //    this.currentState : this.opponentState;
-        //this.pntext.setText('გამარჯვებულია: ' + winner.UserID);
-      //  this.layer.draw();
-
+        $('#PlayerModel').hide();
+        $('#OpponentModel').hide();
     },
 
     sendChar: function (kchar) {
@@ -422,7 +420,6 @@ Game.Init();
 
 game.init = function () {
 
-    //$('#Notification').append('<div class="item waiting_opponent_tournament"><br />Welcome<br/>Waiting for opponent...<br /><br /></div>');
     $('#Notification').append('<div class="item opponent_offline"><br />Opponent is offline, Keep playing<br /><br /></div>');
 
     $('#Player2').append('<div class="offline">Offline</div>');
